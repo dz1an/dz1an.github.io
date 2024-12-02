@@ -43,9 +43,7 @@
         <div class="hero-content d-flex flex-column fullscreen py-5">
           <div class="container my-auto">
             <div class="row">
-              <div class="col-md-4 "> <!-- Adjusted my-7 for lower position -->
-                <img class="profile-large" src="images/profile.png" alt="" style="filter: brightness(1.5);">
-              </div>
+              
               <div class="col-md-8 offset-md-8 my-7">
                 <h1 style="color:#fff"> John Kent Evangelista </h1>
                 <h2 style="color:#fff">I’m <span class="typing" style="color:#4db9ff"></span></h2>
@@ -92,9 +90,7 @@
           <li class="nav-item">
             <a class="nav-link" href="#projects">Projects</a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#clients">Clients</a>
-          </li>
+          
           <li class="nav-item">
             <a class="nav-link" href="#contact">Contact</a>
           </li>
@@ -119,7 +115,7 @@
         <p class="lh-sm lead self-description">Welcome to my professional web portfolio! As a dedicated and skilled web developer, my passion lies in creating exceptional online experiences. I bring ideas to life through beautifully designed and seamlessly functional websites, utilizing a harmonious blend of creativity and technical expertise. With a strong focus on crafting engaging user interfaces and optimizing performance, my goal is to deliver high-quality results that leave a lasting impact. I invite you to explore my work and delve into the projects that showcase my proficiency in web development. Together, we can transform your digital vision into a reality.</p>
       </div>
       <div class="col-md-4">
-        <div class="badge badge-primary years-of-experience-badge">3+</div>
+        <div class="badge badge-primary years-of-experience-badge">2+</div>
         <p class="lead years-of-experience-text">Years of <span>Experience</span></p>
       </div>
     </div>
@@ -133,7 +129,7 @@
       <div class="col-md-4">
         <div class="project-card">
           <h3 class="project-title-stats">Ongoing Projects</h3>
-          <p class="project-number">2</p>
+          <p class="project-number">1</p>
         </div>
       </div>
       <div class="col-md-4">
@@ -145,10 +141,10 @@
     </div>
     <div class="row justify-content-center">
       <div class="col-md-12 cta-button mt-3">
-        <button class="cv-button">Download Curriculum Vitae</button>
+          <button id="downloadCVButton" class="cv-button">Download Curriculum Vitae</button>
       </div>
-    </div>
   </div>
+</div>
 </section>
 
   <!-- Services section -->
@@ -184,18 +180,18 @@
           <div class="row">
             <div class="col-md-6">
               <div class="skill-item">
-                <h5 class="skill-name">PHP</h5>
+                <h5 class="skill-name">Python</h5>
                 <div class="progress">
                   <div id="html-css-progress" class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100""></div>
                 </div>
                 <span class="skill-percentage" id="html-css-percentage">100%</span>
               </div>
               <div class="skill-item">
-                <h5 class="skill-name">Javascript</h5>
+                <h5 class="skill-name">PHP</h5>
                 <div class="progress">
-                  <div id="javascript-progress" class="progress-bar" role="progressbar" aria-valuenow="90" aria-valuemin="0" aria-valuemax="100"></div>
+                  <div id="javascript-progress" class="progress-bar" role="progressbar" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"></div>
                 </div>
-                <span class="skill-percentage" id="javascript-percentage">90%</span>
+                <span class="skill-percentage" id="javascript-percentage">80%</span>
               </div>
               <div class="skill-item">
                 <h5 class="skill-name">HTML/CSS</h5>
@@ -214,11 +210,11 @@
                 <span class="skill-percentage" id="ml-da-percentage">85%</span>
               </div>
               <div class="skill-item">
-                <h5 class="skill-name">Database</h5>
+                <h5 class="skill-name">Django</h5>
                 <div class="progress">
-                  <div id="design-progress" class="progress-bar" role="progressbar" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"></div>
+                  <div id="design-progress" class="progress-bar" role="progressbar" aria-valuenow="95" aria-valuemin="0" aria-valuemax="100"></div>
                 </div>
-                <span class="skill-percentage" id="design-percentage">80%</span>
+                <span class="skill-percentage" id="design-percentage">95%</span>
               </div>
               <div class="skill-item">
                 <h5 class="skill-name">Design</h5>
@@ -318,6 +314,8 @@
             </div>
           </div>
         </div>
+
+
   
         <!-- Medium Project -->
         <div class="col-lg-4">
@@ -337,11 +335,11 @@
         <div class="col-lg-4">
           <div class="project-card medium-card">
             <div class="project-image">
-              <img src="images/project3.png" alt="Project 3" class="img-fluid">
+              <img src="images/project6.png" alt="Project 3" class="img-fluid">
               <div class="overlay"></div>
               <div class="project-info">
-                <h3 class="project-title">Jeshin.Co</h3>
-                <p class="project-description">A sleek online attendance system, Jeshin.Co simplifies tracking attendance for various purposes.</p>
+                <h3 class="project-title">Smartscore</h3>
+                <p class="project-description">SmartScore is an innovative web-based application designed to simplify and automate the management of academic assessments. Built with Django, the platform empowers educators to create, manage, and grade exams efficiently while providing detailed performance insights for students.</p>
               </div>
             </div>
           </div>
@@ -379,86 +377,7 @@
   
 
   <!-- Clients section -->
-  <section id="clients" class="section" style="background-color: #2e3047;">
-    <div class="container">
-      <div class="client-header text-center">
-        <span class="badge rounded-pill title-badge mb-2">Client Testimonial</span>
-        <h2 class="fw-bold text-white">Testimonials from Satisfied Clients</h2>
-      </div>
-      <div class="quotes">
-        <div class="bubble">
-          <blockquote><div class="text-muted text-center">Working with Kent on our web project was an absolute delight. His deep understanding of web development and design allowed him to bring our vision to life flawlessly. Kent's attention to detail, quick response time, and excellent communication skills made the entire process smooth and efficient. The final product exceeded our expectations, and we highly recommend Kent for any web project.</div>
-            <div class="profile-circle rounded-circle d-flex align-items-center justify-content-center shadow text-center">
-              <img src="images/client1.jpg" alt="Client Image" class="profile-image rounded-circle img-fluid">
-              <div class="profile-overlay"></div>
-              <h3 class="profile-name">Charess</h3>
-            </div>                       
-       </blockquote>
-          <div class="bubble-arrow"></div>
-          <div class="row">
-            <cite>Charess</cite>
-            <p class="text-muted">Charess</p>
-          </div>
-        </div>  
-        <div class="bubble">
-          <blockquote><div class="text-muted text-center">Kent is a highly skilled and talented web developer. He tackled our web project with great enthusiasm and dedication. Throughout the process, Kent demonstrated his ability to listen to our requirements and translate them into a visually appealing and user-friendly website. His creativity and technical expertise were evident in every aspect of the project. We are thrilled with the outcome and grateful for Kent's professionalism and expertise.</div>
-            <div class="profile-circle rounded-circle d-flex align-items-center justify-content-center shadow text-center">
-              <img src="images/client2.jpg" alt="Client Image" class="profile-image rounded-circle img-fluid">
-              <div class="profile-overlay"></div>
-              <h3 class="profile-name">Hakao san</h3>
-            </div>                       
-       </blockquote>
-          <div class="bubble-arrow"></div>
-          <div class="row">
-            <cite>hakao</cite>
-            <p class="text-muted">Hakao san</p>
-          </div>
-        </div>
-        <div class="bubble">
-          <blockquote><div class="text-muted text-center">Kent's expertise and professionalism made our web project a success. He took the time to understand our business needs and provided innovative solutions to enhance our online presence. Kent's attention to detail and commitment to delivering a high-quality website were truly impressive. His timely communication and proactive approach made working with him a pleasure. We highly recommend Kent for his exceptional web development skills.</div>
-            <div class="profile-circle rounded-circle d-flex align-items-center justify-content-center shadow text-center">
-              <img src="images/client3.jpg" alt="Client Image" class="profile-image rounded-circle img-fluid">
-              <div class="profile-overlay"></div>
-              <h3 class="profile-name">Rurusama</h3>
-            </div>                       
-       </blockquote>
-          <div class="bubble-arrow"></div>
-          <div class="row">
-            <cite>Ruru</cite>
-            <p class="text-muted">Owner, Rurusama</p>
-          </div>
-        </div>
-        <div class="bubble">
-          <blockquote><div class="text-muted text-center">Kent exceeded our expectations throughout our web project. His strong technical skills and creative flair helped us achieve a website that perfectly represents our brand. Kent's ability to understand our goals and translate them into an engaging online experience was commendable. He was responsive to our feedback and implemented changes promptly. Working with Kent was a seamless and enjoyable experience, and we would not hesitate to work with him again in the future.</div>
-            <div class="profile-circle rounded-circle d-flex align-items-center justify-content-center shadow text-center">
-              <img src="images/client4.png" alt="Client Image" class="profile-image rounded-circle img-fluid">
-              <div class="profile-overlay"></div>
-              <h3 class="profile-name">Michael Reeves</h3>
-            </div>                       
-       </blockquote>
-          <div class="bubble-arrow"></div>
-          <div class="row">
-            <cite>Michael</cite>
-            <p class="text-muted">Owner, Lilypichu</p>
-          </div>
-        </div>
-        <div class="bubble">
-          <blockquote><div class="text-muted text-center">Kent's expertise and professionalism shone through in every aspect of our web project. His attention to detail and ability to understand our requirements resulted in a visually stunning and highly functional website. Kent's clear communication and timely updates kept us informed and engaged throughout the process. We were impressed with his technical knowledge and his commitment to delivering a top-notch website. Kent is a talented web developer, and we highly recommend him for any web project.</div>
-            <div class="profile-circle rounded-circle d-flex align-items-center justify-content-center shadow text-center">
-              <img src="images/client5.jpg" alt="Client Image" class="profile-image rounded-circle img-fluid">
-              <div class="profile-overlay"></div>
-              <h3 class="profile-name">Taylor Swift</h3>
-            </div>                       
-       </blockquote>
-          <div class="bubble-arrow"></div>
-          <div class="row">
-            <cite>Taylor</cite>
-            <p class="text-muted">Taylor Swift</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+
 
   <!-- Contact section -->
   <section id="contact" class="section">

@@ -151,3 +151,26 @@
         overlay.style.display = 'none';
     }
     });
+
+
+    // Function to handle CV download
+    document.addEventListener('DOMContentLoaded', function() {
+      const downloadButton = document.querySelector('.cv-button');
+      
+      if (downloadButton) {
+          downloadButton.addEventListener('click', function() {
+              // Specify the path to your CV PDF
+              const cvPath = '/cv/John_Evangelista_WebDeveloper_Resume.pdf';
+              
+              // Create a temporary anchor element
+              const link = document.createElement('a');
+              link.href = cvPath;
+              link.download = 'John_Kent_WebDeveloper_Resume.pdf';
+              
+              // Append to the body, click, and remove
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+          });
+      }
+    });
