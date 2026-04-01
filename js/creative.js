@@ -50,16 +50,23 @@
   ];
 
   // Camera path — forest walk
+  // 10 chapters — longer path through the forest
   var CAMERA_PATH = [
-    { at: 0.00, pos: [0, 4, 50],    look: [0, 2, 0] },
-    { at: 0.12, pos: [0, 3, 35],    look: [0, 2, 0] },
-    { at: 0.25, pos: [3, 2.5, 22],  look: [0, 3, 0] },
-    { at: 0.38, pos: [6, 3, 12],    look: [0, 3, -2] },
-    { at: 0.50, pos: [10, 3.5, 2],  look: [4, 3, -8] },
-    { at: 0.62, pos: [6, 4, -8],    look: [-2, 3, -15] },
-    { at: 0.75, pos: [-4, 3, -16],  look: [-8, 4, -22] },
-    { at: 0.87, pos: [-8, 5, -8],   look: [0, 3, 0] },
-    { at: 1.00, pos: [0, 14, 20],   look: [0, 0, -5] }
+    { at: 0.00, pos: [0, 4, 55],     look: [0, 2, 0] },     // Ch0: Wide entrance
+    { at: 0.08, pos: [0, 3.5, 42],   look: [0, 2, -5] },    // Walking in
+    { at: 0.14, pos: [-3, 3, 32],    look: [2, 2, 0] },     // Ch1: The path
+    { at: 0.22, pos: [2, 2.8, 22],   look: [0, 3, 0] },     // Approaching clearing
+    { at: 0.28, pos: [4, 3, 14],     look: [0, 3.5, 0] },   // Ch2: The clearing
+    { at: 0.34, pos: [7, 3.2, 8],    look: [0, 3, -2] },    // Ch3: Methodology
+    { at: 0.42, pos: [10, 3.5, 0],   look: [5, 3, -10] },   // Ch4: First lanterns
+    { at: 0.50, pos: [8, 4, -6],     look: [2, 3, -14] },   // Among lanterns
+    { at: 0.58, pos: [4, 4.5, -12],  look: [-2, 3, -18] },  // Ch5: The grove
+    { at: 0.65, pos: [-2, 3.5, -18], look: [-8, 3, -22] },  // Into deep woods
+    { at: 0.72, pos: [-8, 3, -22],   look: [-12, 4, -26] }, // Ch6: Fireflies
+    { at: 0.78, pos: [-12, 4, -16],  look: [-5, 4, -10] },  // Ch7: The award
+    { at: 0.84, pos: [-8, 6, -8],    look: [0, 3, 0] },     // Ch8: Rising
+    { at: 0.92, pos: [-3, 10, 8],    look: [0, 2, -5] },    // Above canopy
+    { at: 1.00, pos: [0, 16, 22],    look: [0, 0, -5] }     // Ch9: Aerial overview
   ];
 
   function lerp(a, b, t) { return a + (b - a) * t; }
@@ -217,8 +224,25 @@
   function createCoreLantern() {
     var orb = new THREE.Mesh(new THREE.SphereGeometry(0.8, 16, 16), new THREE.MeshBasicMaterial({ color: 0xA3B18A, transparent: true, opacity: 0.3 }));
     orb.position.set(0, 4, 0); scene.add(orb); scene._coreOrb = orb;
-    var shell = new THREE.Mesh(new THREE.IcosahedronGeometry(1.5, 2), new THREE.MeshBasicMaterial({ color: SAGE.accent, wireframe: true, transparent: true, opacity: 0.12 }));
-    shell.position.set(0, 4, 0); scene.add(shell); scene._coreShell = shell;
+    // Orbiting embers around the core lantern
+    var embers = [];
+    for (var ei = 0; ei < 20; ei++) {
+      var ember = new THREE.Mesh(
+        new THREE.SphereGeometry(0.04 + Math.random() * 0.04, 6, 6),
+        new THREE.MeshBasicMaterial({ color: 0xA3B18A, transparent: true, opacity: 0.5 + Math.random() * 0.4 })
+      );
+      ember.position.set(0, 4, 0);
+      ember.userData = {
+        radius: 0.8 + Math.random() * 1.5,
+        speed: 0.3 + Math.random() * 0.8,
+        phase: Math.random() * Math.PI * 2,
+        tilt: (Math.random() - 0.5) * Math.PI * 0.8,
+        yOffset: (Math.random() - 0.5) * 1.5
+      };
+      scene.add(ember);
+      embers.push(ember);
+    }
+    scene._coreEmbers = embers;
     var cl = new THREE.PointLight(0xA3B18A, 1.5, 20); cl.position.set(0, 4, 0); scene.add(cl); scene._coreLight = cl;
     var brand = makeLabel("//kent.dev", { fontSize: 32, fontWeight: "700", color: "#A3B18A", scale: 2.2, opacity: 0.7 });
     brand.position.set(0, 7, 0); scene.add(brand); scene._brandLabel = brand;
@@ -342,29 +366,40 @@
     var fills = scene._fills;
     if (fills) {
       var vb = Math.min(scrollVelocity * 40, 0.4);
-      fills[0].intensity = 0.4 + vb + (scrollProgress > 0.2 && scrollProgress < 0.5 ? 0.3 : 0);
-      fills[1].intensity = 0.3 + vb + (scrollProgress > 0.4 && scrollProgress < 0.7 ? 0.3 : 0);
-      fills[2].intensity = 0.2 + vb + (scrollProgress > 0.6 ? 0.3 : 0);
+      fills[0].intensity = 0.4 + vb + (scrollProgress > 0.2 && scrollProgress < 0.45 ? 0.3 : 0);
+      fills[1].intensity = 0.3 + vb + (scrollProgress > 0.38 && scrollProgress < 0.65 ? 0.3 : 0);
+      fills[2].intensity = 0.2 + vb + (scrollProgress > 0.6 && scrollProgress < 0.8 ? 0.3 : 0);
     }
     if (scene._moon) scene._moon.intensity = 0.3 + scrollProgress * 0.4;
 
     // Core
     if (scene._coreOrb) {
-      var cAmp = scrollProgress < 0.4 ? Math.min(1, scrollProgress / 0.2) : Math.max(0.3, 1 - (scrollProgress - 0.4) * 2);
+      var cAmp = scrollProgress < 0.35 ? Math.min(1, scrollProgress / 0.15) : Math.max(0.2, 1 - (scrollProgress - 0.35) * 1.5);
       scene._coreOrb.material.opacity = (0.2 + Math.sin(t * 1.5) * 0.1) * cAmp;
       scene._coreOrb.scale.setScalar(1 + Math.sin(t * 2) * 0.05);
       scene._coreLight.intensity = (1.0 + Math.sin(t * 1.5) * 0.5) * cAmp;
     }
-    if (scene._coreShell) {
-      scene._coreShell.rotation.y = t * 0.05;
-      scene._coreShell.rotation.x = Math.sin(t * 0.03) * 0.1;
-      scene._coreShell.scale.setScalar(1 + Math.sin(t * 0.8) * 0.03 + Math.min(scrollVelocity * 60, 0.2));
+    // Embers orbit the core
+    if (scene._coreEmbers) {
+      var coreY = 4;
+      var velPush = Math.min(scrollVelocity * 40, 0.5);
+      for (var ei = 0; ei < scene._coreEmbers.length; ei++) {
+        var em = scene._coreEmbers[ei], ed = em.userData;
+        var r = ed.radius + velPush;
+        var a = t * ed.speed + ed.phase;
+        em.position.set(
+          Math.cos(a) * r * Math.cos(ed.tilt),
+          coreY + ed.yOffset + Math.sin(a) * r * Math.sin(ed.tilt),
+          Math.sin(a) * r
+        );
+        em.material.opacity = (0.3 + Math.sin(t * 3 + ei) * 0.3) * cAmp;
+      }
     }
     if (scene._brandLabel) scene._brandLabel.position.y = 7 + Math.sin(t * 0.4) * 0.12;
     if (scene._brandSub) scene._brandSub.position.y = 6 + Math.sin(t * 0.4 + 0.5) * 0.08;
 
     // Lanterns
-    var inProj = scrollProgress > 0.35 && scrollProgress < 0.7;
+    var inProj = scrollProgress > 0.38 && scrollProgress < 0.65;
     for (var li = 0; li < lanterns.length; li++) {
       var lan = lanterns[li], bob = Math.sin(t * 0.6 + li * 1.2) * 0.3;
       lan.mesh.position.y = lan.baseY + bob; lan.light.position.y = lan.baseY + bob; lan.label.position.y = lan.baseY + bob + 1.2;
@@ -376,7 +411,7 @@
     }
 
     // Fireflies
-    var inTech = scrollProgress > 0.55 && scrollProgress < 0.85;
+    var inTech = scrollProgress > 0.62 && scrollProgress < 0.78;
     for (var fi = 0; fi < fireflies.length; fi++) {
       var ff = fireflies[fi];
       var fx = ff.baseX + Math.sin(t * ff.speed + ff.phase) * ff.ampX;
@@ -424,7 +459,19 @@
 
   // ======================== Audio ========================
   var audioCtx = null, ambientGain = null, ambientOsc = null, ambientOsc2 = null, currentChAudio = -1;
-  var CH_FREQS = [[82.41, 123.47], [110, 164.81], [98, 146.83], [73.42, 110], [82.41, 130.81]];
+  // 10 chapters of forest tones
+  var CH_FREQS = [
+    [82.41, 123.47],   // ch0: entrance — open
+    [87.31, 130.81],   // ch1: the path — walking
+    [110, 164.81],     // ch2: clearing — centered
+    [98, 146.83],      // ch3: methodology — grounded
+    [116.54, 174.61],  // ch4: first lanterns — warm
+    [103.83, 155.56],  // ch5: the grove — deeper
+    [73.42, 110],      // ch6: fireflies — deep woods
+    [130.81, 196],     // ch7: award — triumphant
+    [110, 164.81],     // ch8: rising — ascending
+    [82.41, 130.81]    // ch9: overview — resolution
+  ];
 
   function initAudio() {
     if (audioCtx) return;
@@ -440,7 +487,7 @@
     if (!audioCtx || !ambientGain) return;
     var vol = localStorage.getItem("sound") !== "off" ? 0.025 : 0;
     ambientGain.gain.value += (vol - ambientGain.gain.value) * 0.015;
-    var ch = Math.min(4, Math.floor(scrollProgress * 5));
+    var ch = Math.min(9, Math.floor(scrollProgress * 10));
     if (ch !== currentChAudio) { currentChAudio = ch; ambientOsc.frequency.setTargetAtTime(CH_FREQS[ch][0], audioCtx.currentTime, 0.8); ambientOsc2.frequency.setTargetAtTime(CH_FREQS[ch][1], audioCtx.currentTime, 0.8); }
   }
   function stopAudio() { if (ambientGain) ambientGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.1); }
