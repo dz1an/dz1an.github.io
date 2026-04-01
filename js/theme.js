@@ -472,6 +472,34 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 // ============================================
+// Bento Cell Staggered Reveal
+// ============================================
+(function () {
+  var grid = document.querySelector(".bento-grid");
+  if (!grid) return;
+
+  var bentoCells = grid.querySelectorAll(".bento-cell");
+
+  var bentoObserver = new IntersectionObserver(
+    function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          bentoCells.forEach(function (cell, i) {
+            setTimeout(function () {
+              cell.classList.add("bento-revealed");
+            }, i * 120);
+          });
+          bentoObserver.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.1 }
+  );
+
+  bentoObserver.observe(grid);
+})();
+
+// ============================================
 // Parallax on Scroll
 // ============================================
 (function () {

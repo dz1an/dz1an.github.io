@@ -327,7 +327,8 @@ body.loaded #preloader {
   position: relative;
   overflow: hidden;
   background: var(--color-bg);
-  padding-top: 5rem;
+  padding-top: 6rem;
+  padding-bottom: 2rem;
 }
 
 /* Animated mesh gradient background */
@@ -652,6 +653,255 @@ body.loaded #preloader {
 @keyframes badge-float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-10px); }
+}
+
+/* ========================================
+   Bento Grid Hero Layout
+   ======================================== */
+
+/* Mega card — macOS-window outer container */
+.bento-mega-card {
+  background: var(--gradient-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-2xl);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-xl);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  position: relative;
+  z-index: 3;
+}
+
+/* CSS Grid */
+.bento-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr 0.8fr;
+  grid-template-rows: auto auto auto;
+  grid-template-areas:
+    "intro intro  profile profile"
+    "intro intro  stats   stats"
+    "skills skills award   award";
+  gap: 1.25rem;
+}
+
+/* Cell base — glassmorphism card */
+.bento-cell {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-xl);
+  padding: 2rem;
+  box-shadow: var(--shadow-card);
+  opacity: 0;
+  transform: translateY(30px) scale(0.97);
+  transition: opacity 0.6s ease, transform 0.6s ease, box-shadow var(--transition-base);
+}
+
+.bento-cell.bento-revealed {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.bento-cell:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+/* Cell A: Main intro — largest cell */
+.bento-intro {
+  grid-area: intro;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 2.5rem;
+}
+
+/* Cell B: Profile card — top-right */
+.bento-profile {
+  grid-area: profile;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1rem;
+  padding: 2rem 1.5rem;
+}
+
+.bento-profile .hero-profile-wrapper {
+  position: relative;
+}
+
+.bento-profile .hero-profile-img {
+  width: 160px;
+  height: 160px;
+  border-radius: var(--radius-xl);
+  object-fit: cover;
+  border: 3px solid var(--color-border-light);
+  box-shadow: var(--shadow-lg);
+}
+
+.bento-profile-info h4 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--color-text-dark);
+  margin-bottom: 0.25rem;
+}
+
+.bento-profile-info .about-location {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.bento-profile-info .about-location i {
+  color: var(--color-primary);
+  font-size: 0.75rem;
+}
+
+/* Cell C: Stats row — mid-right */
+.bento-stats {
+  grid-area: stats;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 1.5rem;
+  gap: 0.75rem;
+}
+
+.bento-stat-item {
+  text-align: center;
+  flex: 1;
+}
+
+.bento-stat-item .stat-number {
+  font-size: 1.75rem;
+  font-weight: 800;
+  background: var(--gradient-text);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.bento-stat-item .stat-label {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Cell D: Skills preview — bottom-left */
+.bento-skills {
+  grid-area: skills;
+  padding: 1.5rem 2rem;
+}
+
+.bento-skills h5 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-text-dark);
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.bento-skills h5 i {
+  color: var(--color-primary);
+}
+
+.bento-skills .skill-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.bento-skills .skill-tag {
+  font-size: 0.75rem;
+  padding: 0.3rem 0.7rem;
+}
+
+/* Cell E: Award badge — bottom-right */
+.bento-award {
+  grid-area: award;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+}
+
+.bento-award-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-text-dark);
+}
+
+.bento-award-sub {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+/* Bento responsive — Tablet */
+@media (max-width: 991.98px) {
+  .bento-grid {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "intro   intro"
+      "profile stats"
+      "skills  award";
+  }
+
+  .bento-mega-card {
+    padding: 1rem;
+  }
+
+  .bento-intro {
+    padding: 2rem;
+  }
+
+  .bento-profile .hero-profile-img {
+    width: 120px;
+    height: 120px;
+  }
+}
+
+/* Bento responsive — Mobile */
+@media (max-width: 767.98px) {
+  .bento-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "intro"
+      "profile"
+      "stats"
+      "skills"
+      "award";
+  }
+
+  .bento-mega-card {
+    padding: 0.75rem;
+    border-radius: var(--radius-xl);
+  }
+
+  .bento-cell {
+    padding: 1.5rem;
+    border-radius: var(--radius-lg);
+  }
+
+  .bento-intro {
+    padding: 1.5rem;
+  }
+
+  .bento-stats {
+    flex-direction: row;
+    gap: 0.5rem;
+  }
+
+  .bento-stat-item .stat-number {
+    font-size: 1.5rem;
+  }
 }
 
 /* ========================================
@@ -1765,10 +2015,6 @@ body,
    Responsive
    ======================================== */
 @media (max-width: 991.98px) {
-  .hero-image-col {
-    display: none;
-  }
-
   .navbar-collapse {
     background: var(--color-bg-card);
     border: 1px solid var(--color-border-light);
@@ -1784,10 +2030,6 @@ body,
 }
 
 @media (max-width: 767.98px) {
-  .hero {
-    padding-top: 6rem;
-  }
-
   .hero h1 {
     font-size: 2.25rem;
   }
