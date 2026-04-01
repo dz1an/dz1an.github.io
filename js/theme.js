@@ -13,37 +13,67 @@
     var toggle = document.getElementById("themeToggle");
     if (!toggle) return;
 
+    function createBuildTerminal(goingLight) {
+      var mode = goingLight ? "light" : "dark";
+
+      var overlay = document.createElement("div");
+      overlay.className = "xc-build-overlay";
+
+      var terminal = document.createElement("div");
+      terminal.className = "xc-build-terminal";
+
+      // Title bar
+      terminal.innerHTML =
+        '<div class="xc-build-titlebar">' +
+          '<span class="xcode-dot xcode-dot-red"></span>' +
+          '<span class="xcode-dot xcode-dot-yellow"></span>' +
+          '<span class="xcode-dot xcode-dot-green"></span>' +
+          '<span class="xc-build-title">kent.dev — Build Log</span>' +
+        '</div>' +
+        '<div class="xc-build-body" id="xcBuildBody"></div>';
+
+      overlay.appendChild(terminal);
+      document.body.appendChild(overlay);
+
+      var body = document.getElementById("xcBuildBody");
+
+      var lines = [
+        { text: "$ xcodebuild -scheme kent.dev -config " + mode, cls: "xc-cmd" },
+        { text: "▸ Compiling ThemeProvider.swift", cls: "" },
+        { text: "▸ Compiling ColorTokens.swift", cls: "" },
+        { text: "▸ Linking kent.dev", cls: "" },
+        { text: "▸ Applying " + mode + " palette [#344E41 → #DAD7CD]", cls: "" },
+        { text: "✓ Build Succeeded — 0 errors, 0 warnings", cls: "xc-success" },
+      ];
+
+      var delay = 80;
+      lines.forEach(function (line, i) {
+        setTimeout(function () {
+          var div = document.createElement("div");
+          div.className = "xc-build-line " + line.cls;
+          div.textContent = line.text;
+          body.appendChild(div);
+          body.scrollTop = body.scrollHeight;
+        }, delay * (i + 1));
+      });
+
+      return overlay;
+    }
+
     toggle.addEventListener("click", function () {
       var current = document.documentElement.getAttribute("data-theme");
       var goingLight = current !== "light";
 
-      // Get toggle position for wipe origin
-      var rect = toggle.getBoundingClientRect();
-      var x = rect.left + rect.width / 2;
-      var y = rect.top + rect.height / 2;
-      var maxDist = Math.max(
-        Math.hypot(x, y),
-        Math.hypot(window.innerWidth - x, y),
-        Math.hypot(x, window.innerHeight - y),
-        Math.hypot(window.innerWidth - x, window.innerHeight - y)
-      );
-      var diameter = maxDist * 2;
+      // Play build sound
+      if (window.playSound) playSound("build");
 
-      // Create translucent wipe circle
-      var wipe = document.createElement("div");
-      wipe.className = "theme-wipe";
-      wipe.style.left = x + "px";
-      wipe.style.top = y + "px";
-      wipe.style.width = diameter + "px";
-      wipe.style.height = diameter + "px";
-      document.body.appendChild(wipe);
-      void wipe.offsetWidth;
-      wipe.classList.add("active");
+      // Show Xcode build terminal
+      var overlay = createBuildTerminal(goingLight);
 
-      // Add text scramble class
+      // Text scramble on content
       document.documentElement.classList.add("theme-switching");
 
-      // Swap theme at 250ms (when text is invisible)
+      // Swap theme when "Build Succeeded" shows (~480ms)
       setTimeout(function () {
         if (goingLight) {
           document.documentElement.setAttribute("data-theme", "light");
@@ -56,13 +86,14 @@
         if (window.updateParticleColor) {
           window.updateParticleColor();
         }
-      }, 200);
+      }, 450);
 
-      // Remove everything after animation
+      // Fade out terminal
       setTimeout(function () {
         document.documentElement.classList.remove("theme-switching");
-        wipe.remove();
-      }, 650);
+        overlay.classList.add("xc-build-done");
+        setTimeout(function () { overlay.remove(); }, 400);
+      }, 850);
     });
   });
 })();
@@ -613,6 +644,12 @@ window.addEventListener("load", function () {
       var targetElement = document.querySelector(targetId);
 
       if (targetElement) {
+        // Flash the target section with a slide-in effect
+        targetElement.classList.add("section-enter");
+        setTimeout(function () {
+          targetElement.classList.remove("section-enter");
+        }, 600);
+
         var targetOffsetTop = targetElement.offsetTop - 80;
 
         window.scrollTo({
@@ -625,6 +662,13 @@ window.addEventListener("load", function () {
         });
 
         link.classList.add("active");
+
+        // Close mobile menu
+        var navCollapse = document.getElementById("navbarNav");
+        if (navCollapse && navCollapse.classList.contains("show")) {
+          var bsCollapse = bootstrap.Collapse.getInstance(navCollapse);
+          if (bsCollapse) bsCollapse.hide();
+        }
       }
     });
   });
@@ -729,6 +773,7 @@ document.addEventListener("DOMContentLoaded", function () {
       document.body.removeChild(link);
 
       showToast("Download Started", "John_kent_Evangelista_CV.pdf", "fas fa-download");
+      if (window.playSound) playSound("success");
     });
   }
 
@@ -890,6 +935,150 @@ document.addEventListener("DOMContentLoaded", function () {
 })();
 
 // ============================================
+// Git Log Tab Switching
+(function () {
+  var tabs = document.querySelectorAll(".git-tab");
+  var workGroup = document.getElementById("gitWork");
+  var eduGroup = document.getElementById("gitEdu");
+  if (!tabs.length || !workGroup || !eduGroup) return;
+
+  tabs.forEach(function (tab) {
+    tab.addEventListener("click", function () {
+      tabs.forEach(function (t) { t.classList.remove("active"); });
+      tab.classList.add("active");
+
+      if (tab.getAttribute("data-tab") === "edu") {
+        workGroup.style.display = "none";
+        eduGroup.style.display = "block";
+      } else {
+        workGroup.style.display = "block";
+        eduGroup.style.display = "none";
+      }
+    });
+  });
+})();
+
+// ============================================
+// UI Sound Effects (Web Audio API)
+// ============================================
+(function () {
+  var audioCtx = null;
+  var muted = localStorage.getItem("sound-muted") === "true";
+
+  function getCtx() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    return audioCtx;
+  }
+
+  window.playSound = function (type) {
+    if (muted) return;
+    try {
+      var ctx = getCtx();
+      var osc = ctx.createOscillator();
+      var gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      if (type === "click") {
+        osc.frequency.value = 800;
+        gain.gain.value = 0.05;
+        osc.type = "sine";
+        osc.start();
+        osc.stop(ctx.currentTime + 0.06);
+      } else if (type === "build") {
+        // Xcode build ding — two ascending tones
+        osc.frequency.value = 880;
+        gain.gain.value = 0.08;
+        osc.type = "sine";
+        osc.start();
+        osc.frequency.setValueAtTime(1174, ctx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.06, ctx.currentTime + 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+        osc.stop(ctx.currentTime + 0.3);
+      } else if (type === "success") {
+        osc.frequency.value = 523;
+        gain.gain.value = 0.06;
+        osc.type = "triangle";
+        osc.start();
+        osc.frequency.setValueAtTime(659, ctx.currentTime + 0.08);
+        osc.frequency.setValueAtTime(784, ctx.currentTime + 0.16);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+        osc.stop(ctx.currentTime + 0.35);
+      } else if (type === "konami") {
+        osc.frequency.value = 440;
+        gain.gain.value = 0.1;
+        osc.type = "square";
+        osc.start();
+        osc.frequency.setValueAtTime(554, ctx.currentTime + 0.08);
+        osc.frequency.setValueAtTime(659, ctx.currentTime + 0.16);
+        osc.frequency.setValueAtTime(880, ctx.currentTime + 0.24);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+        osc.stop(ctx.currentTime + 0.5);
+      }
+    } catch (e) {}
+  };
+
+  // Mute toggle button
+  document.addEventListener("DOMContentLoaded", function () {
+    var muteBtn = document.getElementById("soundToggle");
+    if (!muteBtn) return;
+
+    function updateIcon() {
+      muteBtn.innerHTML = muted
+        ? '<i class="fas fa-volume-mute"></i>'
+        : '<i class="fas fa-volume-up"></i>';
+    }
+    updateIcon();
+
+    muteBtn.addEventListener("click", function () {
+      muted = !muted;
+      localStorage.setItem("sound-muted", muted);
+      updateIcon();
+      if (!muted) playSound("click");
+    });
+  });
+
+  // Add click sound to buttons
+  document.addEventListener("click", function (e) {
+    if (e.target.closest("a, button, .nav-link, .spotlight-item, .git-tab")) {
+      playSound("click");
+    }
+  });
+})();
+
+// Konami Code Easter Egg
+(function () {
+  var konamiCode = [38, 38, 40, 40, 37, 39, 37, 39, 66, 65]; // ↑↑↓↓←→←→BA
+  var konamiIndex = 0;
+
+  document.addEventListener("keydown", function (e) {
+    if (e.keyCode === konamiCode[konamiIndex]) {
+      konamiIndex++;
+      if (konamiIndex === konamiCode.length) {
+        konamiIndex = 0;
+        activateKonami();
+      }
+    } else {
+      konamiIndex = 0;
+    }
+  });
+
+  function activateKonami() {
+    document.documentElement.classList.add("konami-active");
+    if (window.playSound) playSound("konami");
+
+    // Show toast
+    if (window.showToast) {
+      showToast("Konami Code!", "You found the easter egg!", "fas fa-gamepad");
+    }
+
+    // Revert after 5 seconds
+    setTimeout(function () {
+      document.documentElement.classList.remove("konami-active");
+    }, 5000);
+  }
+})();
+
 // Ripple Effect on Buttons
 // ============================================
 (function () {

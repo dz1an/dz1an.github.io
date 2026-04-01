@@ -82,6 +82,9 @@
     <div class="container">
       <a class="navbar-brand" href="#home"><span class="brand-slash">//</span>kent<span class="brand-dot">.dev</span></a>
       <div class="d-flex align-items-center gap-2 order-lg-3">
+        <button class="sound-toggle" id="soundToggle" aria-label="Toggle sound">
+          <i class="fas fa-volume-up"></i>
+        </button>
         <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
           <span class="toggle-track">
             <span class="toggle-thumb">
@@ -138,7 +141,11 @@
             </div>
             <h1><span class="name-gradient text-scramble glitch-text" data-text="John Kent">John Kent</span><br><span class="text-scramble glitch-text" data-text="Evangelista">Evangelista</span></h1>
             <p class="credential">LSSWB &mdash; Lean Six Sigma White Belt</p>
-            <h2><span class="typing"></span></h2>
+            <div class="xc-console-line">
+              <span class="xc-prompt">$</span>
+              <span class="xc-cmd-text">./kent --role</span>
+              <span class="xc-output"><span class="typing"></span></span>
+            </div>
             <p class="hero-summary">Results-driven Senior Software Developer building civic tech platforms, SaaS systems, and business directory solutions. National award winner as part of the VINTAZK Outsourcing core team.</p>
             <div class="hero-buttons">
               <a href="#projects" class="btn-primary-custom magnetic-btn">View My Work <i class="fas fa-arrow-right"></i></a>
@@ -328,66 +335,82 @@
         <span class="section-badge">Resume</span>
         <h2 class="section-title">Experience & Education</h2>
       </div>
-      <div class="row">
-        <!-- Work Experience -->
-        <div class="col-lg-6 mb-4 mb-lg-0 reveal">
-          <div class="resume-subsection">
-            <h4 class="resume-heading"><i class="fas fa-briefcase"></i> Work Experience</h4>
-            <div class="timeline">
-              <div class="timeline-item">
-                <div class="timeline-title">Senior Developer</div>
-                <div class="timeline-org">VINTAZK Outsourcing</div>
-                <div class="timeline-date">Dec 2025 &ndash; Present</div>
-                <div class="timeline-desc">Lead development of enterprise-grade outsourcing solutions. Oversee junior developers and OJT interns across multiple simultaneous projects. Co-contributor to 2025 Productivity Olympics national win.</div>
-              </div>
-              <div class="timeline-item">
-                <div class="timeline-title">System Developer</div>
-                <div class="timeline-org">VINTAZK Outsourcing</div>
-                <div class="timeline-date">Feb 2025 &ndash; Jan 2026</div>
-                <div class="timeline-desc">Architected full-stack web systems using Supabase, React, and Python. Designed database schemas, RLS policies, and backend API integrations.</div>
-              </div>
-              <div class="timeline-item">
-                <div class="timeline-title">Jr. Frontend Web Developer</div>
-                <div class="timeline-org">AKA Software Inc.</div>
-                <div class="timeline-date">Feb 2025</div>
-                <div class="timeline-desc">Developed React.js UI components for client-facing web applications.</div>
-              </div>
-              <div class="timeline-item">
-                <div class="timeline-title">Project Lead Developer</div>
-                <div class="timeline-org">SmartScore</div>
-                <div class="timeline-date">2023 &ndash; 2024</div>
-                <div class="timeline-desc">Led end-to-end development of SmartScore: an Automated Exam System with Computer Vision-based checking for Multiple Choice Exams.</div>
-              </div>
-              <div class="timeline-item">
-                <div class="timeline-title">Quality Assurance Specialist</div>
-                <div class="timeline-org">Western Mindanao State University</div>
-                <div class="timeline-date">2022 &ndash; 2023</div>
-                <div class="timeline-desc">Led system testing and automated critical workflows using Selenium WebDriver. Performed comprehensive API testing.</div>
-              </div>
+      <!-- Git log terminal -->
+      <div class="git-log-terminal mac-window reveal">
+        <div class="git-log-tabs">
+          <span class="git-tab active"><i class="fas fa-briefcase"></i> work</span>
+          <span class="git-tab" data-tab="edu"><i class="fas fa-graduation-cap"></i> education</span>
+        </div>
+        <div class="git-log-header">
+          <span class="git-cmd">$ git log --oneline --graph --all</span>
+        </div>
+        <div class="git-log-body">
+          <!-- Work Experience -->
+          <div class="git-log-group" id="gitWork">
+            <div class="git-commit">
+              <span class="git-graph">●</span>
+              <span class="git-hash">a1b2c3d</span>
+              <span class="git-branch">HEAD → main</span>
+              <span class="git-msg">feat: Senior Developer @ VINTAZK Outsourcing</span>
+              <span class="git-date">Dec 2025 – Present</span>
+              <div class="git-detail">Lead development of enterprise-grade outsourcing solutions. Oversee junior developers and OJT interns. Co-contributor to 2025 Productivity Olympics national win.</div>
+            </div>
+            <div class="git-commit">
+              <span class="git-graph">●</span>
+              <span class="git-hash">e4f5g6h</span>
+              <span class="git-branch">origin/main</span>
+              <span class="git-msg">feat: System Developer @ VINTAZK Outsourcing</span>
+              <span class="git-date">Feb 2025 – Jan 2026</span>
+              <div class="git-detail">Architected full-stack web systems using Supabase, React, and Python. Designed database schemas, RLS policies, and backend APIs.</div>
+            </div>
+            <div class="git-commit">
+              <span class="git-graph">●</span>
+              <span class="git-hash">i7j8k9l</span>
+              <span class="git-msg">feat: Jr. Frontend Dev @ AKA Software Inc.</span>
+              <span class="git-date">Feb 2025</span>
+              <div class="git-detail">Developed React.js UI components for client-facing web applications.</div>
+            </div>
+            <div class="git-commit">
+              <span class="git-graph">●</span>
+              <span class="git-hash">m1n2o3p</span>
+              <span class="git-branch">feature/smartscore</span>
+              <span class="git-msg">feat: Project Lead Developer @ SmartScore</span>
+              <span class="git-date">2023 – 2024</span>
+              <div class="git-detail">Led end-to-end development of SmartScore: Automated Exam System with Computer Vision-based checking.</div>
+            </div>
+            <div class="git-commit">
+              <span class="git-graph">●</span>
+              <span class="git-hash">q4r5s6t</span>
+              <span class="git-msg">feat: QA Specialist @ WMSU</span>
+              <span class="git-date">2022 – 2023</span>
+              <div class="git-detail">Led system testing and automated critical workflows using Selenium WebDriver.</div>
+            </div>
+          </div>
+
+          <!-- Education -->
+          <div class="git-log-group" id="gitEdu" style="display:none;">
+            <div class="git-commit">
+              <span class="git-graph">●</span>
+              <span class="git-hash">u7v8w9x</span>
+              <span class="git-branch">HEAD → edu</span>
+              <span class="git-msg">feat: Executive Education — Digital Transformation</span>
+              <span class="git-date">Sep 2025 – Present</span>
+              <div class="git-detail">Asian Institute of Management (AIM). Focus: Digital Transformation, Project Management, Business Strategy.</div>
+            </div>
+            <div class="git-commit">
+              <span class="git-graph">●</span>
+              <span class="git-hash">y1z2a3b</span>
+              <span class="git-msg">feat: Bachelor of Computer Science</span>
+              <span class="git-date">2020 – 2024</span>
+              <div class="git-detail">Western Mindanao State University. Thesis: SmartScore — Automated Exam System with Computer Vision.</div>
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- Education + Certs + Awards -->
+      <div class="row mt-4">
+        <!-- Certs + Awards -->
         <div class="col-lg-6 reveal reveal-delay-2">
-          <div class="resume-subsection">
-            <h4 class="resume-heading"><i class="fas fa-graduation-cap"></i> Education</h4>
-            <div class="timeline">
-              <div class="timeline-item">
-                <div class="timeline-title">Executive Education &mdash; Digital Transformation</div>
-                <div class="timeline-org">Asian Institute of Management (AIM)</div>
-                <div class="timeline-date">Sep 2025 &ndash; Present</div>
-                <div class="timeline-desc">Focus areas: Digital Transformation, Project Management, Business Strategy.</div>
-              </div>
-              <div class="timeline-item">
-                <div class="timeline-title">Bachelor of Computer Science</div>
-                <div class="timeline-org">Western Mindanao State University</div>
-                <div class="timeline-date">2020 &ndash; 2024</div>
-                <div class="timeline-desc">Thesis: SmartScore &mdash; Development of an Automated Exam System with Computer Vision-based Checking for Multiple Choice Exams.</div>
-              </div>
-            </div>
-          </div>
-
           <div class="resume-subsection">
             <h4 class="resume-heading"><i class="fas fa-certificate"></i> Certification</h4>
             <div class="cert-card">

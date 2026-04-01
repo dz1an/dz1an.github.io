@@ -93,30 +93,30 @@
   --color-amber-light: rgba(92, 118, 80, 0.1);
   --color-rose: #344E41;
 
-  /* Timberwolf / sage-tinted surfaces */
-  --color-bg: #DAD7CD;
-  --color-bg-alt: #d0cdc3;
-  --color-bg-muted: #c5c2b8;
-  --color-bg-card: #e8e5dc;
-  --color-border: rgba(52, 78, 65, 0.12);
-  --color-border-light: rgba(52, 78, 65, 0.06);
-  --color-text-muted: #5C7650;
-  --color-text: #344E41;
+  /* Clean surfaces with subtle sage warmth */
+  --color-bg: #f6f5f2;
+  --color-bg-alt: #eeedea;
+  --color-bg-muted: #e5e4e0;
+  --color-bg-card: #ffffff;
+  --color-border: rgba(52, 78, 65, 0.1);
+  --color-border-light: rgba(52, 78, 65, 0.05);
+  --color-text-muted: #6b7c6e;
+  --color-text: #2d3a30;
   --color-text-dark: #1a2e22;
 
   --gradient-text: linear-gradient(135deg, #344E41, #3A5A40, #5C7650);
-  --gradient-card: linear-gradient(145deg, rgba(232, 229, 220, 0.95), rgba(218, 215, 205, 0.6));
-  --gradient-glass: linear-gradient(135deg, rgba(232, 229, 220, 0.5), rgba(218, 215, 205, 0.2));
+  --gradient-card: linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(246, 245, 242, 0.5));
+  --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(246, 245, 242, 0.2));
 
-  --shadow-sm: 0 1px 3px rgba(52, 78, 65, 0.08);
-  --shadow-md: 0 4px 16px rgba(52, 78, 65, 0.1);
-  --shadow-lg: 0 8px 30px rgba(52, 78, 65, 0.12);
-  --shadow-xl: 0 20px 50px rgba(52, 78, 65, 0.15);
-  --shadow-glow: 0 0 30px rgba(58, 90, 64, 0.1);
-  --shadow-card: 0 2px 12px rgba(52, 78, 65, 0.08), 0 1px 3px rgba(52, 78, 65, 0.05);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.07);
+  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.09);
+  --shadow-xl: 0 20px 50px rgba(0, 0, 0, 0.11);
+  --shadow-glow: 0 0 30px rgba(58, 90, 64, 0.08);
+  --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.03);
 
   --particle-color: 58, 90, 64;
-  --nav-scrolled-bg: rgba(218, 215, 205, 0.92);
+  --nav-scrolled-bg: rgba(246, 245, 242, 0.92);
   --hero-badge-bg: rgba(58, 90, 64, 0.1);
   --hero-badge-border: rgba(58, 90, 64, 0.18);
   --hero-badge-color: #344E41;
@@ -878,17 +878,45 @@ body.loaded #preloader {
   text-transform: uppercase;
 }
 
-.hero h2 {
-  font-size: clamp(1.1rem, 2.5vw, 1.4rem);
-  font-weight: 400;
-  color: var(--color-text-muted);
+/* Xcode console-style typed line */
+.xc-console-line {
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
   margin-bottom: 1.5rem;
-  min-height: 2.2rem;
+  min-height: 2.4rem;
+  width: fit-content;
+  max-width: 100%;
 }
 
-.hero h2 .typing {
+[data-theme="light"] .xc-console-line {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.xc-prompt {
   color: var(--color-primary);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.xc-cmd-text {
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.xc-output .typing {
+  color: #28c840;
   font-weight: 600;
+}
+
+.xc-output .typed-cursor {
+  color: #28c840;
 }
 
 .hero-summary {
@@ -1342,6 +1370,21 @@ body.loaded #preloader {
   overflow: hidden;
 }
 
+.section-enter {
+  animation: section-slide-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes section-slide-in {
+  0% {
+    opacity: 0.3;
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
 @media (max-width: 767.98px) {
   .section {
     padding: 4rem 0;
@@ -1718,6 +1761,155 @@ body.loaded #preloader {
 .resume-heading i {
   color: var(--color-primary);
   font-size: 1rem;
+}
+
+/* ========================================
+   Git Log Terminal — Resume
+   ======================================== */
+.git-log-terminal {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+
+.git-log-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.git-tab {
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 0.68rem;
+  color: var(--color-text-muted);
+  padding: 8px 16px;
+  cursor: pointer;
+  border-right: 1px solid var(--color-border-light);
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.git-tab:hover {
+  background: var(--color-primary-light);
+}
+
+.git-tab.active {
+  color: var(--color-text-dark);
+  background: var(--color-bg-card);
+  position: relative;
+}
+
+.git-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--color-primary);
+}
+
+.git-tab i {
+  font-size: 0.6rem;
+  opacity: 0.6;
+}
+
+.git-log-header {
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--color-border-light);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+[data-theme="light"] .git-log-header {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.git-cmd {
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 0.68rem;
+  color: var(--color-text-muted);
+}
+
+.git-log-body {
+  padding: 16px 18px;
+}
+
+.git-commit {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--color-border-light);
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 0.72rem;
+  line-height: 1.5;
+}
+
+.git-commit:last-child {
+  border-bottom: none;
+}
+
+.git-graph {
+  color: var(--color-primary);
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+.git-hash {
+  color: #d19a66;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.git-branch {
+  color: #28c840;
+  font-weight: 600;
+  font-size: 0.62rem;
+  background: rgba(40, 200, 64, 0.1);
+  padding: 1px 6px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.git-msg {
+  color: var(--color-text-dark);
+  font-weight: 500;
+}
+
+.git-date {
+  color: var(--color-text-muted);
+  font-size: 0.62rem;
+  margin-left: auto;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.git-detail {
+  width: 100%;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  padding: 4px 0 2px 20px;
+  line-height: 1.5;
+}
+
+@media (max-width: 767.98px) {
+  .git-commit {
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .git-date {
+    margin-left: 0;
+  }
+
+  .git-detail {
+    padding-left: 0;
+  }
 }
 
 .timeline {
@@ -2983,6 +3175,27 @@ body.loaded #preloader {
 /* ========================================
    Theme Toggle — iOS-style pill switch
    ======================================== */
+.sound-toggle {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.sound-toggle:hover {
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
 .theme-toggle {
   position: relative;
   display: flex;
@@ -3052,44 +3265,110 @@ body.loaded #preloader {
   transform: rotate(0deg) scale(1);
 }
 
-/* Theme transition — translucent circular wipe + text scramble */
+/* Theme transition — Xcode build terminal */
 .toggle-aftershock {
   display: none;
 }
 
-.theme-wipe {
+.xc-build-overlay {
   position: fixed;
-  border-radius: 50%;
-  pointer-events: none;
+  inset: 0;
   z-index: 99998;
-  transform: translate(-50%, -50%) scale(0);
-  backdrop-filter: blur(8px) saturate(150%);
-  -webkit-backdrop-filter: blur(8px) saturate(150%);
-  background: rgba(28, 28, 30, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: xc-overlay-in 0.15s ease both;
 }
 
-[data-theme="light"] .theme-wipe {
-  background: rgba(248, 249, 250, 0.2);
-  border-color: rgba(0, 0, 0, 0.04);
+.xc-build-overlay.xc-build-done {
+  animation: xc-overlay-out 0.4s ease both;
 }
 
-.theme-wipe.active {
-  animation: theme-wipe 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+@keyframes xc-overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-@keyframes theme-wipe {
-  0% {
-    transform: translate(-50%, -50%) scale(0);
-    opacity: 1;
-  }
-  80% {
-    opacity: 1;
-  }
-  100% {
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 0;
-  }
+@keyframes xc-overlay-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.xc-build-terminal {
+  width: min(440px, 88vw);
+  background: #1a1a1e;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+  animation: xc-term-in 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.xc-build-done .xc-build-terminal {
+  animation: xc-term-out 0.3s ease both;
+}
+
+@keyframes xc-term-in {
+  from { transform: scale(0.9) translateY(20px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+@keyframes xc-term-out {
+  from { transform: scale(1) translateY(0); opacity: 1; }
+  to { transform: scale(0.95) translateY(-10px); opacity: 0; }
+}
+
+.xc-build-titlebar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.xc-build-title {
+  margin-left: auto;
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 0.62rem;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.xc-build-body {
+  padding: 12px 16px;
+  min-height: 100px;
+  max-height: 160px;
+  overflow: hidden;
+}
+
+.xc-build-line {
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 0.7rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.5);
+  white-space: nowrap;
+  overflow: hidden;
+  animation: xc-line-in 0.12s ease both;
+}
+
+.xc-build-line.xc-cmd {
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 4px;
+}
+
+.xc-build-line.xc-success {
+  color: #28c840;
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+@keyframes xc-line-in {
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 
 /* Text transform during theme switch */
@@ -3245,6 +3524,53 @@ body,
 /* ========================================
    Smooth scroll snap (optional feel)
    ======================================== */
+/* ========================================
+   Konami Code Easter Egg
+   ======================================== */
+html.konami-active {
+  --color-primary: #ff6b6b;
+  --color-primary-dark: #ee5a24;
+  --gradient-text: linear-gradient(135deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3, #54a0ff);
+  --particle-color: 255, 107, 107;
+}
+
+html.konami-active * {
+  transition: all 0.3s ease !important;
+}
+
+html.konami-active .hero-profile-img,
+html.konami-active .bento-profile .hero-profile-img {
+  animation: konami-spin 1s ease-in-out;
+  border-color: #ff6b6b;
+}
+
+html.konami-active .bento-mega-card,
+html.konami-active .xcode-card,
+html.konami-active .git-log-terminal,
+html.konami-active .spotlight-container {
+  border-color: #ff6b6b;
+  box-shadow: 0 0 30px rgba(255, 107, 107, 0.2);
+}
+
+html.konami-active .hero h1 {
+  animation: konami-rainbow 0.5s linear infinite;
+}
+
+html.konami-active .xc-build-terminal {
+  border-color: #ff6b6b;
+}
+
+@keyframes konami-spin {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.1); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+@keyframes konami-rainbow {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
