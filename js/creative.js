@@ -24,8 +24,16 @@
   var trails = [];
   var spawned = [];
 
-  var MAX_TRAILS = 50;
-  var MAX_SPAWNED = 25;
+  // Mobile detection
+  var isMobile = /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+    || (window.innerWidth < 768 && "ontouchstart" in window);
+
+  var MAX_TRAILS = isMobile ? 20 : 50;
+  var MAX_SPAWNED = isMobile ? 12 : 25;
+  var TREE_COUNT = isMobile ? 50 : 120;
+  var AMBIENT_FF_COUNT = isMobile ? 15 : 40;
+  var PATH_LAMP_COUNT = isMobile ? 5 : 10;
+  var lastTouchSpawn = 0;
 
   // === Palette ===
   var SAGE = {
@@ -131,8 +139,8 @@
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.1;
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.shadowMap.enabled = !isMobile;
+    if (!isMobile) renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     raycaster = new THREE.Raycaster(); mouseVec = new THREE.Vector2();
 
     // Lighting — dark moonlit forest, lit by lanterns and fireflies
@@ -184,7 +192,7 @@
 
   // ======================== Forest ========================
   function plantForest() {
-    for (var i = 0; i < 120; i++) {
+    for (var i = 0; i < TREE_COUNT; i++) {
       var angle = Math.random() * Math.PI * 2;
       var dist = 8 + Math.random() * 50;
       var x = Math.cos(angle) * dist, z = Math.sin(angle) * dist - 10;
@@ -278,7 +286,8 @@
       var color = ffColors[i % ffColors.length];
       var mesh = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8, 8), new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.9 }));
       mesh.position.set(x, y, z); scene.add(mesh);
-      var light = new THREE.PointLight(color, 0.3, 4); light.position.set(x, y, z); scene.add(light);
+      var light = null;
+      if (!isMobile) { light = new THREE.PointLight(color, 0.3, 4); light.position.set(x, y, z); scene.add(light); }
       var label = makeLabel(name, { fontSize: 14, fontWeight: "500", color: "rgba(218,215,205,0.6)", scale: 0.9, opacity: 0.5 });
       label.position.set(x, y + 0.6, z); scene.add(label);
       fireflies.push({
@@ -318,7 +327,7 @@
       { x: -4, z: 0, y: 2.5 }     // Back toward clearing
     ];
 
-    lampPositions.forEach(function (lp) {
+    lampPositions.slice(0, PATH_LAMP_COUNT).forEach(function (lp) {
       var gY = noise2D(lp.x, lp.z) * 1.2;
       var dC = Math.sqrt(lp.x * lp.x + (lp.z + 10) * (lp.z + 10));
       if (dC < 8) gY *= dC / 8;
@@ -349,7 +358,7 @@
   // ======================== Ambient Fireflies — scattered throughout ========================
   function createAmbientFireflies() {
     var ambientFFs = [];
-    for (var i = 0; i < 40; i++) {
+    for (var i = 0; i < AMBIENT_FF_COUNT; i++) {
       var x = (Math.random() - 0.5) * 60;
       var z = (Math.random() - 0.5) * 70 - 5;
       var y = 1.5 + Math.random() * 5;
@@ -362,10 +371,13 @@
       mesh.position.set(x, y, z);
       scene.add(mesh);
 
-      // Small glow per firefly
-      var light = new THREE.PointLight(color, 0.15, 4);
-      light.position.set(x, y, z);
-      scene.add(light);
+      // Small glow per firefly (skip on mobile — too many lights)
+      var light = null;
+      if (!isMobile) {
+        light = new THREE.PointLight(color, 0.15, 4);
+        light.position.set(x, y, z);
+        scene.add(light);
+      }
 
       ambientFFs.push({
         mesh: mesh, light: light,
@@ -412,8 +424,19 @@
     if (isMouseDown) { var wp = getWorldPos(e.clientX, e.clientY); spawnFirefly(wp.x, wp.y, wp.z); }
   }
   function onClick(e) { var wp = getWorldPos(e.clientX, e.clientY); spawnFirefly(wp.x, wp.y, wp.z); if (window.playSound) playSound("click"); }
-  function onTouch(e) { e.preventDefault(); isMouseDown = true; var t = e.touches[0]; var wp = getWorldPos(t.clientX, t.clientY); spawnFirefly(wp.x, wp.y, wp.z); }
-  function onTouchDrag(e) { e.preventDefault(); var t = e.touches[0]; mouse.ndcX = (t.clientX / window.innerWidth) * 2 - 1; mouse.ndcY = -(t.clientY / window.innerHeight) * 2 + 1; var wp = getWorldPos(t.clientX, t.clientY); spawnFirefly(wp.x, wp.y, wp.z); }
+  function onTouch(e) { e.preventDefault(); isMouseDown = true; var t = e.touches[0]; var wp = getWorldPos(t.clientX, t.clientY); spawnFirefly(wp.x, wp.y, wp.z); lastTouchSpawn = Date.now(); }
+  function onTouchDrag(e) {
+    e.preventDefault(); var t = e.touches[0];
+    mouse.ndcX = (t.clientX / window.innerWidth) * 2 - 1;
+    mouse.ndcY = -(t.clientY / window.innerHeight) * 2 + 1;
+    // Throttle: max 1 spawn per 100ms on touch drag
+    var now = Date.now();
+    if (now - lastTouchSpawn > 100) {
+      var wp = getWorldPos(t.clientX, t.clientY);
+      spawnFirefly(wp.x, wp.y, wp.z);
+      lastTouchSpawn = now;
+    }
+  }
   function onResize() { clearTimeout(resizeTimeout); resizeTimeout = setTimeout(function () { if (!camera || !renderer) return; camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); }, 100); }
   function updateScroll() {
     var c = document.getElementById("creativeScroll"); if (!c) return;
@@ -496,10 +519,10 @@
       var fx = ff.baseX + Math.sin(t * ff.speed + ff.phase) * ff.ampX;
       var fy = ff.baseY + Math.cos(t * ff.speed * 0.7 + ff.phase) * ff.ampY;
       var fz = ff.baseZ + Math.sin(t * ff.speed * 0.5 + ff.phase * 2) * ff.ampZ;
-      ff.mesh.position.set(fx, fy, fz); ff.light.position.set(fx, fy, fz); ff.label.position.set(fx, fy + 0.6, fz);
+      ff.mesh.position.set(fx, fy, fz); if (ff.light) ff.light.position.set(fx, fy, fz); ff.label.position.set(fx, fy + 0.6, fz);
       var fO = inTech ? 0.95 : 0.4, fL = inTech ? 0.6 : 0.15, fLO = inTech ? 0.7 : 0.25, fS = inTech ? 2.0 : 1.0;
       ff.mesh.material.opacity += (fO - ff.mesh.material.opacity) * 0.03;
-      ff.light.intensity += (fL - ff.light.intensity) * 0.03;
+      if (ff.light) ff.light.intensity += (fL - ff.light.intensity) * 0.03;
       ff.label.material.opacity += (fLO - ff.label.material.opacity) * 0.03;
       ff.mesh.scale.setScalar(ff.mesh.scale.x + (fS - ff.mesh.scale.x) * 0.03);
       ff.mesh.material.opacity *= 0.85 + Math.sin(t * 5 + fi * 3) * 0.15;
@@ -513,9 +536,9 @@
         var ay = af.baseY + Math.cos(t * af.speed * 0.6 + af.phase) * af.ampY;
         var az = af.baseZ + Math.sin(t * af.speed * 0.4 + af.phase * 2) * af.ampZ;
         af.mesh.position.set(ax, ay, az);
-        af.light.position.set(ax, ay, az);
+        if (af.light) af.light.position.set(ax, ay, az);
         af.mesh.material.opacity = 0.4 + Math.sin(t * 4 + ai * 2.5) * 0.35;
-        af.light.intensity = 0.1 + Math.sin(t * 4 + ai * 2.5) * 0.1;
+        if (af.light) af.light.intensity = 0.1 + Math.sin(t * 4 + ai * 2.5) * 0.1;
       }
     }
 

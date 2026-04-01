@@ -532,18 +532,33 @@
 /* === Responsive === */
 @media (max-width: 768px) {
   .chapter-content h2 { font-size: 1.8rem; }
-  .chapter-content p { font-size: 0.9rem; }
-  .chapter-left, .chapter-right { margin: 0; padding: 24px; }
-  .chapter-content { max-width: 100%; }
+  .chapter-content p { font-size: 0.88rem; }
+  .chapter-left, .chapter-right { margin: 0; padding: 20px; }
+  .chapter-content { max-width: 100%; padding: 24px; }
 
   .creative-hud-top {
     padding: 8px 14px;
     gap: 10px;
   }
   .creative-hud-brand { font-size: 0.85rem; }
-  .creative-hud-back { font-size: 0.75rem; padding: 5px 10px; }
+  .creative-hud-back { font-size: 0.75rem; padding: 8px 14px; min-height: 40px; }
   .creative-hud-stats { display: none; }
-  .creative-hud-social { bottom: 24px; }
+  .creative-hud-social { bottom: 20px; left: 16px; }
+  .creative-hud-social a { width: 44px; height: 44px; font-size: 1rem; }
+
+  .chapter-cta { flex-direction: column; align-items: center; }
+  .creative-cta-btn, .creative-cta-outline { width: 100%; max-width: 280px; justify-content: center; padding: 14px 20px; }
+}
+
+@media (max-width: 400px) {
+  .chapter-content h2 { font-size: 1.5rem; }
+  .chapter-content p { font-size: 0.82rem; max-width: 100%; }
+  .chapter-content { padding: 16px; }
+  .chapter-label { font-size: 0.6rem; }
+
+  .creative-hud-top { padding: 6px 12px; gap: 8px; }
+  .creative-hud-brand { font-size: 0.78rem; }
+  .creative-hud-back { font-size: 0.7rem; }
 }
 
 /* ========================================
