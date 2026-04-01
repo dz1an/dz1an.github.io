@@ -5,292 +5,362 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1.0, shrink-to-fit=no">
-  <title>Evangelista - Personal Portfolio</title>
-  <meta name="author" content="KentUwU">
+  <title>John Kent Evangelista — Senior Software Developer</title>
+  <meta name="author" content="John Kent Evangelista">
+  <meta name="description" content="Senior Software Developer specializing in civic tech, SaaS, and digital transformation. Based in Zamboanga City, Philippines.">
 
-  <!-- Web Fonts -->
-  <link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Poppins:100,200,300,400,500,600,700,800,900' type='text/css'>
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <!-- Stylesheet -->
-
-  <!-- Animate -->
-  <link rel="stylesheet" type="text/css" href="vendor/animate/animate.min.css" />
-  <!-- Bootstrap -->
+  <!-- Stylesheets -->
   <link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css" />
-  <!-- Font Awesome -->
   <link rel="stylesheet" type="text/css" href="vendor/font-awesome/css/all.min.css" />
-  <!-- Owl Carousel -->
-  <link rel="stylesheet" type="text/css" href="vendor/owl.carousel/assets/owl.carousel.min.css" />
-  <!-- Magnific Popup -->
-  <link rel="stylesheet" type="text/css" href="vendor/magnific-popup/magnific-popup.min.css" />
-  <!-- Custom Stylesheet -->
   <link rel="stylesheet" type="text/css" href="css/style.css">
-
 </head>
 
 <body>
 
-    <!-- Preloader -->
-    <div id="preloader">
-    </div>
+  <!-- Scroll progress bar -->
+  <div class="scroll-progress" id="scrollProgress"></div>
 
+  <!-- Custom cursor (desktop) -->
+  <div class="custom-cursor d-none d-lg-block" id="customCursor">
+    <div class="cursor-dot"></div>
+    <div class="cursor-ring"></div>
+  </div>
 
-    <!-- Hero section -->
-    <section id="home" class="d-none d-md-block">
-      <div class="hero-wrap">
-        <div class="hero-mask"></div>
-        <div class="hero-bg" style="background-image:url('images/hero.jpg');"></div>
-        <div class="hero-content d-flex flex-column fullscreen py-5">
-          <div class="container my-auto">
-            <div class="row">
-              
-              <div class="col-md-8 offset-md-8 my-7">
-                <h1 style="color:#fff"> John Kent Evangelista </h1>
-                <h2 style="color:#fff">I’m <span class="typing" style="color:#4db9ff"></span></h2>
-                <nav class="nav-menu d-none d-lg-block">
-                  <a href="https://www.facebook.com/tabibito12/" class="social-icon"><i class="fab fa-facebook"></i></a>
-                  <a href="https://twitter.com/DzianKent" class="social-icon"><i class="fab fa-twitter"></i></a>
-                  <a href="https://www.instagram.com/dziannn/" class="social-icon"><i class="fab fa-instagram"></i></a>
-                  <a href="https://github.com/dz1an" class="social-icon"><i class="fab fa-github"></i></a>
-                
-                </nav>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="container py-2 text-center">
-          <a href="#about" class="text-white smooth-scroll"><i class="fas fa-arrow-down"></i></a>
-        </div>
-      </div>
-    </section>
-    
-    
+  <!-- Cursor glow (desktop) -->
+  <div class="cursor-glow d-none d-lg-block"></div>
+
+  <!-- Preloader -->
+  <div id="preloader">
+    <div class="loader-bar"></div>
+  </div>
 
   <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <div class="container-fluid">
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
-      aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
+  <nav class="navbar navbar-expand-lg" id="mainNav">
+    <div class="container">
+      <a class="navbar-brand" href="#home">Kent<span class="brand-dot">.</span></a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
-        <ul class="navbar-nav mb-2 mb-lg-0">
-          <li class="nav-item">
-            <a class="nav-link active" href="#home">Home</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#about">About</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#services">Services</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#resume">Resume</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#projects">Projects</a>
-          </li>
-          
-          <li class="nav-item">
-            <a class="nav-link" href="#contact">Contact</a>
-          </li>
+        <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link active" href="#home">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
+          <li class="nav-item"><a class="nav-link" href="#expertise">Expertise</a></li>
+          <li class="nav-item"><a class="nav-link" href="#skills">Skills</a></li>
+          <li class="nav-item"><a class="nav-link" href="#resume">Resume</a></li>
+          <li class="nav-item"><a class="nav-link" href="#projects">Projects</a></li>
+          <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
         </ul>
+        <a href="#contact" class="nav-cta magnetic-btn d-none d-lg-inline-block">Let's Talk</a>
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+          <span class="toggle-track">
+            <span class="toggle-thumb">
+              <i class="fas fa-sun icon-sun"></i>
+              <i class="fas fa-moon icon-moon"></i>
+            </span>
+          </span>
+          <span class="toggle-aftershock" id="toggleAftershock"></span>
+        </button>
       </div>
     </div>
   </nav>
 
-  
-  <!-- About Me section -->
-  
-<section id="about" class="section bg-light">
-  <div class="container">
-    <div class="text-center">
-      <span class="badge rounded-pill title-badge mb-2">About Me</span>
-      <h2 class="font-weight-bold about-heading">Discover More About Me</h2>
+  <!-- Hero Section — Bento Grid Dashboard -->
+  <section id="home" class="hero">
+    <!-- Particle canvas -->
+    <canvas id="particleCanvas"></canvas>
+    <!-- Animated mesh background -->
+    <div class="hero-bg-mesh">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+      <div class="blob blob-3"></div>
     </div>
-    <div class="row justify-content-center align-items-center">
-      <div class="col-md-8">
-        <h3 class="text-justify self-introduction">Greetings, I am <span class="span-name">John Kent</span></h3>
-        
-        <p class="lh-sm lead self-description">Welcome to my professional web portfolio! As a dedicated and skilled web developer, my passion lies in creating exceptional online experiences. I bring ideas to life through beautifully designed and seamlessly functional websites, utilizing a harmonious blend of creativity and technical expertise. With a strong focus on crafting engaging user interfaces and optimizing performance, my goal is to deliver high-quality results that leave a lasting impact. I invite you to explore my work and delve into the projects that showcase my proficiency in web development. Together, we can transform your digital vision into a reality.</p>
-      </div>
-      <div class="col-md-4">
-        <div class="badge badge-primary years-of-experience-badge">3+</div>
-        <p class="lead years-of-experience-text">Years of <span>Experience</span></p>
-      </div>
-    </div>
-    <div class="row project-stats">
-      <div class="col-md-4">
-        <div class="project-card">
-          <h3 class="project-title-stats">Total Projects</h3>
-          <p class="project-number">5</p>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="project-card">
-          <h3 class="project-title-stats">Ongoing Projects</h3>
-          <p class="project-number">1</p>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="project-card">
-          <h3 class="project-title-stats">Job Success Rate</h3>
-          <p class="project-number">90%</p>
-        </div>
-      </div>
-    </div>
-    <div class="row justify-content-center">
-      <div class="col-md-12 cta-button mt-3">
-          <button id="downloadCVButton" class="cv-button">Download Curriculum Vitae</button>
-      </div>
-  </div>
-</div>
-</section>
 
-  <!-- Services section -->
-  <section id="services" class="section">
     <div class="container">
-      <div class="services-header text-center">
-        <span class="badge rounded-pill title-badge mb-2">What I Do?</span>
-        <h1 class="fw-bold">My Offered Services</h1>
-      </div>
-      <div class="row justify-content-center align-items-center text-center">
-        <div class="col-md-4 text-center">
-          <i class="display-5 fa-solid fa-database mb-3" style="color: #3c3f58;"></i>
-          <h5 class="fw-bold mt-2">Database Management</h5>
-          <p class="services-description lh-base text-muted">Maximize data efficiency with expert database management. Secure, organize, and access your valuable information seamlessly. Drive informed decisions and business growth with confidence.</p>
-        </div>
-        <div class="col-md-4 text-center">
-          <i class="display-5 fa-solid fa-code mb-3" style="color: #3c3f58;"></i>
-          <h5 class="fw-bold mt-2">Web and Mobile Development</h5>
-          <p class="services-description lh-base text-muted">Elevate your digital presence with my web and mobile development skills. Deliver seamless user experiences and drive audience engagement through innovative applications.</p>
-        </div>
-        <div class="col-md-4 text-center">
-          <i class="display-5 fa-solid fa-chart-pie mb-3" style="color: #3c3f58;"></i>
-          <h5 class="fw-bold mt-2">Data Analysis and Visualization</h5>
-          <p class="services-description lh-base text-muted">Unleash the potential of your data with my expertise in data analysis and visualization. Gain valuable insights and communicate complex information effectively through impactful visualizations and data-driven narratives.</p>
-        </div>
-      </div>
-      <section id="skills" class="skills-section mt-4">
-        <div class="container">
-          <div class="skills-header text-center">
-            <h2 class="section-title">My Skills</h2>
-            <div class="line"></div>
-          </div>
-          <div class="row">
-            <div class="col-md-6">
-              <div class="skill-item">
-                <h5 class="skill-name">Python</h5>
-                <div class="progress">
-                  <div id="html-css-progress" class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100""></div>
-                </div>
-                <span class="skill-percentage" id="html-css-percentage">100%</span>
-              </div>
-              <div class="skill-item">
-                <h5 class="skill-name">PHP</h5>
-                <div class="progress">
-                  <div id="javascript-progress" class="progress-bar" role="progressbar" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"></div>
-                </div>
-                <span class="skill-percentage" id="javascript-percentage">80%</span>
-              </div>
-              <div class="skill-item">
-                <h5 class="skill-name">HTML/CSS</h5>
-                <div class="progress">
-                  <div id="php-progress" class="progress-bar" role="progressbar" aria-valuenow="90" aria-valuemin="0" aria-valuemax="100"></div>
-                </div>
-                <span class="skill-percentage" id="php-percentage">90%</span>
-              </div>
+      <div class="bento-mega-card">
+        <div class="bento-grid">
+
+          <!-- Cell A: Main Intro (largest, spans 2 rows left) -->
+          <div class="bento-cell bento-intro">
+            <div class="hero-badge">
+              <span class="pulse-dot"></span>
+              Open to Opportunities
             </div>
-            <div class="col-md-6">
-              <div class="skill-item">
-                <h5 class="skill-name">Machine Learning/Data Analytics</h5>
-                <div class="progress">
-                  <div id="ml-da-progress" class="progress-bar" role="progressbar" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100"></div>
-                </div>
-                <span class="skill-percentage" id="ml-da-percentage">85%</span>
-              </div>
-              <div class="skill-item">
-                <h5 class="skill-name">Django</h5>
-                <div class="progress">
-                  <div id="design-progress" class="progress-bar" role="progressbar" aria-valuenow="95" aria-valuemin="0" aria-valuemax="100"></div>
-                </div>
-                <span class="skill-percentage" id="design-percentage">95%</span>
-              </div>
-              <div class="skill-item">
-                <h5 class="skill-name">Design</h5>
-                <div class="progress">
-                  <div id="db-progress" class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-                </div>
-                <span class="skill-percentage" id="db-percentage">100%</span>
-              </div>
+            <h1><span class="name-gradient text-scramble" data-text="John Kent">John Kent</span><br><span class="text-scramble" data-text="Evangelista">Evangelista</span></h1>
+            <p class="credential">LSSWB &mdash; Lean Six Sigma White Belt</p>
+            <h2><span class="typing"></span></h2>
+            <p class="hero-summary">Results-driven Senior Software Developer building civic tech platforms, SaaS systems, and business directory solutions. National award winner as part of the VINTAZK Outsourcing core team.</p>
+            <div class="hero-buttons">
+              <a href="#projects" class="btn-primary-custom magnetic-btn">View My Work <i class="fas fa-arrow-right"></i></a>
+              <a href="#contact" class="btn-outline-custom magnetic-btn">Get in Touch</a>
+            </div>
+            <div class="hero-social">
+              <a href="https://github.com/dz1an" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
+              <a href="https://www.facebook.com/tabibito12/" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+              <a href="https://www.instagram.com/dziannn/" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
             </div>
           </div>
+
+          <!-- Cell B: Profile Card (top-right) -->
+          <div class="bento-cell bento-profile tilt-card">
+            <div class="hero-profile-wrapper">
+              <img src="images/profile.png" alt="John Kent Evangelista" class="hero-profile-img" loading="lazy">
+            </div>
+            <div class="bento-profile-info">
+              <h4>John Kent Evangelista</h4>
+              <div class="about-location">
+                <i class="fas fa-map-marker-alt"></i> Zamboanga City, PH
+              </div>
+            </div>
+            <button id="downloadCVButton" class="cv-button magnetic-btn">
+              <i class="fas fa-download"></i> Download CV
+            </button>
+          </div>
+
+          <!-- Cell C: Stats Row (mid-right) -->
+          <div class="bento-cell bento-stats">
+            <div class="bento-stat-item">
+              <div class="stat-number count-up" data-target="5" data-suffix="+">0</div>
+              <div class="stat-label">Projects</div>
+            </div>
+            <div class="bento-stat-item">
+              <div class="stat-number count-up" data-target="636" data-suffix="+">0</div>
+              <div class="stat-label">Businesses</div>
+            </div>
+            <div class="bento-stat-item">
+              <div class="stat-number">1st</div>
+              <div class="stat-label">National</div>
+            </div>
+          </div>
+
+          <!-- Cell D: Tech Stack (bottom-left) -->
+          <div class="bento-cell bento-skills tilt-card">
+            <h5><i class="fas fa-code"></i> Tech Stack</h5>
+            <div class="skill-tags">
+              <span class="skill-tag">Python</span>
+              <span class="skill-tag">Flutter</span>
+              <span class="skill-tag">React</span>
+              <span class="skill-tag">Django</span>
+              <span class="skill-tag">Supabase</span>
+              <span class="skill-tag">Node.js</span>
+            </div>
+          </div>
+
+          <!-- Cell E: Award Badge (bottom-right) -->
+          <div class="bento-cell bento-award tilt-card">
+            <span class="badge-icon icon-trophy"><i class="fas fa-trophy"></i></span>
+            <div>
+              <div class="bento-award-title">National Winner</div>
+              <div class="bento-award-sub">2025 Productivity Olympics</div>
+            </div>
+          </div>
+
         </div>
-      </section>
+      </div>
     </div>
   </section>
 
-  <!-- Resume section -->
-  <section id="resume" class="section bg-light">
+  <!-- About anchor (content merged into hero bento) -->
+  <section id="about"></section>
+
+  <!-- Expertise Section -->
+  <section id="expertise" class="section">
     <div class="container">
-      <div class="services-header text-center">
-        <span class="badge rounded-pill title-badge mb-2">Resume</span>
-        <h2 class="fw-bold">My Resume</h2>
+      <div class="text-center mb-5 reveal">
+        <span class="section-badge">What I Do</span>
+        <h2 class="section-title">My Expertise</h2>
+        <p class="section-subtitle">Building impactful software solutions across multiple domains</p>
+      </div>
+      <div class="row g-4">
+        <div class="col-md-6 col-lg-3 reveal reveal-delay-1">
+          <div class="expertise-card tilt-card">
+            <div class="expertise-icon"><i class="fas fa-layer-group"></i></div>
+            <h5>Full-Stack Development</h5>
+            <p>Building end-to-end web and mobile applications using React, Flutter, Django, and Supabase with modern architecture patterns.</p>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3 reveal reveal-delay-2">
+          <div class="expertise-card tilt-card">
+            <div class="expertise-icon"><i class="fas fa-city"></i></div>
+            <h5>Civic Tech & SaaS</h5>
+            <p>Designing platforms that serve communities, from barangay management systems to city-wide business directories.</p>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3 reveal reveal-delay-3">
+          <div class="expertise-card tilt-card">
+            <div class="expertise-icon"><i class="fas fa-diagram-project"></i></div>
+            <h5>Project Leadership</h5>
+            <p>Leading development teams, managing OJT interns, scoping features, and running sprint-based delivery across concurrent projects.</p>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3 reveal reveal-delay-4">
+          <div class="expertise-card tilt-card">
+            <div class="expertise-icon"><i class="fas fa-chart-line"></i></div>
+            <h5>Digital Transformation</h5>
+            <p>Applying Lean Six Sigma principles and digital transformation strategies to streamline workflows and optimize delivery.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Skills Section -->
+  <section id="skills" class="section section-bg-alt">
+    <div class="container">
+      <div class="text-center mb-5 reveal">
+        <span class="section-badge">Skills</span>
+        <h2 class="section-title">Technical Toolkit</h2>
+        <p class="section-subtitle">Technologies and tools I work with daily</p>
+      </div>
+      <div class="row justify-content-center">
+        <div class="col-lg-10">
+          <div class="skills-container reveal">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="skills-category">
+                  <h5>Languages & Frameworks</h5>
+                  <div class="skill-tags">
+                    <span class="skill-tag">Python</span>
+                    <span class="skill-tag">Dart / Flutter</span>
+                    <span class="skill-tag">JavaScript</span>
+                    <span class="skill-tag">React.js</span>
+                    <span class="skill-tag">Django</span>
+                    <span class="skill-tag">HTML / CSS</span>
+                  </div>
+                </div>
+                <div class="skills-category">
+                  <h5>Databases & Backend</h5>
+                  <div class="skill-tags">
+                    <span class="skill-tag">Supabase (PostgreSQL)</span>
+                    <span class="skill-tag">SQLite</span>
+                    <span class="skill-tag">RLS Policies</span>
+                    <span class="skill-tag">Triggers & Functions</span>
+                    <span class="skill-tag">Node.js</span>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="skills-category">
+                  <h5>Tools & Platforms</h5>
+                  <div class="skill-tags">
+                    <span class="skill-tag">OpenCV</span>
+                    <span class="skill-tag">scikit-learn</span>
+                    <span class="skill-tag">Selenium WebDriver</span>
+                    <span class="skill-tag">n8n</span>
+                    <span class="skill-tag">Cursor</span>
+                    <span class="skill-tag">Claude Code</span>
+                    <span class="skill-tag">Git / GitHub</span>
+                  </div>
+                </div>
+                <div class="skills-category">
+                  <h5>Project Management</h5>
+                  <div class="skill-tags">
+                    <span class="skill-tag">Intern Supervision</span>
+                    <span class="skill-tag">Feature Scoping</span>
+                    <span class="skill-tag">Sprint Planning</span>
+                    <span class="skill-tag">Multi-project Delivery</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Resume Section -->
+  <section id="resume" class="section">
+    <div class="container">
+      <div class="text-center mb-5 reveal">
+        <span class="section-badge">Resume</span>
+        <h2 class="section-title">Experience & Education</h2>
       </div>
       <div class="row">
-        <div class="col-lg-6">
-          <h4 class="resume-heading">Education</h4>
-          <div class="resume-card">
-            <div class="resume-card-header">
-              <h4 class="resume-title">Bachelor of Science in Computer Science</h4>
-              <h5 class="resume-subtitle">Western Mindanao State University</h5>
-            </div>
-            <div class="resume-card-body">
-              <p class="resume-date">2020 - Present</p>
-              <p class="resume-description">Obtained a Bachelor of Science in Computer Science from Western Mindanao State University. Proficient in programming, algorithms, and database management. Passionate about web and mobile application development.</p>
-            </div>
-          </div>
-  
-          <div class="resume-card">
-            <div class="resume-card-header">
-              <h4 class="resume-title">Diploma in Web Development</h4>
-              <h5 class="resume-subtitle">Online Course</h5>
-            </div>
-            <div class="resume-card-body">
-              <p class="resume-date">2021 - 2022</p>
-              <p class="resume-description">Completed online courses in web development, gaining expertise in HTML, CSS, and JavaScript. Skilled in building responsive and user-friendly websites. Continuously expanding knowledge in the latest web development technologies.</p>
+        <!-- Work Experience -->
+        <div class="col-lg-6 mb-4 mb-lg-0 reveal">
+          <div class="resume-subsection">
+            <h4 class="resume-heading"><i class="fas fa-briefcase"></i> Work Experience</h4>
+            <div class="timeline">
+              <div class="timeline-item">
+                <div class="timeline-title">Senior Developer</div>
+                <div class="timeline-org">VINTAZK Outsourcing</div>
+                <div class="timeline-date">Dec 2025 &ndash; Present</div>
+                <div class="timeline-desc">Lead development of enterprise-grade outsourcing solutions. Oversee junior developers and OJT interns across multiple simultaneous projects. Co-contributor to 2025 Productivity Olympics national win.</div>
+              </div>
+              <div class="timeline-item">
+                <div class="timeline-title">System Developer</div>
+                <div class="timeline-org">VINTAZK Outsourcing</div>
+                <div class="timeline-date">Feb 2025 &ndash; Jan 2026</div>
+                <div class="timeline-desc">Architected full-stack web systems using Supabase, React, and Python. Designed database schemas, RLS policies, and backend API integrations.</div>
+              </div>
+              <div class="timeline-item">
+                <div class="timeline-title">Jr. Frontend Web Developer</div>
+                <div class="timeline-org">AKA Software Inc.</div>
+                <div class="timeline-date">Feb 2025</div>
+                <div class="timeline-desc">Developed React.js UI components for client-facing web applications.</div>
+              </div>
+              <div class="timeline-item">
+                <div class="timeline-title">Project Lead Developer</div>
+                <div class="timeline-org">SmartScore</div>
+                <div class="timeline-date">2023 &ndash; 2024</div>
+                <div class="timeline-desc">Led end-to-end development of SmartScore: an Automated Exam System with Computer Vision-based checking for Multiple Choice Exams.</div>
+              </div>
+              <div class="timeline-item">
+                <div class="timeline-title">Quality Assurance Specialist</div>
+                <div class="timeline-org">Western Mindanao State University</div>
+                <div class="timeline-date">2022 &ndash; 2023</div>
+                <div class="timeline-desc">Led system testing and automated critical workflows using Selenium WebDriver. Performed comprehensive API testing.</div>
+              </div>
             </div>
           </div>
         </div>
-  
-        <div class="col-lg-6">
-          <h4 class="resume-heading">Experience</h3>
-          <div class="resume-card">
-            <div class="resume-card-header">
-              <h4 class="resume-title">Full Stack Developer</h4>
-              <h5 class="resume-subtitle">Smartscore</h5>
-            </div>
-            <div class="resume-card-body">
-              <p class="resume-date">2023 - 2024</p>
-              <p class="resume-description">
-                Designed and developed a web-based academic
-                assessment system to streamline exam creation,
-                grading, and performance analytics.</p>
+
+        <!-- Education + Certs + Awards -->
+        <div class="col-lg-6 reveal reveal-delay-2">
+          <div class="resume-subsection">
+            <h4 class="resume-heading"><i class="fas fa-graduation-cap"></i> Education</h4>
+            <div class="timeline">
+              <div class="timeline-item">
+                <div class="timeline-title">Executive Education &mdash; Digital Transformation</div>
+                <div class="timeline-org">Asian Institute of Management (AIM)</div>
+                <div class="timeline-date">Sep 2025 &ndash; Present</div>
+                <div class="timeline-desc">Focus areas: Digital Transformation, Project Management, Business Strategy.</div>
+              </div>
+              <div class="timeline-item">
+                <div class="timeline-title">Bachelor of Computer Science</div>
+                <div class="timeline-org">Western Mindanao State University</div>
+                <div class="timeline-date">2020 &ndash; 2024</div>
+                <div class="timeline-desc">Thesis: SmartScore &mdash; Development of an Automated Exam System with Computer Vision-based Checking for Multiple Choice Exams.</div>
+              </div>
             </div>
           </div>
-  
-          <div class="resume-card">
-            <div class="resume-card-header">
-              <h4 class="resume-title">Quality Assurance</h4>
-              <h5 class="resume-subtitle">WMSU Collection System</h5>
+
+          <div class="resume-subsection">
+            <h4 class="resume-heading"><i class="fas fa-certificate"></i> Certification</h4>
+            <div class="cert-card">
+              <div class="cert-icon"><i class="fas fa-award"></i></div>
+              <div>
+                <h6>Lean Six Sigma White Belt (LSSWB)</h6>
+                <p>Six Sigma PH &middot; Issued Oct 2025 &middot; ID: MEM-8T-BE8w7-u5Oz</p>
+              </div>
             </div>
-            <div class="resume-card-body">
-              <p class="resume-date">2022 - 2023 </p>
-              <p class="resume-description">Identified and documented defects, collaborating
-                with the development team to resolve issues. 
-                Helped validate the system's functionality and
-                ensure it met the specified requirements through
-                rigorous testing.</p>
+          </div>
+
+          <div class="resume-subsection mt-3">
+            <h4 class="resume-heading"><i class="fas fa-trophy"></i> Award</h4>
+            <div class="award-card">
+              <div class="award-icon"><i class="fas fa-medal"></i></div>
+              <div>
+                <h6>National Winner &mdash; Service Micro Category</h6>
+                <p>2025 Productivity Olympics (10th Edition) &middot; DOLE & RTWPB &middot; Sep 2025</p>
+              </div>
             </div>
           </div>
         </div>
@@ -298,223 +368,178 @@
     </div>
   </section>
 
-  <!-- Projects section -->
-  <section id="projects" class="section">
+  <!-- Projects Section -->
+  <section id="projects" class="section section-bg-alt">
     <div class="container">
-      <div class="projects-header text-center mb-5">
-        <span class="badge rounded-pill title-badge mb-2">Portfolio</span>
-        <h2 class="fw-bold">My Recent Works</h2>
+      <div class="text-center mb-5 reveal">
+        <span class="section-badge">Portfolio</span>
+        <h2 class="section-title">Key Projects</h2>
+        <p class="section-subtitle">Solutions built for real-world impact</p>
       </div>
-      <div class="row">
-  
-        <!-- Large Project -->
-        <div class="col-lg-8">
-          <div class="project-card large-card">
-            <div class="project-image">
-              <img src="images/project5.png" alt="Project 1" class="img-fluid">
-              <div class="overlay">WMSU Collection</div>
-              <div class="project-info">
-                <h3 class="project-title"></h3>
-                <p class="project-description">WMSU Collection: Simplify fee collection with our efficient platform. Streamline the process and ensure a hassle-free experience for educational institutions and payers alike.</p>
-              </div>
+      <div class="projects-grid">
+        <div class="project-card tilt-card reveal reveal-delay-1">
+          <div class="project-card-gradient gradient-1">
+            <span class="project-initials">VT</span>
+          </div>
+          <div class="project-card-body">
+            <div class="project-card-role">Senior Developer & Team Lead</div>
+            <h4>Vintech / VINTAZK Platform</h4>
+            <p>Core contributor to the outsourcing solutions platform that earned the National Winner title at the 2025 Productivity Olympics. Led cross-functional team including developers, UI/UX designer, and OJT interns.</p>
+            <div class="project-tags">
+              <span class="project-tag">Supabase</span>
+              <span class="project-tag">React</span>
+              <span class="project-tag">Python</span>
+              <span class="project-tag">Node.js</span>
             </div>
           </div>
         </div>
 
+        <div class="project-card tilt-card reveal reveal-delay-2">
+          <div class="project-card-gradient gradient-2">
+            <span class="project-initials">ZG</span>
+          </div>
+          <div class="project-card-body">
+            <div class="project-card-role">Lead Developer</div>
+            <h4>ZamGo &mdash; Business Directory</h4>
+            <p>Built and maintained a directory of 636+ Zamboanga City businesses with enriched descriptions, duplicate detection, analytics dashboard, and Excel reporting.</p>
+            <div class="project-tags">
+              <span class="project-tag">Supabase</span>
+              <span class="project-tag">React</span>
+              <span class="project-tag">Python</span>
+              <span class="project-tag">OpenPyXL</span>
+            </div>
+          </div>
+        </div>
 
-  
-        <!-- Medium Project -->
-        <div class="col-lg-4">
-          <div class="project-card medium-card">
-            <div class="project-image">
-              <img src="images/project2.png" alt="Project 2" class="img-fluid">
-              <div class="overlay"></div>
-              <div class="project-info">
-                <h3 class="project-title">Used Car Prediction</h3>
-                <p class="project-description">Helping buyers make informed decisions by providing accurate predictions and insights on used car values, condition, and performance.</p>
-              </div>
+        <div class="project-card tilt-card reveal reveal-delay-3">
+          <div class="project-card-gradient gradient-3">
+            <span class="project-initials">VA</span>
+          </div>
+          <div class="project-card-body">
+            <div class="project-card-role">Full-Stack Developer</div>
+            <h4>Vintazk Academy &mdash; LMS</h4>
+            <p>Full-featured Learning Management System supporting course management, learner tracking, content delivery, role-based access control, and progress tracking dashboards.</p>
+            <div class="project-tags">
+              <span class="project-tag">Supabase</span>
+              <span class="project-tag">React</span>
+              <span class="project-tag">Python</span>
             </div>
           </div>
         </div>
-  
-        <!-- Small Projects -->
-        <div class="col-lg-4">
-          <div class="project-card medium-card">
-            <div class="project-image">
-              <img src="images/project6.png" alt="Project 3" class="img-fluid">
-              <div class="overlay"></div>
-              <div class="project-info">
-                <h3 class="project-title">Smartscore</h3>
-                <p class="project-description">SmartScore is an innovative web-based application designed to simplify and automate the management of academic assessments. Built with Django, the platform empowers educators to create, manage, and grade exams efficiently while providing detailed performance insights for students.</p>
-              </div>
+
+        <div class="project-card tilt-card reveal reveal-delay-1">
+          <div class="project-card-gradient gradient-4">
+            <span class="project-initials">BC</span>
+          </div>
+          <div class="project-card-body">
+            <div class="project-card-role">System Developer & Intern Manager</div>
+            <h4>Barangay Connect (CalarianConnect)</h4>
+            <p>Four-component civic digital system: mobile app, web admin panel, kiosk terminal, and Supabase backend. Integrated face detection for kiosk terminal with depth camera research.</p>
+            <div class="project-tags">
+              <span class="project-tag">Supabase</span>
+              <span class="project-tag">Flutter</span>
+              <span class="project-tag">React</span>
+              <span class="project-tag">OpenCV</span>
             </div>
           </div>
         </div>
-  
-        <div class="col-lg-4">
-          <div class="project-card medium-card">
-            <div class="project-image">
-              <img src="images/project4.png" alt="Project 4" class="img-fluid">
-              <div class="overlay"></div>
-              <div class="project-info">
-                <h3 class="project-title">Tulong</h3>
-                <p class="project-description">Your go-to platform for online freelance services, connecting clients with skilled professionals for a seamless and efficient work collaboration.</p>
-              </div>
+
+        <div class="project-card tilt-card reveal reveal-delay-2">
+          <div class="project-card-gradient gradient-5">
+            <span class="project-initials">IP</span>
+          </div>
+          <div class="project-card-body">
+            <div class="project-card-role">Lead Developer</div>
+            <h4>Inventa POS</h4>
+            <p>Windows desktop POS system with offline-first architecture using SQLite and Supabase cloud sync. Integrated OpenCV webcam-based employee clock-in and on-device predictive AI.</p>
+            <div class="project-tags">
+              <span class="project-tag">Flutter / Dart</span>
+              <span class="project-tag">SQLite</span>
+              <span class="project-tag">Supabase</span>
+              <span class="project-tag">scikit-learn</span>
             </div>
           </div>
         </div>
-  
-        <div class="col-lg-4">
-          <div class="project-card medium-card">
-            <div class="project-image">
-              <img src="images/project1.png" alt="Project 5" class="img-fluid">
-              <div class="overlay"></div>
-              <div class="project-info">
-                <h3 class="project-title">Rental girlfriend</h3>
-                <p class="project-description">Find your perfect girlfriend with our user-friendly website. Connect and discover meaningful romantic connections today.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-  
       </div>
     </div>
   </section>
-  
 
-  <!-- Clients section -->
-
-
-  <!-- Contact section -->
+  <!-- Contact Section -->
   <section id="contact" class="section">
     <div class="container">
-      <div class="contact-header text-center">
-        <span class="badge rounded-pill title-badge mb-2">Contact Me</span>
-        <h2 class="fw-bold">Reach Out to Me</h2>
+      <div class="text-center mb-5 reveal">
+        <span class="section-badge">Contact</span>
+        <h2 class="section-title">Let's Work Together</h2>
+        <p class="section-subtitle">Seeking freelance engagements in digital transformation, full-stack development, and software project management</p>
       </div>
-      <div class="row">
-        <div class="col-8">
-          <h2 class="contact-title">Get in <span style="color: #707793;">Touch</span></h2>
-        </div>
-        <div class="col-lg-3 offset-lg-1">
-          <h4 class="fw-bold">Contact <span style="color: #707793;">Details</span></h4>
-        </div>
-        <div class="col-lg-8">
-          <form>
-            <div class="row">
-              <div class="col-12">
-                <div class="form-group">
-                  <textarea class="form-control w-100 rounded-0" name="message" id="message" cols="30" rows="9" placeholder="Enter Message"></textarea>
+      <div class="row justify-content-center">
+        <div class="col-lg-9">
+          <div class="contact-wrapper reveal">
+            <div class="row align-items-center">
+              <div class="col-lg-7 mb-4 mb-lg-0">
+                <h3 class="contact-heading">Ready to start a project?</h3>
+                <p class="contact-desc">I'm currently open to freelance work and new opportunities. Let's build something impactful together.</p>
+                <a href="mailto:dzian2k17@gmail.com" class="btn-email magnetic-btn">
+                  <i class="fas fa-envelope"></i> Send an Email
+                </a>
+                <div class="contact-social">
+                  <a href="https://github.com/dz1an" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                  <a href="https://www.facebook.com/tabibito12/" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                  <a href="https://www.instagram.com/dziannn/" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
                 </div>
               </div>
-              <div class="col-sm-6">
-                <div class="form-group">
-                  <input class="form-control rounded-0" name="name" id="name" type="text" placeholder="Enter your name">
+              <div class="col-lg-5">
+                <div class="contact-card">
+                  <h4>Contact Details</h4>
+                  <div class="contact-item">
+                    <div class="contact-item-icon"><i class="fas fa-map-marker-alt"></i></div>
+                    <div>
+                      <h6>Location</h6>
+                      <p>Zamboanga City, Philippines</p>
+                    </div>
+                  </div>
+                  <div class="contact-item">
+                    <div class="contact-item-icon"><i class="fas fa-envelope"></i></div>
+                    <div>
+                      <h6>Email</h6>
+                      <p>dzian2k17@gmail.com</p>
+                    </div>
+                  </div>
+                  <div class="contact-item">
+                    <div class="contact-item-icon"><i class="fas fa-globe"></i></div>
+                    <div>
+                      <h6>Availability</h6>
+                      <p>On-site &middot; Hybrid &middot; Remote</p>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div class="col-sm-6">
-                <div class="form-group">
-                  <input class="form-control rounded-0" name="email" id="email" type="email" placeholder="Email">
-                </div>
-              </div>
-              <div class="col-12">
-                <div class="form-group">
-                  <input class="form-control rounded-0" name="subject" id="subject" type="text" placeholder="Enter Subject">
-                </div>
-              </div>
-            </div>
-            <div class="form-group mt-3">
-              <button type="submit" class="button button-contactForm rounded-0">Send Message</button>
-            </div>
-          </form>
-        </div>
-        <div class="col-lg-3 offset-lg-1">
-          <div class="contact-info">
-            <div class="contact-info__item">
-              <i class="fas fa-map-marker-alt contact-info__icon"></i>
-              <div class="contact-info__details">
-                <h3>Location</h3>
-                <p>San Jose Road</p>
-                <p>Zamboanga City, 7000</p>
-              </div>
-            </div>
-            <div class="contact-info__item">
-              <i class="fas fa-phone contact-info__icon"></i>
-              <div class="contact-info__details">
-                <h3>Phone</h3>
-                <p>0629914371</p>
-                <p>Mon to Fri 9am to 5pm</p>
-              </div>
-            </div>
-            <div class="contact-info__item">
-              <i class="fas fa-envelope contact-info__icon"></i>
-              <div class="contact-info__details">
-                <h3>Email</h3>
-                <p>dzian2k17@gmaill.com</p>
-                <p>Send us your query anytime!</p>
-              </div>
-            </div>
-            <div class="contact-info__social">
-              <a href="#" class="contact-info__social-link"><i class="fab fa-facebook-f"></i></a>
-              <a href="#" class="contact-info__social-link"><i class="fab fa-twitter"></i></a>
-              <a href="#" class="contact-info__social-link"><i class="fab fa-instagram"></i></a>
-              <a href="#" class="contact-info__social-link"><i class="fab fa-github"></i></a>
             </div>
           </div>
         </div>
       </div>
     </div>
   </section>
-
-  <div class="image-popup">
-    <div class="popup-content">
-      <span class="close-button">&times;</span>
-      <img class="popup-image" src="" alt="Project Image">
-    </div>
-  </div>
 
   <!-- Footer -->
   <footer class="footer">
     <div class="container">
-      &copy; 2023 Kent. All Rights Reserved.
+      <div class="footer-brand">Kent<span class="brand-dot">.</span></div>
+      <div class="footer-social">
+        <a href="https://github.com/dz1an" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
+        <a href="https://www.facebook.com/tabibito12/" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+        <a href="https://www.instagram.com/dziannn/" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+      </div>
+      <p>&copy; 2026 John Kent Evangelista. All Rights Reserved.</p>
     </div>
   </footer>
 
-  <!-- JavaScript --> 
-  <script src="vendor/jquery/jquery.min.js"></script> 
-  <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script> 
-  <!-- Easing --> 
-  <script src="vendor/jquery.easing/jquery.easing.min.js"></script> 
-  <!-- Appear --> 
-  <script src="vendor/jquery.appear/jquery.appear.min.js"></script> 
-  <!-- WOW animation --> 
-  <script src="vendor/wow/wow.min.js"></script>
-  <!-- Images Loaded --> 
-  <script src="vendor/imagesloaded/imagesloaded.pkgd.min.js"></script> 
-  <!-- Typed --> 
-  <script src="vendor/typed/typed.min.js"></script> 
-  <!-- Parallax Bg --> 
-  <script src="vendor/parallaxie/parallaxie.min.js"></script> 
-  <!-- Owl Carousel --> 
-  <script src="vendor/owl.carousel/owl.carousel.min.js"></script> 
-  <!-- isotope Portfolio Filter --> 
-  <script src="vendor/isotope/isotope.pkgd.min.js"></script> 
-  <!-- Magnific Popup --> 
-  <script src="vendor/magnific-popup/jquery.magnific-popup.min.js"></script>
-  <!-- Font Awesome -->
-  <script src="https://kit.fontawesome.com/3a762edbf5.js" crossorigin="anonymous"></script>
-  <!-- Custom Script --> 
+  <!-- JavaScript -->
+  <script src="vendor/jquery/jquery.min.js"></script>
+  <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="vendor/typed/typed.min.js"></script>
   <script src="js/theme.js"></script>
 
-  <script type="text/javascript">
-    var typed = new Typed('.typing',{
-      strings: ["A Full Stack Developer", "A Software Developer", "A Web Developer."],
-      loop: true,
-      typeSpeed: 65,
-      backSpeed: 65
-    });
-  </script>
-  
 </body>
 
 </html>
