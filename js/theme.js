@@ -619,7 +619,6 @@ document.addEventListener("DOMContentLoaded", function () {
 // ============================================
 (function () {
   var blobs = document.querySelectorAll(".blob");
-  var floatBadges = document.querySelectorAll(".hero-float-badge");
 
   window.addEventListener("scroll", function () {
     var scrollY = window.scrollY;
@@ -627,11 +626,6 @@ document.addEventListener("DOMContentLoaded", function () {
     blobs.forEach(function (blob, i) {
       var speed = 0.2 + i * 0.1;
       blob.style.transform = "translateY(" + scrollY * speed + "px)";
-    });
-
-    floatBadges.forEach(function (badge, i) {
-      var speed = 0.05 + i * 0.03;
-      badge.style.transform = "translateY(" + scrollY * -speed + "px)";
     });
   });
 })();
@@ -935,37 +929,6 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 })();
 
-// ============================================
-// Timeline Items Stagger
-// ============================================
-(function () {
-  var timelines = document.querySelectorAll(".timeline");
-
-  var timelineObserver = new IntersectionObserver(
-    function (entries) {
-      entries.forEach(function (entry) {
-        if (entry.isIntersecting) {
-          var items = entry.target.querySelectorAll(".timeline-item");
-          items.forEach(function (item, i) {
-            item.style.opacity = "0";
-            item.style.transform = "translateX(-20px)";
-            setTimeout(function () {
-              item.style.transition = "opacity 0.6s ease, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)";
-              item.style.opacity = "1";
-              item.style.transform = "translateX(0)";
-            }, 150 * i);
-          });
-          timelineObserver.unobserve(entry.target);
-        }
-      });
-    },
-    { threshold: 0.1 }
-  );
-
-  timelines.forEach(function (tl) {
-    timelineObserver.observe(tl);
-  });
-})();
 
 // ============================================
 // Git Log Tab Switching
@@ -1174,7 +1137,7 @@ document.addEventListener("DOMContentLoaded", function () {
 // Ripple Effect on Buttons
 // ============================================
 (function () {
-  document.querySelectorAll(".btn-primary-custom, .btn-email, .cv-button, .nav-cta").forEach(function (btn) {
+  document.querySelectorAll(".btn-primary-custom, .cv-button, .nav-cta").forEach(function (btn) {
     btn.addEventListener("click", function (e) {
       var rect = btn.getBoundingClientRect();
       var ripple = document.createElement("span");
