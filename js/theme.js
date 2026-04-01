@@ -44,11 +44,63 @@
 })();
 
 // ============================================
-// Preloader
+// Terminal Preloader — Boot Sequence
 // ============================================
-window.addEventListener("load", function () {
-  document.body.classList.add("loaded");
-});
+(function () {
+  var bootLines = [
+    { text: "loading modules...", delay: 200 },
+    { text: '<span class="term-muted">[core]</span> css-variables <span class="term-success">✓</span>', delay: 150 },
+    { text: '<span class="term-muted">[core]</span> design-system <span class="term-success">✓</span>', delay: 120 },
+    { text: '<span class="term-muted">[plugin]</span> particles.js <span class="term-success">✓</span>', delay: 180 },
+    { text: '<span class="term-muted">[plugin]</span> typed.js <span class="term-success">✓</span>', delay: 100 },
+    { text: '<span class="term-muted">[plugin]</span> scroll-reveal <span class="term-success">✓</span>', delay: 130 },
+    { text: "compiling <span class='term-accent'>//kent.dev</span>...", delay: 300 },
+    { text: '<span class="term-success">ready.</span> launching portfolio ↗', delay: 400 },
+  ];
+
+  var terminalBody = document.getElementById("terminalBody");
+  if (!terminalBody) {
+    // Fallback if terminal HTML not found
+    window.addEventListener("load", function () {
+      document.body.classList.add("loaded");
+    });
+    return;
+  }
+
+  var totalDelay = 300; // initial pause
+
+  bootLines.forEach(function (line) {
+    totalDelay += line.delay;
+    setTimeout(function () {
+      var div = document.createElement("div");
+      div.className = "terminal-line";
+      div.innerHTML = line.text;
+      terminalBody.appendChild(div);
+      // Auto-scroll to bottom
+      terminalBody.scrollTop = terminalBody.scrollHeight;
+    }, totalDelay);
+  });
+
+  // After all lines, wait for window load then reveal site
+  var bootDone = false;
+  var windowLoaded = false;
+
+  function tryReveal() {
+    if (bootDone && windowLoaded) {
+      document.body.classList.add("loaded");
+    }
+  }
+
+  setTimeout(function () {
+    bootDone = true;
+    tryReveal();
+  }, totalDelay + 300);
+
+  window.addEventListener("load", function () {
+    windowLoaded = true;
+    tryReveal();
+  });
+})();
 
 // ============================================
 // Scroll Progress Bar
@@ -265,14 +317,23 @@ window.addEventListener("scroll", function () {
   }
   ringFollow();
 
-  // Grow cursor on interactive elements
+  // Grow cursor on interactive elements + stop blink
   var hoverTargets = document.querySelectorAll("a, button, .tilt-card, .skill-tag, .nav-link");
   hoverTargets.forEach(function (el) {
     el.addEventListener("mouseenter", function () {
       ring.classList.add("cursor-hover");
+      dot.style.animation = "none";
+      dot.style.opacity = "1";
+      dot.style.height = "8px";
+      dot.style.width = "8px";
+      dot.style.borderRadius = "1px";
     });
     el.addEventListener("mouseleave", function () {
       ring.classList.remove("cursor-hover");
+      dot.style.animation = "cursor-blink 1s step-end infinite";
+      dot.style.height = "18px";
+      dot.style.width = "2px";
+      dot.style.borderRadius = "1px";
     });
   });
 
@@ -610,7 +671,30 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 // ============================================
-// CV Download
+// macOS Notification Toast
+// ============================================
+function showToast(title, sub, icon) {
+  var toast = document.getElementById("macToast");
+  var titleEl = document.getElementById("toastTitle");
+  var subEl = document.getElementById("toastSub");
+  var iconEl = toast ? toast.querySelector(".mac-toast-icon i") : null;
+  if (!toast || !titleEl || !subEl) return;
+
+  titleEl.textContent = title;
+  subEl.textContent = sub;
+  if (iconEl && icon) {
+    iconEl.className = icon;
+  }
+
+  toast.classList.add("show");
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(function () {
+    toast.classList.remove("show");
+  }, 3000);
+}
+
+// ============================================
+// CV Download + Toast
 // ============================================
 document.addEventListener("DOMContentLoaded", function () {
   var downloadButton = document.getElementById("downloadCVButton");
@@ -626,6 +710,18 @@ document.addEventListener("DOMContentLoaded", function () {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+
+      showToast("Download Started", "John_kent_Evangelista_CV.pdf", "fas fa-download");
+    });
+  }
+
+  // Copy email button
+  var copyEmailBtn = document.getElementById("copyEmailBtn");
+  if (copyEmailBtn) {
+    copyEmailBtn.addEventListener("click", function () {
+      navigator.clipboard.writeText("dzian2k17@gmail.com").then(function () {
+        showToast("Copied to Clipboard", "dzian2k17@gmail.com", "fas fa-check");
+      });
     });
   }
 });
@@ -667,6 +763,49 @@ document.addEventListener("DOMContentLoaded", function () {
   } else {
     glow.style.display = "none";
   }
+})();
+
+// ============================================
+// Code Scroll Spy Widget
+// ============================================
+(function () {
+  var widget = document.getElementById("scrollSpy");
+  var sectionEl = document.getElementById("spySection");
+  var lineEl = document.getElementById("spyLine");
+  if (!widget || !sectionEl || !lineEl) return;
+
+  var sections = document.querySelectorAll("section[id]");
+  var sectionMap = {};
+  var lineCounter = 1;
+
+  sections.forEach(function (sec, i) {
+    sectionMap[sec.id] = { name: "#" + sec.id, line: (i + 1) * 24 };
+  });
+
+  function updateSpy() {
+    var scrollY = window.scrollY + window.innerHeight / 3;
+    var current = "home";
+
+    sections.forEach(function (sec) {
+      if (sec.offsetTop <= scrollY && sec.id) {
+        current = sec.id;
+      }
+    });
+
+    var info = sectionMap[current] || { name: "#home", line: 1 };
+    sectionEl.textContent = info.name;
+    lineEl.textContent = "ln " + info.line;
+
+    // Show/hide based on scroll
+    if (window.scrollY > 200) {
+      widget.classList.add("visible");
+    } else {
+      widget.classList.remove("visible");
+    }
+  }
+
+  window.addEventListener("scroll", updateSpy);
+  updateSpy();
 })();
 
 // ============================================

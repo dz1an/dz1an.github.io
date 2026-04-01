@@ -23,21 +23,54 @@
 
 <body>
 
+  <!-- macOS Notification Toast -->
+  <div class="mac-toast" id="macToast">
+    <div class="mac-toast-icon"><i class="fas fa-check"></i></div>
+    <div class="mac-toast-text">
+      <span class="mac-toast-title" id="toastTitle">Success</span>
+      <span class="mac-toast-sub" id="toastSub">Action completed</span>
+    </div>
+  </div>
+
   <!-- Scroll progress bar -->
   <div class="scroll-progress" id="scrollProgress"></div>
 
-  <!-- Custom cursor (desktop) -->
+  <!-- Code scroll spy (desktop) -->
+  <div class="scroll-spy-widget d-none d-xl-flex" id="scrollSpy">
+    <span class="spy-comment">// viewing →</span>
+    <span class="spy-section" id="spySection">#home</span>
+    <span class="spy-line" id="spyLine">ln 1</span>
+  </div>
+
+  <!-- Custom cursor (desktop) — dev crosshair -->
   <div class="custom-cursor d-none d-lg-block" id="customCursor">
     <div class="cursor-dot"></div>
-    <div class="cursor-ring"></div>
+    <div class="cursor-ring">
+      <span class="cursor-bracket cursor-br-tr"></span>
+      <span class="cursor-bracket cursor-br-bl"></span>
+    </div>
   </div>
 
   <!-- Cursor glow (desktop) -->
   <div class="cursor-glow d-none d-lg-block"></div>
 
-  <!-- Preloader -->
+  <!-- Terminal Preloader -->
   <div id="preloader">
-    <div class="loader-bar"></div>
+    <div class="terminal-preloader">
+      <div class="terminal-header">
+        <span class="terminal-dot terminal-dot-red"></span>
+        <span class="terminal-dot terminal-dot-yellow"></span>
+        <span class="terminal-dot terminal-dot-green"></span>
+        <span class="terminal-title">kent.dev — boot</span>
+      </div>
+      <div class="terminal-body" id="terminalBody">
+        <div class="terminal-line terminal-prompt">$ initializing kent.dev</div>
+      </div>
+      <div class="terminal-cursor-line">
+        <span class="terminal-prompt-symbol">$</span>
+        <span class="terminal-blink">_</span>
+      </div>
+    </div>
   </div>
 
   <!-- Navbar -->
@@ -86,7 +119,7 @@
     </div>
 
     <div class="container">
-      <div class="bento-mega-card">
+      <div class="bento-mega-card mac-window">
         <div class="bento-grid">
 
           <!-- Cell A: Main Intro (largest, spans 2 rows left) -->
@@ -223,7 +256,7 @@
       </div>
       <div class="row justify-content-center">
         <div class="col-lg-10">
-          <div class="skills-container reveal">
+          <div class="skills-container mac-window reveal">
             <div class="row">
               <div class="col-md-6">
                 <div class="skills-category">
@@ -379,145 +412,333 @@
         <h2 class="section-title">Key Projects</h2>
         <p class="section-subtitle">Solutions built for real-world impact</p>
       </div>
+      <!-- Xcode Toolbar -->
+      <div class="xcode-toolbar reveal">
+        <div class="xcode-toolbar-left">
+          <button class="xcode-tb-btn xcode-tb-play"><i class="fas fa-play"></i></button>
+          <button class="xcode-tb-btn xcode-tb-stop"><i class="fas fa-stop"></i></button>
+          <div class="xcode-tb-scheme">
+            <i class="fas fa-hammer"></i>
+            <span>kent.dev</span>
+            <span class="xcode-tb-chevron">›</span>
+            <span class="xcode-tb-device">My Mac</span>
+          </div>
+        </div>
+        <div class="xcode-toolbar-center">
+          <span class="xcode-tb-status"><i class="fas fa-check-circle"></i> Build Succeeded</span>
+        </div>
+        <div class="xcode-toolbar-right">
+          <button class="xcode-tb-icon"><i class="fas fa-th-large"></i></button>
+          <button class="xcode-tb-icon"><i class="fas fa-terminal"></i></button>
+          <button class="xcode-tb-icon active"><i class="fas fa-columns"></i></button>
+        </div>
+      </div>
+
       <div class="projects-grid">
-        <div class="project-card tilt-card reveal reveal-delay-1">
-          <div class="project-card-gradient gradient-1">
-            <img src="images/vintech.png" alt="Vintech Platform" class="project-card-img">
-          </div>
-          <div class="project-card-body">
-            <div class="project-card-role">Senior Developer & Team Lead</div>
-            <h4>Vintech / VINTAZK Platform</h4>
-            <p>Core contributor to the outsourcing solutions platform that earned the National Winner title at the 2025 Productivity Olympics. Led cross-functional team including developers, UI/UX designer, and OJT interns.</p>
-            <div class="project-tags">
-              <span class="project-tag">Supabase</span>
-              <span class="project-tag">React</span>
-              <span class="project-tag">Python</span>
-              <span class="project-tag">Node.js</span>
-            </div>
-            <a href="https://app.vintech.vintazk.com" target="_blank" class="project-link"><i class="fas fa-external-link-alt"></i> Live Site</a>
-          </div>
-        </div>
 
-        <div class="project-card tilt-card reveal reveal-delay-2">
-          <div class="project-card-gradient gradient-2">
-            <img src="images/zamgo.png" alt="ZamGo Business Directory" class="project-card-img">
-          </div>
-          <div class="project-card-body">
-            <div class="project-card-role">Lead Developer</div>
-            <h4>ZamGo &mdash; Business Directory</h4>
-            <p>Built and maintained a directory of 636+ Zamboanga City businesses with enriched descriptions, duplicate detection, analytics dashboard, and Excel reporting.</p>
-            <div class="project-tags">
-              <span class="project-tag">Supabase</span>
-              <span class="project-tag">React</span>
-              <span class="project-tag">Python</span>
-              <span class="project-tag">OpenPyXL</span>
+        <!-- Vintech -->
+        <div class="xcode-card tilt-card reveal reveal-delay-1">
+          <div class="xcode-titlebar">
+            <div class="xcode-dots">
+              <span class="xcode-dot xcode-dot-red"></span>
+              <span class="xcode-dot xcode-dot-yellow"></span>
+              <span class="xcode-dot xcode-dot-green"></span>
             </div>
-            <a href="https://zamgo.vintazk.com" target="_blank" class="project-link"><i class="fas fa-external-link-alt"></i> Live Site</a>
+            <span class="xcode-filename">Vintech.xcodeproj</span>
+            <span class="xcode-badge">▶ Running</span>
           </div>
-        </div>
-
-        <div class="project-card tilt-card reveal reveal-delay-3">
-          <div class="project-card-gradient gradient-3">
-            <img src="images/vintazkUniversity.png" alt="Vintazk University LMS" class="project-card-img">
-          </div>
-          <div class="project-card-body">
-            <div class="project-card-role">Full-Stack Developer</div>
-            <h4>Vintazk University &mdash; LMS</h4>
-            <p>Full-featured Learning Management System supporting course management, learner tracking, content delivery, role-based access control, and progress tracking dashboards.</p>
-            <div class="project-tags">
-              <span class="project-tag">Supabase</span>
-              <span class="project-tag">React</span>
-              <span class="project-tag">Python</span>
+          <div class="xcode-body">
+            <div class="xcode-sidebar">
+              <div class="xcode-sidebar-label">TARGETS</div>
+              <div class="xcode-file active"><i class="fas fa-folder"></i> src/</div>
+              <div class="xcode-file"><i class="fas fa-file-code"></i> App.tsx</div>
+              <div class="xcode-file"><i class="fas fa-database"></i> supabase</div>
+              <div class="xcode-file"><i class="fas fa-cog"></i> api/</div>
+              <div class="xcode-sidebar-label">STACK</div>
+              <div class="xcode-tag">Supabase</div>
+              <div class="xcode-tag">React</div>
+              <div class="xcode-tag">Python</div>
+              <div class="xcode-tag">Node.js</div>
             </div>
-            <a href="https://vintazkacademy.vintazk.com" target="_blank" class="project-link"><i class="fas fa-external-link-alt"></i> Live Site</a>
-          </div>
-        </div>
-
-        <div class="project-card tilt-card reveal reveal-delay-1">
-          <div class="project-card-gradient gradient-4">
-            <span class="project-initials">BC</span>
-          </div>
-          <div class="project-card-body">
-            <div class="project-card-role">System Developer & Intern Manager</div>
-            <h4>Barangay Connect (CalarianConnect)</h4>
-            <p>Four-component civic digital system: mobile app, web admin panel, kiosk terminal, and Supabase backend. Integrated face detection for kiosk terminal with depth camera research.</p>
-            <div class="project-tags">
-              <span class="project-tag">Supabase</span>
-              <span class="project-tag">Flutter</span>
-              <span class="project-tag">React</span>
-              <span class="project-tag">OpenCV</span>
+            <div class="xcode-main">
+              <div class="xcode-tabs">
+                <span class="xcode-tab active">App.tsx</span>
+                <span class="xcode-tab">README.md</span>
+                <span class="xcode-tab">schema.sql</span>
+              </div>
+              <div class="xcode-preview">
+                <img src="images/vintech.png" alt="Vintech Platform" loading="lazy">
+              </div>
+              <div class="xcode-info">
+                <div class="xcode-role">Senior Developer & Team Lead</div>
+                <h4>Vintech / VINTAZK Platform</h4>
+                <p>Core contributor to the outsourcing solutions platform that earned the National Winner title at the 2025 Productivity Olympics.</p>
+                <a href="https://app.vintech.vintazk.com" target="_blank" class="project-link"><i class="fas fa-external-link-alt"></i> Live Site</a>
+              </div>
+              <div class="xcode-console">
+                <span class="xc-ok">Build Succeeded</span> — 0 errors, 0 warnings | <span class="xc-time">0.8s</span>
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="project-card tilt-card reveal reveal-delay-2">
-          <div class="project-card-gradient gradient-5">
-            <span class="project-initials">SS</span>
+        <!-- ZamGo -->
+        <div class="xcode-card tilt-card reveal reveal-delay-2">
+          <div class="xcode-titlebar">
+            <div class="xcode-dots">
+              <span class="xcode-dot xcode-dot-red"></span>
+              <span class="xcode-dot xcode-dot-yellow"></span>
+              <span class="xcode-dot xcode-dot-green"></span>
+            </div>
+            <span class="xcode-filename">ZamGo.xcodeproj</span>
+            <span class="xcode-badge">▶ Running</span>
           </div>
-          <div class="project-card-body">
-            <div class="project-card-role">Lead Developer</div>
-            <h4>SmartScore</h4>
-            <p>AI-powered scoring and evaluation platform with automated grading, analytics dashboards, and performance tracking for educational institutions.</p>
-            <div class="project-tags">
-              <span class="project-tag">Python</span>
-              <span class="project-tag">Supabase</span>
-              <span class="project-tag">React</span>
-              <span class="project-tag">AI / ML</span>
+          <div class="xcode-body">
+            <div class="xcode-sidebar">
+              <div class="xcode-sidebar-label">TARGETS</div>
+              <div class="xcode-file active"><i class="fas fa-folder"></i> src/</div>
+              <div class="xcode-file"><i class="fas fa-file-code"></i> Directory.tsx</div>
+              <div class="xcode-file"><i class="fas fa-database"></i> supabase</div>
+              <div class="xcode-file"><i class="fas fa-chart-bar"></i> analytics/</div>
+              <div class="xcode-sidebar-label">STACK</div>
+              <div class="xcode-tag">Supabase</div>
+              <div class="xcode-tag">React</div>
+              <div class="xcode-tag">Python</div>
+              <div class="xcode-tag">OpenPyXL</div>
+            </div>
+            <div class="xcode-main">
+              <div class="xcode-tabs">
+                <span class="xcode-tab active">Directory.tsx</span>
+                <span class="xcode-tab">Search.tsx</span>
+                <span class="xcode-tab">export.py</span>
+              </div>
+              <div class="xcode-preview">
+                <img src="images/zamgo.png" alt="ZamGo" loading="lazy">
+              </div>
+              <div class="xcode-info">
+                <div class="xcode-role">Lead Developer</div>
+                <h4>ZamGo — Business Directory</h4>
+                <p>Built and maintained a directory of 636+ Zamboanga City businesses with analytics dashboard and Excel reporting.</p>
+                <a href="https://zamgo.vintazk.com" target="_blank" class="project-link"><i class="fas fa-external-link-alt"></i> Live Site</a>
+              </div>
+              <div class="xcode-console">
+                <span class="xc-ok">Build Succeeded</span> — 0 errors, 2 warnings | <span class="xc-time">1.2s</span>
+              </div>
             </div>
           </div>
         </div>
+
+        <!-- Vintazk University -->
+        <div class="xcode-card tilt-card reveal reveal-delay-3">
+          <div class="xcode-titlebar">
+            <div class="xcode-dots">
+              <span class="xcode-dot xcode-dot-red"></span>
+              <span class="xcode-dot xcode-dot-yellow"></span>
+              <span class="xcode-dot xcode-dot-green"></span>
+            </div>
+            <span class="xcode-filename">VintazkUni.xcodeproj</span>
+            <span class="xcode-badge">▶ Running</span>
+          </div>
+          <div class="xcode-body">
+            <div class="xcode-sidebar">
+              <div class="xcode-sidebar-label">TARGETS</div>
+              <div class="xcode-file active"><i class="fas fa-folder"></i> lms/</div>
+              <div class="xcode-file"><i class="fas fa-file-code"></i> Courses.tsx</div>
+              <div class="xcode-file"><i class="fas fa-database"></i> supabase</div>
+              <div class="xcode-file"><i class="fas fa-user-shield"></i> rbac/</div>
+              <div class="xcode-sidebar-label">STACK</div>
+              <div class="xcode-tag">Supabase</div>
+              <div class="xcode-tag">React</div>
+              <div class="xcode-tag">Python</div>
+            </div>
+            <div class="xcode-main">
+              <div class="xcode-tabs">
+                <span class="xcode-tab active">Courses.tsx</span>
+                <span class="xcode-tab">Learners.tsx</span>
+                <span class="xcode-tab">rbac.sql</span>
+              </div>
+              <div class="xcode-preview">
+                <img src="images/vintazkUniversity.png" alt="Vintazk University" loading="lazy">
+              </div>
+              <div class="xcode-info">
+                <div class="xcode-role">Full-Stack Developer</div>
+                <h4>Vintazk University — LMS</h4>
+                <p>Full-featured LMS supporting course management, learner tracking, content delivery, and role-based access control.</p>
+                <a href="https://vintazkacademy.vintazk.com" target="_blank" class="project-link"><i class="fas fa-external-link-alt"></i> Live Site</a>
+              </div>
+              <div class="xcode-console">
+                <span class="xc-ok">Build Succeeded</span> — 0 errors, 1 warning | <span class="xc-time">0.9s</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Barangay Connect -->
+        <div class="xcode-card tilt-card reveal reveal-delay-1">
+          <div class="xcode-titlebar">
+            <div class="xcode-dots">
+              <span class="xcode-dot xcode-dot-red"></span>
+              <span class="xcode-dot xcode-dot-yellow"></span>
+              <span class="xcode-dot xcode-dot-green"></span>
+            </div>
+            <span class="xcode-filename">BarangayConnect.xcodeproj</span>
+            <span class="xcode-badge xcode-badge-build">⏳ Build</span>
+          </div>
+          <div class="xcode-body">
+            <div class="xcode-sidebar">
+              <div class="xcode-sidebar-label">TARGETS</div>
+              <div class="xcode-file active"><i class="fas fa-mobile-alt"></i> mobile/</div>
+              <div class="xcode-file"><i class="fas fa-desktop"></i> admin/</div>
+              <div class="xcode-file"><i class="fas fa-tv"></i> kiosk/</div>
+              <div class="xcode-file"><i class="fas fa-camera"></i> faceID/</div>
+              <div class="xcode-sidebar-label">STACK</div>
+              <div class="xcode-tag">Supabase</div>
+              <div class="xcode-tag">Flutter</div>
+              <div class="xcode-tag">React</div>
+              <div class="xcode-tag">OpenCV</div>
+            </div>
+            <div class="xcode-main">
+              <div class="xcode-tabs">
+                <span class="xcode-tab active">main.dart</span>
+                <span class="xcode-tab">AdminPanel.tsx</span>
+                <span class="xcode-tab">kiosk.py</span>
+              </div>
+              <div class="xcode-preview xcode-preview-empty">
+                <i class="fas fa-city"></i>
+                <span>CalarianConnect</span>
+              </div>
+              <div class="xcode-info">
+                <div class="xcode-role">System Developer & Intern Manager</div>
+                <h4>Barangay Connect</h4>
+                <p>Four-component civic digital system: mobile app, web admin, kiosk terminal, and Supabase backend with face detection.</p>
+              </div>
+              <div class="xcode-console">
+                <span class="xc-warn">Compiling</span> — 4 targets | <span class="xc-time">...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SmartScore -->
+        <div class="xcode-card tilt-card reveal reveal-delay-2">
+          <div class="xcode-titlebar">
+            <div class="xcode-dots">
+              <span class="xcode-dot xcode-dot-red"></span>
+              <span class="xcode-dot xcode-dot-yellow"></span>
+              <span class="xcode-dot xcode-dot-green"></span>
+            </div>
+            <span class="xcode-filename">SmartScore.xcodeproj</span>
+            <span class="xcode-badge xcode-badge-build">⏳ Build</span>
+          </div>
+          <div class="xcode-body">
+            <div class="xcode-sidebar">
+              <div class="xcode-sidebar-label">TARGETS</div>
+              <div class="xcode-file active"><i class="fas fa-folder"></i> scoring/</div>
+              <div class="xcode-file"><i class="fas fa-brain"></i> ai-model/</div>
+              <div class="xcode-file"><i class="fas fa-chart-line"></i> analytics/</div>
+              <div class="xcode-file"><i class="fas fa-database"></i> supabase</div>
+              <div class="xcode-sidebar-label">STACK</div>
+              <div class="xcode-tag">Python</div>
+              <div class="xcode-tag">Supabase</div>
+              <div class="xcode-tag">React</div>
+              <div class="xcode-tag">AI / ML</div>
+            </div>
+            <div class="xcode-main">
+              <div class="xcode-tabs">
+                <span class="xcode-tab active">model.py</span>
+                <span class="xcode-tab">Score.tsx</span>
+                <span class="xcode-tab">train.py</span>
+              </div>
+              <div class="xcode-preview xcode-preview-empty">
+                <i class="fas fa-graduation-cap"></i>
+                <span>SmartScore AI</span>
+              </div>
+              <div class="xcode-info">
+                <div class="xcode-role">Lead Developer</div>
+                <h4>SmartScore</h4>
+                <p>AI-powered scoring and evaluation platform with automated grading, analytics, and performance tracking.</p>
+              </div>
+              <div class="xcode-console">
+                <span class="xc-warn">Compiling</span> — 3 targets | <span class="xc-time">...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </section>
 
-  <!-- Contact Section -->
+  <!-- Contact Section — Spotlight Style -->
   <section id="contact" class="section section-divider">
     <div class="container">
       <div class="text-center mb-5 reveal">
         <span class="section-badge">Contact</span>
         <h2 class="section-title">Let's Work Together</h2>
-        <p class="section-subtitle">Seeking freelance engagements in digital transformation, full-stack development, and software project management</p>
+        <p class="section-subtitle">Open to freelance, full-time, and collaboration opportunities</p>
       </div>
       <div class="row justify-content-center">
-        <div class="col-lg-9">
-          <div class="contact-wrapper reveal">
-            <div class="row align-items-center">
-              <div class="col-lg-7 mb-4 mb-lg-0">
-                <h3 class="contact-heading">Ready to start a project?</h3>
-                <p class="contact-desc">I'm currently open to freelance work and new opportunities. Let's build something impactful together.</p>
-                <a href="mailto:dzian2k17@gmail.com" class="btn-email magnetic-btn">
-                  <i class="fas fa-envelope"></i> Send an Email
-                </a>
-                <div class="contact-social">
-                  <a href="https://github.com/kent-vintazk" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
-                  <a href="https://www.facebook.com/tabibito12/" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-                  <a href="https://www.instagram.com/dziannn/" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        <div class="col-lg-7">
+          <!-- Spotlight search bar -->
+          <div class="spotlight-container mac-window reveal">
+            <div class="spotlight-search">
+              <i class="fas fa-search spotlight-icon"></i>
+              <span class="spotlight-placeholder">What can I help you with?</span>
+            </div>
+            <div class="spotlight-results">
+              <a href="mailto:dzian2k17@gmail.com" class="spotlight-item">
+                <div class="spotlight-item-icon"><i class="fas fa-envelope"></i></div>
+                <div class="spotlight-item-text">
+                  <span class="spotlight-item-title">Send an Email</span>
+                  <span class="spotlight-item-sub">dzian2k17@gmail.com</span>
+                </div>
+                <span class="spotlight-item-shortcut">↗</span>
+              </a>
+              <button class="spotlight-item" id="copyEmailBtn" type="button">
+                <div class="spotlight-item-icon"><i class="fas fa-copy"></i></div>
+                <div class="spotlight-item-text">
+                  <span class="spotlight-item-title">Copy Email Address</span>
+                  <span class="spotlight-item-sub">Copy to clipboard</span>
+                </div>
+                <span class="spotlight-item-shortcut"><kbd>⌘C</kbd></span>
+              </button>
+              <a href="https://github.com/kent-vintazk" target="_blank" class="spotlight-item">
+                <div class="spotlight-item-icon"><i class="fab fa-github"></i></div>
+                <div class="spotlight-item-text">
+                  <span class="spotlight-item-title">GitHub Profile</span>
+                  <span class="spotlight-item-sub">kent-vintazk</span>
+                </div>
+                <span class="spotlight-item-shortcut">↗</span>
+              </a>
+              <a href="https://www.facebook.com/tabibito12/" target="_blank" class="spotlight-item">
+                <div class="spotlight-item-icon"><i class="fab fa-facebook-f"></i></div>
+                <div class="spotlight-item-text">
+                  <span class="spotlight-item-title">Facebook</span>
+                  <span class="spotlight-item-sub">tabibito12</span>
+                </div>
+                <span class="spotlight-item-shortcut">↗</span>
+              </a>
+              <a href="https://www.instagram.com/dziannn/" target="_blank" class="spotlight-item">
+                <div class="spotlight-item-icon"><i class="fab fa-instagram"></i></div>
+                <div class="spotlight-item-text">
+                  <span class="spotlight-item-title">Instagram</span>
+                  <span class="spotlight-item-sub">@dziannn</span>
+                </div>
+                <span class="spotlight-item-shortcut">↗</span>
+              </a>
+              <div class="spotlight-divider"></div>
+              <div class="spotlight-item spotlight-item-info">
+                <div class="spotlight-item-icon"><i class="fas fa-map-marker-alt"></i></div>
+                <div class="spotlight-item-text">
+                  <span class="spotlight-item-title">Location</span>
+                  <span class="spotlight-item-sub">Zamboanga City, Philippines</span>
                 </div>
               </div>
-              <div class="col-lg-5">
-                <div class="contact-card">
-                  <h4>Contact Details</h4>
-                  <div class="contact-item">
-                    <div class="contact-item-icon"><i class="fas fa-map-marker-alt"></i></div>
-                    <div>
-                      <h6>Location</h6>
-                      <p>Zamboanga City, Philippines</p>
-                    </div>
-                  </div>
-                  <div class="contact-item">
-                    <div class="contact-item-icon"><i class="fas fa-envelope"></i></div>
-                    <div>
-                      <h6>Email</h6>
-                      <p>dzian2k17@gmail.com</p>
-                    </div>
-                  </div>
-                  <div class="contact-item">
-                    <div class="contact-item-icon"><i class="fas fa-globe"></i></div>
-                    <div>
-                      <h6>Availability</h6>
-                      <p>On-site &middot; Hybrid &middot; Remote</p>
-                    </div>
-                  </div>
+              <div class="spotlight-item spotlight-item-info">
+                <div class="spotlight-item-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="spotlight-item-text">
+                  <span class="spotlight-item-title">Availability</span>
+                  <span class="spotlight-item-sub">On-site · Hybrid · Remote</span>
                 </div>
               </div>
             </div>

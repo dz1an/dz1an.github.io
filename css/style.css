@@ -377,6 +377,93 @@ body::after {
 }
 
 /* ========================================
+   macOS Window Chrome — Traffic Light Dots
+   ======================================== */
+.mac-window {
+  position: relative;
+  padding-top: 2.75rem !important;
+}
+
+.mac-window::before {
+  content: '';
+  position: absolute;
+  top: 14px;
+  left: 16px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ff5f57;
+  box-shadow:
+    18px 0 0 #febc2e,
+    36px 0 0 #28c840;
+  z-index: 3;
+  opacity: 0.85;
+}
+
+/* ========================================
+   macOS Notification Toast
+   ======================================== */
+.mac-toast {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 99997;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xl);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  font-size: 0.82rem;
+  color: var(--color-text-dark);
+  font-weight: 600;
+  transform: translateX(120%);
+  opacity: 0;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+              opacity 0.4s ease;
+}
+
+.mac-toast.show {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.mac-toast-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.mac-toast-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.mac-toast-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--color-text-dark);
+}
+
+.mac-toast-sub {
+  font-size: 0.68rem;
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
+/* ========================================
    Scroll Reveal Animations
    ======================================== */
 .reveal {
@@ -408,39 +495,109 @@ body::after {
   background: var(--color-bg);
   z-index: 9999;
   display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 1.5rem;
-}
-
-.loader-bar {
-  width: 120px;
-  height: 3px;
-  background: var(--color-bg-muted);
-  border-radius: var(--radius-full);
-  overflow: hidden;
-}
-
-.loader-bar::after {
-  content: '';
-  display: block;
-  width: 40%;
-  height: 100%;
-  background: var(--gradient-text);
-  border-radius: var(--radius-full);
-  animation: loader-slide 1s ease-in-out infinite;
-}
-
-@keyframes loader-slide {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(350%); }
 }
 
 body.loaded #preloader {
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.4s ease-out, visibility 0.4s ease-out;
+  transition: opacity 0.5s ease-out 0.2s, visibility 0.5s ease-out 0.2s;
+}
+
+/* Terminal window */
+.terminal-preloader {
+  width: min(480px, 90vw);
+  background: #0d1117;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+}
+
+.terminal-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.terminal-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.terminal-dot-red { background: #ff5f57; }
+.terminal-dot-yellow { background: #febc2e; }
+.terminal-dot-green { background: #28c840; }
+
+.terminal-title {
+  margin-left: auto;
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.3);
+  letter-spacing: 0.04em;
+}
+
+.terminal-body {
+  padding: 16px 18px 4px;
+  min-height: 120px;
+  max-height: 180px;
+  overflow: hidden;
+}
+
+.terminal-line {
+  font-size: 0.78rem;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.5);
+  opacity: 0;
+  transform: translateY(5px);
+  animation: term-line-in 0.2s ease forwards;
+}
+
+.terminal-line .term-success {
+  color: #28c840;
+}
+
+.terminal-line .term-accent {
+  color: var(--color-primary);
+}
+
+.terminal-line .term-muted {
+  color: rgba(255, 255, 255, 0.25);
+}
+
+.terminal-prompt {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.terminal-cursor-line {
+  padding: 0 18px 16px;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.6);
+  display: flex;
+  gap: 6px;
+}
+
+.terminal-prompt-symbol {
+  color: var(--color-primary);
+}
+
+.terminal-blink {
+  color: var(--color-primary);
+  animation: term-blink 0.8s step-end infinite;
+}
+
+@keyframes term-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@keyframes term-line-in {
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* ========================================
@@ -490,13 +647,24 @@ body.loaded #preloader {
   color: var(--color-text-muted);
   padding: 0.5rem 0.875rem;
   border-radius: var(--radius-sm);
-  transition: all var(--transition-fast);
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
   text-decoration: none;
   position: relative;
+  transform-origin: bottom center;
 }
 
+/* Dock magnify — hovered link scales up, neighbors scale slightly */
 .navbar .nav-link:hover {
   color: var(--color-text-dark);
+  transform: scale(1.15) translateY(-2px);
+}
+
+.navbar .nav-item:hover + .nav-item .nav-link {
+  transform: scale(1.05);
+}
+
+.navbar .nav-item:has(+ .nav-item:hover) .nav-link {
+  transform: scale(1.05);
 }
 
 .navbar .nav-link.active {
@@ -508,8 +676,11 @@ body.loaded #preloader {
   background: var(--color-primary);
   color: var(--color-white) !important;
   padding: 0.5rem 1.25rem !important;
-  border-radius: var(--radius-full);
-  font-weight: 600;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.8rem;
   font-size: 0.85rem;
   text-decoration: none;
   transition: all var(--transition-fast);
@@ -1646,13 +1817,14 @@ body.loaded #preloader {
    ======================================== */
 .projects-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
   gap: 1.5rem;
 }
 
 @media (max-width: 767.98px) {
   .projects-grid {
     grid-template-columns: 1fr;
+    gap: 1.25rem;
   }
 }
 
@@ -1799,6 +1971,438 @@ body.loaded #preloader {
 .gradient-5 { background: linear-gradient(135deg, #A3B18A 0%, #DAD7CD 100%); }
 
 /* ========================================
+   Xcode-Style Project Cards
+   ======================================== */
+.xcode-card {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: all var(--transition-base);
+  display: flex;
+  flex-direction: column;
+}
+
+.xcode-card:hover {
+  box-shadow: var(--shadow-xl);
+  border-color: rgba(var(--particle-color), 0.2);
+  transform: translateY(-4px);
+}
+
+/* Title bar — macOS chrome */
+.xcode-titlebar {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid var(--color-border-light);
+  gap: 8px;
+}
+
+[data-theme="light"] .xcode-titlebar {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.xcode-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.xcode-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.xcode-dot-red { background: #ff5f57; }
+.xcode-dot-yellow { background: #febc2e; }
+.xcode-dot-green { background: #28c840; }
+
+.xcode-filename {
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 0.68rem;
+  color: var(--color-text-muted);
+  letter-spacing: 0.02em;
+}
+
+.xcode-badge {
+  margin-left: auto;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #28c840;
+  background: rgba(40, 200, 64, 0.1);
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+
+.xcode-badge-build {
+  color: #febc2e;
+  background: rgba(254, 188, 46, 0.1);
+}
+
+/* Body — sidebar + main */
+.xcode-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Sidebar — file navigator */
+.xcode-sidebar {
+  width: 140px;
+  min-width: 140px;
+  padding: 12px;
+  border-right: 1px solid var(--color-border-light);
+  background: rgba(255, 255, 255, 0.01);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+[data-theme="light"] .xcode-sidebar {
+  background: rgba(0, 0, 0, 0.015);
+}
+
+.xcode-sidebar-label {
+  font-size: 0.55rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--color-text-muted);
+  opacity: 0.5;
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+
+.xcode-sidebar-label:first-child {
+  margin-top: 0;
+}
+
+.xcode-file {
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 0.65rem;
+  color: var(--color-text-muted);
+  padding: 3px 6px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.xcode-file i {
+  font-size: 0.6rem;
+  width: 12px;
+  text-align: center;
+  opacity: 0.6;
+}
+
+.xcode-file.active {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.xcode-file.active i {
+  opacity: 1;
+}
+
+.xcode-tag {
+  font-size: 0.6rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  background: var(--color-bg-muted);
+  color: var(--color-text-muted);
+  border-radius: 3px;
+  width: fit-content;
+}
+
+/* Main content area */
+.xcode-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.xcode-preview {
+  height: 180px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0d1117;
+  border-bottom: 1px solid var(--color-border-light);
+  padding: 12px;
+}
+
+[data-theme="light"] .xcode-preview {
+  background: #1e1e1e;
+}
+
+.xcode-preview img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 4px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  transition: transform 0.4s ease;
+}
+
+.xcode-card:hover .xcode-preview img {
+  transform: scale(1.04) translateY(-2px);
+}
+
+.xcode-preview-empty {
+  flex-direction: column;
+  gap: 8px;
+  color: var(--color-text-muted);
+  opacity: 0.4;
+}
+
+.xcode-preview-empty i {
+  font-size: 2rem;
+}
+
+.xcode-preview-empty span {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.xcode-info {
+  padding: 14px 16px;
+  flex: 1;
+}
+
+.xcode-role {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-primary);
+  margin-bottom: 4px;
+}
+
+.xcode-info h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text-dark);
+  margin-bottom: 6px;
+  letter-spacing: -0.01em;
+}
+
+.xcode-info p {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  line-height: 1.55;
+  margin-bottom: 0;
+}
+
+.xcode-info .project-link {
+  margin-top: 8px;
+}
+
+/* Tab bar */
+.xcode-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--color-border-light);
+  background: rgba(255, 255, 255, 0.02);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.xcode-tabs::-webkit-scrollbar { display: none; }
+
+[data-theme="light"] .xcode-tabs {
+  background: rgba(0, 0, 0, 0.015);
+}
+
+.xcode-tab {
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 0.62rem;
+  color: var(--color-text-muted);
+  padding: 6px 14px;
+  white-space: nowrap;
+  border-right: 1px solid var(--color-border-light);
+  cursor: default;
+  transition: all 0.15s ease;
+  position: relative;
+}
+
+.xcode-tab.active {
+  color: var(--color-text-dark);
+  background: var(--color-bg-card);
+}
+
+.xcode-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--color-primary);
+}
+
+/* Build console */
+.xcode-console {
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 0.6rem;
+  color: var(--color-text-muted);
+  padding: 8px 14px;
+  border-top: 1px solid var(--color-border-light);
+  background: rgba(0, 0, 0, 0.15);
+  letter-spacing: 0.02em;
+}
+
+[data-theme="light"] .xcode-console {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.xc-ok {
+  color: #28c840;
+  font-weight: 700;
+}
+
+.xc-warn {
+  color: #febc2e;
+  font-weight: 700;
+}
+
+.xc-time {
+  color: var(--color-text-muted);
+  opacity: 0.6;
+}
+
+/* Xcode Toolbar */
+.xcode-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  margin-bottom: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  gap: 12px;
+  overflow-x: auto;
+}
+
+.xcode-toolbar-left,
+.xcode-toolbar-center,
+.xcode-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.xcode-toolbar-center {
+  flex: 1;
+  justify-content: center;
+}
+
+.xcode-tb-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  cursor: default;
+  transition: all 0.15s ease;
+  background: none;
+}
+
+.xcode-tb-play {
+  color: #28c840;
+}
+
+.xcode-tb-stop {
+  color: var(--color-text-muted);
+  opacity: 0.4;
+}
+
+.xcode-tb-scheme {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 0.68rem;
+  color: var(--color-text-muted);
+  padding: 4px 10px;
+  background: var(--color-bg-muted);
+  border-radius: var(--radius-sm);
+}
+
+.xcode-tb-scheme i {
+  font-size: 0.6rem;
+  opacity: 0.6;
+}
+
+.xcode-tb-chevron {
+  opacity: 0.4;
+}
+
+.xcode-tb-device {
+  color: var(--color-text-dark);
+  font-weight: 600;
+}
+
+.xcode-tb-status {
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 0.68rem;
+  color: #28c840;
+  font-weight: 600;
+}
+
+.xcode-tb-status i {
+  margin-right: 4px;
+}
+
+.xcode-tb-icon {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  background: none;
+  cursor: default;
+  opacity: 0.5;
+}
+
+.xcode-tb-icon.active {
+  opacity: 1;
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+/* Xcode card responsive */
+@media (max-width: 767.98px) {
+  .xcode-sidebar {
+    display: none;
+  }
+
+  .xcode-preview {
+    height: 140px;
+  }
+
+  .xcode-toolbar {
+    display: none;
+  }
+}
+
+/* ========================================
    Contact Section
    ======================================== */
 .contact-wrapper {
@@ -1933,6 +2537,133 @@ body.loaded #preloader {
 }
 
 /* ========================================
+   Spotlight-Style Contact
+   ======================================== */
+.spotlight-container {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-xl);
+}
+
+.spotlight-search {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.spotlight-icon {
+  color: var(--color-text-muted);
+  font-size: 1rem;
+}
+
+.spotlight-placeholder {
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+  font-weight: 400;
+}
+
+.spotlight-results {
+  padding: 8px 0;
+}
+
+.spotlight-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  width: 100%;
+  background: none;
+  border: none;
+  text-decoration: none;
+  color: inherit;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  text-align: left;
+}
+
+.spotlight-item:hover {
+  background: var(--color-primary-light);
+}
+
+.spotlight-item-info {
+  cursor: default;
+}
+
+.spotlight-item-info:hover {
+  background: none;
+}
+
+.spotlight-item-icon {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-muted);
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  transition: all 0.15s ease;
+}
+
+.spotlight-item:hover .spotlight-item-icon {
+  background: var(--color-primary);
+  color: var(--color-white);
+}
+
+.spotlight-item-info:hover .spotlight-item-icon {
+  background: var(--color-bg-muted);
+  color: var(--color-text-muted);
+}
+
+.spotlight-item-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.spotlight-item-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-dark);
+}
+
+.spotlight-item-sub {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+}
+
+.spotlight-item-shortcut {
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  opacity: 0.5;
+  flex-shrink: 0;
+}
+
+.spotlight-item-shortcut kbd {
+  font-family: inherit;
+  font-size: 0.65rem;
+  padding: 2px 5px;
+  background: var(--color-bg-muted);
+  border: 1px solid var(--color-border);
+  border-radius: 3px;
+  color: var(--color-text-muted);
+}
+
+.spotlight-divider {
+  height: 1px;
+  background: var(--color-border-light);
+  margin: 6px 0;
+}
+
+/* ========================================
    Footer
    ======================================== */
 .footer {
@@ -2012,6 +2743,57 @@ body.loaded #preloader {
 }
 
 /* ========================================
+   Code Scroll Spy Widget
+   ======================================== */
+.scroll-spy-widget {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 997;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 0.72rem;
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.scroll-spy-widget.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.spy-comment {
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.spy-section {
+  color: var(--color-primary);
+  font-weight: 700;
+  font-style: normal;
+  transition: all 0.2s ease;
+}
+
+.spy-line {
+  color: var(--color-text-muted);
+  opacity: 0.5;
+  font-size: 0.65rem;
+  border-left: 1px solid var(--color-border);
+  padding-left: 8px;
+  margin-left: 2px;
+}
+
+/* ========================================
    Particle Canvas
    ======================================== */
 #particleCanvas {
@@ -2029,38 +2811,97 @@ body.loaded #preloader {
   z-index: 99999;
 }
 
+/* Center dot — blinking terminal cursor */
 .cursor-dot {
   position: fixed;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
+  width: 2px;
+  height: 18px;
+  border-radius: 1px;
   background: var(--color-primary);
   pointer-events: none;
   transform: translate(-50%, -50%);
   z-index: 99999;
-  mix-blend-mode: normal;
+  animation: cursor-blink 1s step-end infinite;
 }
 
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Outer ring — code bracket crosshair */
 .cursor-ring {
   position: fixed;
   width: 36px;
   height: 36px;
-  border-radius: 50%;
-  border: 1.5px solid var(--cursor-ring-border);
+  border-radius: 0;
+  border: none;
   pointer-events: none;
   transform: translate(-50%, -50%);
   z-index: 99998;
   transition: width 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
               height 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-              border-color 0.3s ease,
-              background 0.3s ease;
+              opacity 0.3s ease;
 }
 
+/* Four corner brackets via box-shadows */
+.cursor-ring::before,
+.cursor-ring::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-color: var(--cursor-ring-border);
+  border-style: solid;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.cursor-ring::before {
+  top: 0;
+  left: 0;
+  border-width: 1.5px 0 0 1.5px;
+}
+
+.cursor-ring::after {
+  bottom: 0;
+  right: 0;
+  border-width: 0 1.5px 1.5px 0;
+}
+
+/* Extra bracket corners */
+.cursor-bracket {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-color: var(--cursor-ring-border);
+  border-style: solid;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.cursor-br-tr {
+  top: 0;
+  right: 0;
+  border-width: 1.5px 1.5px 0 0;
+}
+
+.cursor-br-bl {
+  bottom: 0;
+  left: 0;
+  border-width: 0 0 1.5px 1.5px;
+}
+
+/* Hover state — expand brackets */
 .cursor-ring.cursor-hover {
-  width: 56px;
-  height: 56px;
+  width: 52px;
+  height: 52px;
+}
+
+.cursor-ring.cursor-hover::before,
+.cursor-ring.cursor-hover::after,
+.cursor-ring.cursor-hover .cursor-bracket {
+  width: 14px;
+  height: 14px;
   border-color: var(--cursor-ring-hover-border);
-  background: var(--cursor-ring-hover-bg);
 }
 
 /* ========================================
@@ -2119,8 +2960,6 @@ body.loaded #preloader {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 56px;
-  height: 30px;
   padding: 0;
   margin: 0;
   background: none;
@@ -2128,61 +2967,37 @@ body.loaded #preloader {
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   overflow: visible;
+  width: 36px;
+  height: 36px;
+  transition: all 0.3s ease;
 }
 
 .toggle-track {
   position: relative;
-  width: 56px;
-  height: 30px;
-  border-radius: 15px;
-  background: #3a3a3c;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  transition: background 0.4s ease, border-color 0.4s ease;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
-}
-
-[data-theme="light"] .toggle-track {
-  background: #e5e5e7;
-  border-color: rgba(0, 0, 0, 0.06);
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
-}
-
-.toggle-thumb {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 26px;
-  height: 26px;
-  border-radius: 13px;
-  background: #ffffff;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.1);
-  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
-              background 0.3s ease,
-              box-shadow 0.3s ease;
-  font-size: 0.7rem;
-  color: #A3B18A;
-  z-index: 1;
 }
 
-[data-theme="light"] .toggle-thumb {
-  transform: translateX(26px);
-  color: #3A5A40;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.06);
+.toggle-thumb {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+  color: var(--color-text-muted);
+  position: relative;
 }
 
 .theme-toggle:hover .toggle-thumb {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
-}
-
-.theme-toggle:active .toggle-thumb {
-  width: 30px;
-}
-
-[data-theme="light"] .theme-toggle:active .toggle-thumb {
-  transform: translateX(22px);
+  color: var(--color-primary);
+  background: var(--color-primary-light);
 }
 
 /* Dark mode (default): show sun, hide moon */
@@ -2190,19 +3005,19 @@ body.loaded #preloader {
   position: absolute;
   opacity: 1;
   transform: rotate(0deg) scale(1);
-  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .toggle-thumb .icon-moon {
   position: absolute;
   opacity: 0;
-  transform: rotate(-90deg) scale(0.4);
-  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform: rotate(-90deg) scale(0);
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* Light mode: show moon, hide sun */
 [data-theme="light"] .toggle-thumb .icon-sun {
   opacity: 0;
-  transform: rotate(90deg) scale(0.4);
+  transform: rotate(90deg) scale(0);
 }
 [data-theme="light"] .toggle-thumb .icon-moon {
   opacity: 1;
