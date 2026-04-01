@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" rx="6" fill="#1c1c1e"/>
+  <text x="4" y="23" font-family="Inter, system-ui, sans-serif" font-weight="900" font-size="16" fill="#5C7650" letter-spacing="-0.5">kd</text>
+  <rect x="24" y="18" width="4" height="4" rx="1" fill="#A3B18A"/>
+</svg>
