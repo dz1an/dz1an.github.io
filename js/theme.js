@@ -761,6 +761,32 @@ function showToast(title, sub, icon) {
 }
 
 // ============================================
+// ============================================
+// Email Obfuscation — assembled at runtime
+// ============================================
+(function () {
+  // Split into parts so bots can't scrape a plain email string
+  var u = "dzian2k17";
+  var d = "gmail";
+  var t = "com";
+  var addr = u + "@" + d + "." + t;
+
+  // Expose for other scripts
+  window._e = function () { return addr; };
+
+  // Populate email link + display
+  var link = document.getElementById("emailLink");
+  var display = document.getElementById("emailDisplay");
+
+  if (link) {
+    link.href = "mai" + "lto:" + addr;
+  }
+  if (display) {
+    display.textContent = addr;
+  }
+})();
+
+// ============================================
 // CV Download + Toast
 // ============================================
 document.addEventListener("DOMContentLoaded", function () {
@@ -787,8 +813,9 @@ document.addEventListener("DOMContentLoaded", function () {
   var copyEmailBtn = document.getElementById("copyEmailBtn");
   if (copyEmailBtn) {
     copyEmailBtn.addEventListener("click", function () {
-      navigator.clipboard.writeText("dzian2k17@gmail.com").then(function () {
-        showToast("Copied to Clipboard", "dzian2k17@gmail.com", "fas fa-check");
+      var email = window._e ? window._e() : "";
+      navigator.clipboard.writeText(email).then(function () {
+        showToast("Copied to Clipboard", email, "fas fa-check");
       });
     });
   }
@@ -1051,6 +1078,64 @@ document.addEventListener("DOMContentLoaded", function () {
       playSound("click");
     }
   });
+})();
+
+// ============================================
+// DevTools Easter Egg — Console Message
+// ============================================
+(function () {
+  // Styled console banner
+  console.log(
+    "%c //kent.dev %c v1.0 ",
+    "background: #3A5A40; color: #DAD7CD; font-size: 20px; font-weight: 900; padding: 10px 15px; border-radius: 6px 0 0 6px; font-family: monospace;",
+    "background: #5C7650; color: #DAD7CD; font-size: 20px; font-weight: 400; padding: 10px 15px; border-radius: 0 6px 6px 0; font-family: monospace;"
+  );
+
+  console.log(
+    "%c$ whoami%c\n  John Kent Evangelista\n  Senior Software Developer @ VINTAZK Outsourcing\n  Zamboanga City, Philippines",
+    "color: #5C7650; font-weight: 700; font-size: 12px; font-family: monospace;",
+    "color: #A3B18A; font-size: 11px; font-family: monospace;"
+  );
+
+  console.log(
+    "%c$ cat tech-stack.txt%c\n  React · Flutter · Django · Supabase · Python · Node.js · Xcode",
+    "color: #5C7650; font-weight: 700; font-size: 12px; font-family: monospace;",
+    "color: #A3B18A; font-size: 11px; font-family: monospace;"
+  );
+
+  console.log(
+    "%c⚠ Hey, curious dev!%c\n  Nice to see you poking around.\n  If you like what you see, let's build something together.\n  → linkedin.com/in/john-kent-evangelista-lsswb-482435307",
+    "color: #28c840; font-weight: 700; font-size: 13px; font-family: monospace;",
+    "color: #A3B18A; font-size: 11px; font-family: monospace; line-height: 1.6;"
+  );
+
+  console.log(
+    "%c🎮 Hint: Try the Konami Code (↑↑↓↓←→←→BA)",
+    "color: #d19a66; font-size: 10px; font-family: monospace; font-style: italic;"
+  );
+
+  // Detect DevTools open via resize trick
+  var devtoolsOpen = false;
+  var threshold = 160;
+
+  function checkDevTools() {
+    var widthDiff = window.outerWidth - window.innerWidth > threshold;
+    var heightDiff = window.outerHeight - window.innerHeight > threshold;
+
+    if ((widthDiff || heightDiff) && !devtoolsOpen) {
+      devtoolsOpen = true;
+      if (window.showToast) {
+        showToast("DevTools Detected", "Welcome, fellow developer!", "fas fa-terminal");
+      }
+      if (window.playSound) playSound("success");
+    } else if (!widthDiff && !heightDiff) {
+      devtoolsOpen = false;
+    }
+  }
+
+  window.addEventListener("resize", checkDevTools);
+  // Check on load too (if already open)
+  setTimeout(checkDevTools, 1000);
 })();
 
 // Konami Code Easter Egg

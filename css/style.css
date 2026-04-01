@@ -2042,7 +2042,7 @@ body.loaded #preloader {
    ======================================== */
 .projects-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(420px, 100%), 1fr));
   gap: 1.5rem;
 }
 
@@ -3430,9 +3430,143 @@ html.theme-switching .project-link {
 }
 
 /* Mobile: navbar-brand smaller, keep controls tight */
+/* ========================================
+   Mobile — 767px (phones)
+   ======================================== */
+@media (max-width: 767.98px) {
+  /* Scroll spy — hide on phones */
+  .scroll-spy-widget {
+    display: none !important;
+  }
+
+  /* Toast — reposition to bottom center */
+  .mac-toast {
+    top: auto;
+    right: 12px;
+    bottom: 12px;
+    left: 12px;
+    max-width: none;
+  }
+
+  /* Bento profile image smaller */
+  .bento-profile .hero-profile-img {
+    width: 100px;
+    height: 100px;
+  }
+
+  /* Build terminal lines wrap */
+  .xc-build-line {
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  /* Spotlight tighter */
+  .spotlight-item {
+    padding: 8px 14px;
+    gap: 10px;
+  }
+
+  .spotlight-item-shortcut {
+    display: none;
+  }
+
+  /* Footer icons touch-friendly */
+  .footer-social a {
+    width: 42px;
+    height: 42px;
+  }
+
+  /* Git log font smaller */
+  .git-commit {
+    font-size: 0.65rem;
+  }
+
+  .git-detail {
+    font-size: 0.72rem;
+  }
+
+  /* XC console line wrap */
+  .xc-console-line {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .xc-cmd-text {
+    display: none;
+  }
+}
+
+/* ========================================
+   Small Mobile — 575px (iPhone SE / small)
+   ======================================== */
 @media (max-width: 575.98px) {
   .navbar-brand {
     font-size: 1.1rem;
+  }
+
+  /* Blobs smaller to prevent overflow */
+  .hero-bg-mesh .blob-1 {
+    width: 250px;
+    height: 250px;
+  }
+
+  .hero-bg-mesh .blob-2 {
+    width: 200px;
+    height: 200px;
+  }
+
+  .hero-bg-mesh .blob-3 {
+    width: 150px;
+    height: 150px;
+  }
+
+  /* Hero heading tighter */
+  .hero h1 {
+    font-size: 1.8rem;
+  }
+
+  /* Bento profile even smaller */
+  .bento-profile .hero-profile-img {
+    width: 80px;
+    height: 80px;
+  }
+
+  .bento-profile-info h4 {
+    font-size: 0.9rem;
+  }
+
+  /* Stats compact */
+  .bento-stat-item .stat-number {
+    font-size: 1.25rem;
+  }
+
+  /* Section badge compact */
+  .section-badge {
+    font-size: 0.65rem;
+    padding: 0.3rem 0.75rem;
+  }
+
+  /* Section title */
+  .section-title {
+    font-size: 1.4rem;
+  }
+
+  /* Build terminal compact */
+  .xc-build-terminal {
+    width: 92vw;
+  }
+
+  .xc-build-body {
+    max-height: 120px;
+  }
+
+  /* Git log compact */
+  .git-hash {
+    display: none;
+  }
+
+  .git-branch {
+    font-size: 0.55rem;
   }
 }
 
