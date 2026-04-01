@@ -1,20 +1,25 @@
 // ============================================
-// Theme Toggle (dark default, persist to localStorage)
+// Theme Toggle — Code Mode (dark) ↔ Creative Mode (3D)
 // ============================================
 (function () {
   var savedTheme = localStorage.getItem("theme");
-  // Default is dark (no data-theme attribute needed)
-  // Only set light if explicitly saved
-  if (savedTheme === "light") {
-    document.documentElement.setAttribute("data-theme", "light");
+  // Default is dark / code mode (no data-theme attribute needed)
+  // Activate creative mode if explicitly saved
+  if (savedTheme === "creative") {
+    document.documentElement.setAttribute("data-theme", "creative");
   }
 
   document.addEventListener("DOMContentLoaded", function () {
     var toggle = document.getElementById("themeToggle");
     if (!toggle) return;
 
-    function createBuildTerminal(goingLight) {
-      var mode = goingLight ? "light" : "dark";
+    // If saved as creative, start the 3D scene once DOM is ready
+    if (savedTheme === "creative" && window.creativeScene) {
+      window.creativeScene.start();
+    }
+
+    function createBuildTerminal(goingCreative) {
+      var mode = goingCreative ? "creative" : "code";
 
       var overlay = document.createElement("div");
       overlay.className = "xc-build-overlay";
@@ -43,14 +48,23 @@
       overlay.appendChild(terminal);
       document.body.appendChild(overlay);
 
-      var lines = [
-        { text: "$ xcodebuild -scheme kent.dev -config " + mode, cls: "xc-cmd" },
-        { text: "▸ Compiling ThemeProvider.swift", cls: "" },
-        { text: "▸ Compiling ColorTokens.swift", cls: "" },
-        { text: "▸ Linking kent.dev", cls: "" },
-        { text: "▸ Applying " + mode + " palette [#344E41 → #DAD7CD]", cls: "" },
-        { text: "✓ Build Succeeded — 0 errors, 0 warnings", cls: "xc-success" },
-      ];
+      var lines = goingCreative
+        ? [
+            { text: "$ xcodebuild -scheme kent.dev -config forest", cls: "xc-cmd" },
+            { text: "\u25b8 Loading Three.js runtime...", cls: "" },
+            { text: "\u25b8 Compiling ForestScene.swift", cls: "" },
+            { text: "\u25b8 Planting 120 trees \u2014 sage green canopy", cls: "" },
+            { text: "\u25b8 Lighting 5 lanterns + 12 fireflies", cls: "" },
+            { text: "\u2713 Build Succeeded \u2014 Entering the Forest", cls: "xc-success" },
+          ]
+        : [
+            { text: "$ xcodebuild -scheme kent.dev -config code", cls: "xc-cmd" },
+            { text: "\u25b8 Leaving the forest...", cls: "" },
+            { text: "\u25b8 Compiling ThemeProvider.swift", cls: "" },
+            { text: "\u25b8 Restoring dark palette [#1c1c1e]", cls: "" },
+            { text: "\u25b8 Linking kent.dev", cls: "" },
+            { text: "\u2713 Build Succeeded \u2014 Code Mode Active", cls: "xc-success" },
+          ];
 
       var delay = 80;
       lines.forEach(function (line, i) {
@@ -66,41 +80,215 @@
       return overlay;
     }
 
+    function activateCreative() {
+      document.documentElement.setAttribute("data-theme", "creative");
+      localStorage.setItem("theme", "creative");
+      if (window.creativeScene) window.creativeScene.start();
+      var scrollEl = document.getElementById("creativeScroll");
+      if (scrollEl) scrollEl.scrollTop = 0;
+      startShapeCounter();
+      startChapterObserver();
+      startScrollProgress();
+    }
+
+    function deactivateCreative() {
+      document.documentElement.removeAttribute("data-theme");
+      localStorage.setItem("theme", "dark");
+      if (window.creativeScene) window.creativeScene.stop();
+      stopShapeCounter();
+      stopChapterObserver();
+      if (window.updateParticleColor) window.updateParticleColor();
+    }
+
+    // Toggle button (navbar) — cinematic transition
     toggle.addEventListener("click", function () {
       var current = document.documentElement.getAttribute("data-theme");
-      var goingLight = current !== "light";
+      var goingCreative = current !== "creative";
 
-      // Play build sound
       if (window.playSound) playSound("build");
 
-      // Show Xcode build terminal
-      var overlay = createBuildTerminal(goingLight);
+      // Create cinematic fade overlay
+      var fade = document.createElement("div");
+      fade.className = "creative-transition";
+      document.body.appendChild(fade);
 
-      // Text scramble on content
-      document.documentElement.classList.add("theme-switching");
+      // Force reflow then activate
+      fade.offsetHeight;
+      fade.classList.add("ct-active");
 
-      // Swap theme when "Build Succeeded" shows (~480ms)
+      // Show build terminal on top of fade
+      var buildOverlay = createBuildTerminal(goingCreative);
+
+      // At peak darkness, swap modes
       setTimeout(function () {
-        if (goingLight) {
-          document.documentElement.setAttribute("data-theme", "light");
-          localStorage.setItem("theme", "light");
+        if (goingCreative) {
+          activateCreative();
         } else {
-          document.documentElement.removeAttribute("data-theme");
-          localStorage.setItem("theme", "dark");
+          deactivateCreative();
         }
+      }, 650);
 
-        if (window.updateParticleColor) {
-          window.updateParticleColor();
-        }
-      }, 450);
-
-      // Fade out terminal
+      // Fade out after build terminal finishes
       setTimeout(function () {
         document.documentElement.classList.remove("theme-switching");
-        overlay.classList.add("xc-build-done");
-        setTimeout(function () { overlay.remove(); }, 400);
-      }, 850);
+        buildOverlay.classList.add("xc-build-done");
+        setTimeout(function () { buildOverlay.remove(); }, 400);
+
+        // Begin fade out
+        fade.classList.add("ct-fade-out");
+        setTimeout(function () { fade.remove(); }, 700);
+      }, 1100);
+
+      document.documentElement.classList.add("theme-switching");
     });
+
+    // Back button (creative HUD) — cinematic exit
+    var backBtn = document.getElementById("creativeBackBtn");
+    if (backBtn) {
+      backBtn.addEventListener("click", function () {
+        if (window.playSound) playSound("click");
+
+        var fade = document.createElement("div");
+        fade.className = "creative-transition";
+        document.body.appendChild(fade);
+        fade.offsetHeight;
+        fade.classList.add("ct-active");
+
+        setTimeout(function () {
+          deactivateCreative();
+          fade.classList.add("ct-fade-out");
+          setTimeout(function () { fade.remove(); }, 700);
+        }, 600);
+      });
+    }
+
+    // Live shape counter
+    var shapeCounterInterval = null;
+    var shapeCountEl = document.getElementById("creativeShapeCount");
+
+    function startShapeCounter() {
+      if (shapeCounterInterval) return;
+      shapeCounterInterval = setInterval(function () {
+        if (shapeCountEl && window.creativeScene && window.creativeScene.isRunning()) {
+          var canvas = document.getElementById("creativeCanvas");
+          // Access shape count from the scene's children count minus static objects
+          var count = canvas ? canvas.getAttribute("data-shapes") || "0" : "0";
+          shapeCountEl.textContent = "lights: " + count;
+        }
+      }, 200);
+    }
+
+    function stopShapeCounter() {
+      if (shapeCounterInterval) {
+        clearInterval(shapeCounterInterval);
+        shapeCounterInterval = null;
+      }
+    }
+
+    // Chapter visibility observer
+    var chapterObserver = null;
+
+    function startChapterObserver() {
+      var scrollContainer = document.getElementById("creativeScroll");
+      if (!scrollContainer) return;
+
+      var chapters = scrollContainer.querySelectorAll(".chapter-content");
+
+      chapterObserver = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("chapter-visible");
+          } else {
+            entry.target.classList.remove("chapter-visible");
+          }
+        });
+      }, {
+        root: scrollContainer,
+        threshold: 0.3
+      });
+
+      chapters.forEach(function (ch) { chapterObserver.observe(ch); });
+    }
+
+    function stopChapterObserver() {
+      if (chapterObserver) {
+        chapterObserver.disconnect();
+        chapterObserver = null;
+      }
+      // Reset chapter visibility
+      var chapters = document.querySelectorAll(".chapter-content");
+      chapters.forEach(function (ch) { ch.classList.remove("chapter-visible"); });
+    }
+
+    // Scroll progress bar
+    function startScrollProgress() {
+      var scrollEl = document.getElementById("creativeScroll");
+      var progressEl = document.getElementById("creativeProgress");
+      if (!scrollEl || !progressEl) return;
+
+      scrollEl.addEventListener("scroll", function () {
+        var max = scrollEl.scrollHeight - scrollEl.clientHeight;
+        var pct = max > 0 ? (scrollEl.scrollTop / max) * 100 : 0;
+        progressEl.style.width = pct + "%";
+      });
+    }
+
+    // CTA buttons — switch back to portfolio and navigate
+    var contactBtn = document.getElementById("creativeContactBtn");
+    var projectsBtn = document.getElementById("creativeProjectsBtn");
+
+    if (contactBtn) {
+      contactBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        if (window.playSound) playSound("click");
+
+        var fade = document.createElement("div");
+        fade.className = "creative-transition";
+        document.body.appendChild(fade);
+        fade.offsetHeight;
+        fade.classList.add("ct-active");
+
+        setTimeout(function () {
+          deactivateCreative();
+          fade.classList.add("ct-fade-out");
+          setTimeout(function () {
+            fade.remove();
+            var el = document.getElementById("contact");
+            if (el) el.scrollIntoView({ behavior: "smooth" });
+          }, 500);
+        }, 600);
+      });
+    }
+
+    if (projectsBtn) {
+      projectsBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        if (window.playSound) playSound("click");
+
+        var fade = document.createElement("div");
+        fade.className = "creative-transition";
+        document.body.appendChild(fade);
+        fade.offsetHeight;
+        fade.classList.add("ct-active");
+
+        setTimeout(function () {
+          deactivateCreative();
+          fade.classList.add("ct-fade-out");
+          setTimeout(function () {
+            fade.remove();
+            var el = document.getElementById("projects");
+            if (el) el.scrollIntoView({ behavior: "smooth" });
+          }, 500);
+        }, 600);
+      });
+    }
+
+    // If starting in creative mode
+    if (savedTheme === "creative") {
+      startShapeCounter();
+      startChapterObserver();
+      startScrollProgress();
+    }
   });
 })();
 

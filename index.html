@@ -10,7 +10,7 @@
   <meta name="author" content="John Kent Evangelista">
   <meta name="description" content="Senior Software Developer specializing in civic tech, SaaS, and digital transformation. Based in Zamboanga City, Philippines.">
   <meta name="referrer" content="strict-origin-when-cross-origin">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:;">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:;">
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -60,6 +60,89 @@
   <!-- Cursor glow (desktop) -->
   <div class="cursor-glow d-none d-lg-block"></div>
 
+  <!-- Creative Mode 3D Canvas -->
+  <canvas id="creativeCanvas"></canvas>
+
+  <!-- Creative Mode — Scroll-driven Journey -->
+  <div class="creative-hud" id="creativeHud">
+    <!-- Fixed top bar -->
+    <div class="creative-hud-top">
+      <span class="creative-hud-brand"><span class="brand-slash">//</span>kent<span class="brand-dot">.dev</span></span>
+      <div class="creative-hud-divider"></div>
+      <button class="creative-hud-back" id="creativeBackBtn">
+        <i class="fas fa-code"></i> Code Mode
+      </button>
+    </div>
+
+    <!-- Scroll progress indicator -->
+    <div class="creative-scroll-progress" id="creativeProgress"></div>
+
+    <!-- Fixed social + stats -->
+    <div class="creative-hud-social">
+      <a href="https://www.linkedin.com/in/john-kent-evangelista-lsswb-482435307/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+      <a href="https://github.com/kent-vintazk" target="_blank" rel="noopener noreferrer" aria-label="GitHub"><i class="fab fa-github"></i></a>
+    </div>
+    <div class="creative-hud-stats" id="creativeStats">
+      <span id="creativeShapeCount">lights: 0</span>
+      <span>scroll to walk</span>
+    </div>
+
+    <!-- Scroll container — drives the 3D camera -->
+    <div class="creative-scroll" id="creativeScroll">
+
+      <!-- Chapter 0: Enter the forest -->
+      <div class="creative-chapter" data-chapter="0">
+        <div class="chapter-content chapter-left">
+          <span class="chapter-label">001 / Enter</span>
+          <h2>Welcome to<br>the Forest</h2>
+          <p>Every system I build grows from the same root — understanding what communities actually need. Walk with me.</p>
+          <span class="chapter-scroll-cue"><i class="fas fa-chevron-down"></i> Scroll to walk deeper</span>
+        </div>
+      </div>
+
+      <!-- Chapter 1: The clearing -->
+      <div class="creative-chapter" data-chapter="1">
+        <div class="chapter-content chapter-right">
+          <span class="chapter-label">002 / The Clearing</span>
+          <h2>Where Ideas<br>Take Root</h2>
+          <p>Full-stack architecture. Lean Six Sigma discipline. At the center of the forest, every path connects back to purpose.</p>
+        </div>
+      </div>
+
+      <!-- Chapter 2: The lantern grove -->
+      <div class="creative-chapter" data-chapter="2">
+        <div class="chapter-content chapter-left">
+          <span class="chapter-label">003 / The Lanterns</span>
+          <h2>Five Platforms.<br>Five Lights.</h2>
+          <p>Each lantern represents a living system — Vintech, ZamGo, Vintazk University, Barangay Connect, SmartScore. Built to serve, still growing.</p>
+        </div>
+      </div>
+
+      <!-- Chapter 3: Deep woods — fireflies -->
+      <div class="creative-chapter" data-chapter="3">
+        <div class="chapter-content chapter-right">
+          <span class="chapter-label">004 / The Fireflies</span>
+          <h2>The Tools That<br>Light the Way</h2>
+          <p>React, Supabase, Python, Flutter — each one a firefly in the dark. Small on their own. Together, they illuminate everything.</p>
+        </div>
+      </div>
+
+      <!-- Chapter 4: Above the canopy -->
+      <div class="creative-chapter" data-chapter="4">
+        <div class="chapter-content chapter-center">
+          <span class="chapter-label">005 / Above the Canopy</span>
+          <h2>Let's Build<br>Something Together</h2>
+          <p>The forest is still growing. Your project could be the next lantern.</p>
+          <div class="chapter-cta">
+            <a href="#contact" class="creative-cta-btn" id="creativeContactBtn"><i class="fas fa-envelope"></i> Get in Touch</a>
+            <a href="#projects" class="creative-cta-outline" id="creativeProjectsBtn"><i class="fas fa-arrow-right"></i> View Portfolio</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <!-- Terminal Preloader -->
   <div id="preloader">
     <div class="terminal-preloader">
@@ -87,11 +170,11 @@
         <button class="sound-toggle" id="soundToggle" aria-label="Toggle sound">
           <i class="fas fa-volume-up"></i>
         </button>
-        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle creative mode">
           <span class="toggle-track">
             <span class="toggle-thumb">
-              <i class="fas fa-sun icon-sun"></i>
-              <i class="fas fa-moon icon-moon"></i>
+              <i class="fas fa-cube icon-sun"></i>
+              <i class="fas fa-code icon-moon"></i>
             </span>
           </span>
           <span class="toggle-aftershock" id="toggleAftershock"></span>
@@ -809,6 +892,8 @@
   <!-- JavaScript -->
   <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
   <script src="vendor/typed/typed.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script src="js/creative.js"></script>
   <script src="js/theme.js"></script>
 
 </body>
