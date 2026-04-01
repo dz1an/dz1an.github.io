@@ -130,14 +130,14 @@
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 0.9;
+    renderer.toneMappingExposure = 1.1;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     raycaster = new THREE.Raycaster(); mouseVec = new THREE.Vector2();
 
-    // Lighting
-    scene.add(new THREE.AmbientLight(0x1a2e22, 0.4));
-    var moon = new THREE.DirectionalLight(0x8899AA, 0.5);
+    // Lighting — dark moonlit forest, lit by lanterns and fireflies
+    scene.add(new THREE.AmbientLight(0x1a2e22, 0.5));
+    var moon = new THREE.DirectionalLight(0x8899AA, 0.6);
     moon.position.set(-20, 30, 10); moon.castShadow = true;
     moon.shadow.mapSize.set(1024, 1024);
     moon.shadow.camera.near = 1; moon.shadow.camera.far = 80;
@@ -152,6 +152,7 @@
 
     buildTerrain(); plantForest(); createCoreLantern();
     createProjectLanterns(); createFireflies(); createMist();
+    createPathLamps(); createAmbientFireflies();
 
     canvas.addEventListener("mousemove", onMouseMove);
     canvas.addEventListener("mousedown", function () { isMouseDown = true; });
@@ -301,6 +302,84 @@
     scene.add(mist); scene._mist = mist;
   }
 
+  // ======================== Path Lamps — warm lights along the walk ========================
+  function createPathLamps() {
+    // Place lamps along the camera path to illuminate the journey
+    var lampPositions = [
+      { x: -2, z: 40, y: 2.5 },   // Near entrance
+      { x: 3, z: 30, y: 2.5 },    // Along path
+      { x: -1, z: 20, y: 2.5 },   // Approaching clearing
+      { x: 5, z: 10, y: 2.5 },    // Near clearing
+      { x: 8, z: 2, y: 2.5 },     // Toward lanterns
+      { x: 3, z: -6, y: 2.5 },    // Lantern area
+      { x: -3, z: -14, y: 2.5 },  // Deep woods path
+      { x: -8, z: -20, y: 2.5 },  // Firefly zone
+      { x: -10, z: -10, y: 2.5 }, // Turning back
+      { x: -4, z: 0, y: 2.5 }     // Back toward clearing
+    ];
+
+    lampPositions.forEach(function (lp) {
+      var gY = noise2D(lp.x, lp.z) * 1.2;
+      var dC = Math.sqrt(lp.x * lp.x + (lp.z + 10) * (lp.z + 10));
+      if (dC < 8) gY *= dC / 8;
+
+      // Lamp post (thin cylinder)
+      var post = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.03, 0.04, 2, 4),
+        new THREE.MeshStandardMaterial({ color: 0x3B2314, roughness: 0.9 })
+      );
+      post.position.set(lp.x, gY + 1, lp.z);
+      scene.add(post);
+
+      // Lamp glow (small sphere)
+      var glow = new THREE.Mesh(
+        new THREE.SphereGeometry(0.12, 8, 8),
+        new THREE.MeshBasicMaterial({ color: 0xE8C87A, transparent: true, opacity: 0.8 })
+      );
+      glow.position.set(lp.x, gY + 2.2, lp.z);
+      scene.add(glow);
+
+      // Warm point light
+      var light = new THREE.PointLight(0xE8C87A, 0.8, 12);
+      light.position.set(lp.x, gY + 2.5, lp.z);
+      scene.add(light);
+    });
+  }
+
+  // ======================== Ambient Fireflies — scattered throughout ========================
+  function createAmbientFireflies() {
+    var ambientFFs = [];
+    for (var i = 0; i < 40; i++) {
+      var x = (Math.random() - 0.5) * 60;
+      var z = (Math.random() - 0.5) * 70 - 5;
+      var y = 1.5 + Math.random() * 5;
+      var color = [0xA3B18A, 0xB5C99A, 0xDAD7CD, 0x97A97C][Math.floor(Math.random() * 4)];
+
+      var mesh = new THREE.Mesh(
+        new THREE.SphereGeometry(0.05, 6, 6),
+        new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.7 })
+      );
+      mesh.position.set(x, y, z);
+      scene.add(mesh);
+
+      // Small glow per firefly
+      var light = new THREE.PointLight(color, 0.15, 4);
+      light.position.set(x, y, z);
+      scene.add(light);
+
+      ambientFFs.push({
+        mesh: mesh, light: light,
+        baseX: x, baseY: y, baseZ: z,
+        phase: Math.random() * Math.PI * 2,
+        speed: 0.3 + Math.random() * 1.0,
+        ampX: 0.3 + Math.random() * 1.0,
+        ampY: 0.2 + Math.random() * 0.5,
+        ampZ: 0.3 + Math.random() * 1.0
+      });
+    }
+    scene._ambientFFs = ambientFFs;
+  }
+
   // ======================== Spawn ========================
   function spawnFirefly(x, y, z) {
     var color = [0xA3B18A, 0xDAD7CD, 0xB5C99A, 0x97A97C][Math.floor(Math.random() * 4)];
@@ -370,7 +449,7 @@
       fills[1].intensity = 0.3 + vb + (scrollProgress > 0.38 && scrollProgress < 0.65 ? 0.3 : 0);
       fills[2].intensity = 0.2 + vb + (scrollProgress > 0.6 && scrollProgress < 0.8 ? 0.3 : 0);
     }
-    if (scene._moon) scene._moon.intensity = 0.3 + scrollProgress * 0.4;
+    if (scene._moon) scene._moon.intensity = 0.4 + scrollProgress * 0.4;
 
     // Core
     if (scene._coreOrb) {
@@ -424,6 +503,20 @@
       ff.label.material.opacity += (fLO - ff.label.material.opacity) * 0.03;
       ff.mesh.scale.setScalar(ff.mesh.scale.x + (fS - ff.mesh.scale.x) * 0.03);
       ff.mesh.material.opacity *= 0.85 + Math.sin(t * 5 + fi * 3) * 0.15;
+    }
+
+    // Ambient fireflies wander and flicker
+    if (scene._ambientFFs) {
+      for (var ai = 0; ai < scene._ambientFFs.length; ai++) {
+        var af = scene._ambientFFs[ai];
+        var ax = af.baseX + Math.sin(t * af.speed + af.phase) * af.ampX;
+        var ay = af.baseY + Math.cos(t * af.speed * 0.6 + af.phase) * af.ampY;
+        var az = af.baseZ + Math.sin(t * af.speed * 0.4 + af.phase * 2) * af.ampZ;
+        af.mesh.position.set(ax, ay, az);
+        af.light.position.set(ax, ay, az);
+        af.mesh.material.opacity = 0.4 + Math.sin(t * 4 + ai * 2.5) * 0.35;
+        af.light.intensity = 0.1 + Math.sin(t * 4 + ai * 2.5) * 0.1;
+      }
     }
 
     // Mist
