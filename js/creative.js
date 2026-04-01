@@ -58,26 +58,27 @@
   ];
 
   // Camera path — forest walk
-  // 10 chapters — campsite gets a long, slow orbit
+  // 10 chapters — campsite centered, clear sightlines
   var CAMERA_PATH = [
-    { at: 0.00, pos: [0, 4, 55],     look: [0, 1, 0] },     // Ch0: Wide forest entrance
-    { at: 0.06, pos: [0, 3.5, 40],   look: [0, 1, 0] },     // Walking in
-    { at: 0.12, pos: [-2, 3, 28],    look: [0, 1.5, 0] },   // Ch1: The path — bio
-    { at: 0.18, pos: [2, 2.8, 16],   look: [0, 1, 0.5] },   // Approaching campsite
-    { at: 0.22, pos: [4, 2.5, 8],    look: [0, 1, 0.5] },   // Ch2: Arriving at campsite — wide
-    { at: 0.27, pos: [3, 2.2, 5],    look: [0, 1, 0.5] },   // Closer to the fire
-    { at: 0.32, pos: [2, 2, 3.5],    look: [-0.3, 0.8, 0.5] }, // Ch3: Method — sitting by fire
-    { at: 0.37, pos: [-1, 2.2, 3],   look: [0, 1, 0.5] },   // Slow orbit left around campfire
-    { at: 0.42, pos: [-3, 2.5, 5],   look: [0, 1, 0] },     // Still orbiting — campfire in view
-    { at: 0.48, pos: [-2, 3, 3],     look: [3, 2, -8] },    // Ch4: Turning toward lanterns
-    { at: 0.54, pos: [4, 3.5, -4],   look: [5, 2.5, -12] }, // Walking to lantern grove
-    { at: 0.60, pos: [6, 4, -10],    look: [2, 3, -16] },   // Ch5: Among lanterns
-    { at: 0.66, pos: [2, 3.5, -16],  look: [-4, 3, -22] },  // Into deep woods
-    { at: 0.72, pos: [-4, 3, -20],   look: [-10, 3, -24] }, // Ch6: Fireflies
-    { at: 0.78, pos: [-10, 4, -14],  look: [-4, 4, -8] },   // Ch7: The award
-    { at: 0.84, pos: [-6, 6, -4],    look: [0, 1, 0] },     // Ch8: Rising — campfire below
-    { at: 0.92, pos: [-2, 12, 10],   look: [0, 0, -5] },    // Above canopy
-    { at: 1.00, pos: [0, 18, 24],    look: [0, 0, -5] }     // Ch9: Full aerial
+    { at: 0.00, pos: [0, 8, 40],      look: [0, 0, 0] },     // Ch0: High above, looking down into clearing
+    { at: 0.06, pos: [0, 5, 28],     look: [0, 0.5, 0] },   // Descending toward forest
+    { at: 0.12, pos: [0, 3, 18],     look: [0, 0.5, 0] },   // Ch1: The path — inside the tree ring
+    { at: 0.18, pos: [2, 2, 10],     look: [0, 0.6, 0] },   // Approaching campsite
+    { at: 0.22, pos: [3.5, 1.8, 6],  look: [0, 0.5, -0.5] },// Ch2: Campsite — clear wide view
+    { at: 0.27, pos: [2.5, 1.6, 4],  look: [0, 0.6, 0] },   // Closer — fire and figure visible
+    { at: 0.32, pos: [-1, 1.8, 4],   look: [0, 0.5, -0.3] },// Ch3: Orbit left — other side of fire
+    { at: 0.37, pos: [-2.5, 2, 3],   look: [0.5, 0.5, 0] }, // Still at campsite
+    { at: 0.42, pos: [-2, 2.5, 1],   look: [0, 0.5, -0.5] },// Lingering
+    { at: 0.48, pos: [-1, 3, -2],    look: [8, 2, -20] },   // Ch4: Turning toward lanterns
+    { at: 0.54, pos: [6, 3.5, -10],  look: [10, 2.5, -22] },// Walking to lanterns
+    { at: 0.60, pos: [10, 4, -16],   look: [8, 3, -22] },   // Ch5: Among lanterns
+    { at: 0.66, pos: [4, 3.5, -22],  look: [-4, 3, -28] },  // Into deep woods
+    { at: 0.72, pos: [-4, 3, -26],   look: [-10, 3, -30] }, // Ch6: Fireflies
+    { at: 0.78, pos: [-10, 4, -18],  look: [-4, 4, -10] },  // Ch7: The award
+    { at: 0.84, pos: [-6, 6, -6],    look: [0, 0.5, 0] },   // Ch8: Rising
+    { at: 0.90, pos: [-4, 8, 6],     look: [0, 0.5, 0] },   // Climbing into the canopy
+    { at: 0.95, pos: [16, 7, 4],     look: [0, 0.5, 0] },   // Settling into a tree
+    { at: 1.00, pos: [16, 6, 3],     look: [0, 0.5, 0] }    // Ch9: Nested in the branches, looking back at camp
   ];
 
   function lerp(a, b, t) { return a + (b - a) * t; }
@@ -136,7 +137,7 @@
     scene.fog = new THREE.Fog(0x0C1210, 18, 75);
     clock = new THREE.Clock();
     camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 200);
-    camera.position.set(0, 4, 50);
+    camera.position.set(0, 8, 40);
     renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -163,6 +164,7 @@
 
     buildTerrain(); plantForest(); createCoreLantern();
     createProjectLanterns(); createFireflies(); createMist();
+    createSky(); createSmoke(); createGroundDetails();
     createPathLamps(); createAmbientFireflies();
 
     canvas.addEventListener("mousemove", onMouseMove);
@@ -184,7 +186,7 @@
       var x = pos.getX(i), y = pos.getY(i);
       var h = noise2D(x, y) * 1.2;
       var d = Math.sqrt(x * x + y * y);
-      if (d < 8) h *= d / 8;
+      if (d < 14) h *= d / 14;
       pos.setZ(i, h);
     }
     geo.computeVertexNormals();
@@ -194,11 +196,19 @@
   }
 
   // ======================== Forest ========================
+  function getGroundY(x, z) {
+    var h = noise2D(x, z) * 1.2;
+    var d = Math.sqrt(x * x + z * z);
+    if (d < 14) h *= d / 14;
+    return h;
+  }
+
   function plantForest() {
     for (var i = 0; i < TREE_COUNT; i++) {
       var angle = Math.random() * Math.PI * 2;
-      var dist = 8 + Math.random() * 50;
-      var x = Math.cos(angle) * dist, z = Math.sin(angle) * dist - 10;
+      var dist = 14 + Math.random() * 45;
+      var x = Math.cos(angle) * dist;
+      var z = Math.sin(angle) * dist;
       if (Math.abs(x) > 55 || Math.abs(z) > 55) continue;
 
       var height = 3 + Math.random() * 7;
@@ -206,9 +216,7 @@
       var canopyH = height * (0.5 + Math.random() * 0.3);
       var canopyR = 1.2 + Math.random() * 2.5;
       var trunkR = 0.1 + Math.random() * 0.2;
-      var gY = noise2D(x, z) * 1.2;
-      var dC = Math.sqrt(x * x + (z + 10) * (z + 10));
-      if (dC < 8) gY *= dC / 8;
+      var gY = getGroundY(x, z);
 
       var trunk = new THREE.Mesh(
         new THREE.CylinderGeometry(trunkR * 0.6, trunkR, trunkH, 6),
@@ -217,16 +225,38 @@
       trunk.position.set(x, gY + trunkH / 2, z); trunk.castShadow = true;
       scene.add(trunk);
 
-      var layers = 2 + Math.floor(Math.random() * 2);
-      for (var j = 0; j < layers; j++) {
-        var lr = canopyR * (1 - j * 0.2), lh = canopyH * (0.6 + j * 0.15);
-        var cone = new THREE.Mesh(
-          new THREE.ConeGeometry(lr, lh, 7 + Math.floor(Math.random() * 3)),
-          new THREE.MeshStandardMaterial({ color: CANOPY_COLORS[Math.floor(Math.random() * 6)], roughness: 0.8, flatShading: true })
-        );
-        cone.position.set(x, gY + trunkH + lh * 0.35 + j * canopyH * 0.25, z);
-        cone.rotation.y = Math.random() * Math.PI; cone.castShadow = true;
-        scene.add(cone);
+      var isRoundTree = Math.random() > 0.6;
+      if (isRoundTree) {
+        // Round / deciduous canopy
+        var sphereCount = 2 + Math.floor(Math.random() * 2);
+        for (var j = 0; j < sphereCount; j++) {
+          var sr = canopyR * (0.5 + Math.random() * 0.4);
+          var canopy = new THREE.Mesh(
+            new THREE.SphereGeometry(sr, 7, 6),
+            new THREE.MeshStandardMaterial({ color: CANOPY_COLORS[Math.floor(Math.random() * 6)], roughness: 0.8, flatShading: true })
+          );
+          canopy.position.set(
+            x + (Math.random() - 0.5) * canopyR * 0.5,
+            gY + trunkH + sr * 0.5 + j * sr * 0.5,
+            z + (Math.random() - 0.5) * canopyR * 0.5
+          );
+          canopy.scale.y = 0.7 + Math.random() * 0.3;
+          canopy.castShadow = true;
+          scene.add(canopy);
+        }
+      } else {
+        // Conifer / pine tree (original)
+        var layers = 2 + Math.floor(Math.random() * 2);
+        for (var j = 0; j < layers; j++) {
+          var lr = canopyR * (1 - j * 0.2), lh = canopyH * (0.6 + j * 0.15);
+          var cone = new THREE.Mesh(
+            new THREE.ConeGeometry(lr, lh, 7 + Math.floor(Math.random() * 3)),
+            new THREE.MeshStandardMaterial({ color: CANOPY_COLORS[Math.floor(Math.random() * 6)], roughness: 0.8, flatShading: true })
+          );
+          cone.position.set(x, gY + trunkH + lh * 0.35 + j * canopyH * 0.25, z);
+          cone.rotation.y = Math.random() * Math.PI; cone.castShadow = true;
+          scene.add(cone);
+        }
       }
       trees.push({ x: x, z: z });
     }
@@ -239,83 +269,67 @@
     // === Tent — proper A-frame with ridge pole, guy ropes, ground sheet ===
     var tentFabric = new THREE.MeshStandardMaterial({ color: 0x4A6B3F, roughness: 0.75, flatShading: true, side: THREE.DoubleSide });
     var tentFabricInner = new THREE.MeshStandardMaterial({ color: 0x3D5C35, roughness: 0.8, flatShading: true, side: THREE.DoubleSide });
-    var ropeMat = new THREE.MeshBasicMaterial({ color: 0x8B7D6B });
     var poleMat = new THREE.MeshStandardMaterial({ color: 0x6B5B4B, roughness: 0.7 });
 
     // Ground sheet
+    var tX = 1.0, tZ = -1.2; // tent center offset
     var groundSheet = new THREE.Mesh(
-      new THREE.PlaneGeometry(2.0, 2.8),
+      new THREE.PlaneGeometry(1.4, 1.8),
       new THREE.MeshStandardMaterial({ color: 0x3A5A40, roughness: 0.9 })
     );
     groundSheet.rotation.x = -Math.PI / 2;
-    groundSheet.position.set(1.2, gY + 0.02, -1.5);
+    groundSheet.position.set(tX, gY + 0.02, tZ);
     scene.add(groundSheet);
 
-    // Left panel (larger, proper angle)
-    var panelGeo = new THREE.PlaneGeometry(1.8, 3.0);
+    // Left panel
+    var panelGeo = new THREE.PlaneGeometry(1.1, 2.0);
     var tentL = new THREE.Mesh(panelGeo, tentFabric);
-    tentL.position.set(0.4, gY + 0.9, -1.5);
-    tentL.rotation.set(0, 0, 0.65);
+    tentL.position.set(tX - 0.45, gY + 0.55, tZ);
+    tentL.rotation.set(0, 0, 0.6);
     scene.add(tentL);
 
     // Right panel
     var tentR = new THREE.Mesh(panelGeo.clone(), tentFabric);
-    tentR.position.set(2.0, gY + 0.9, -1.5);
-    tentR.rotation.set(0, 0, -0.65);
+    tentR.position.set(tX + 0.45, gY + 0.55, tZ);
+    tentR.rotation.set(0, 0, -0.6);
     scene.add(tentR);
 
-    // Front flap (slightly open, angled outward)
-    var flapGeo = new THREE.PlaneGeometry(1.0, 1.6);
+    // Front flap (slightly open)
+    var flapGeo = new THREE.PlaneGeometry(0.6, 1.0);
     var flapL = new THREE.Mesh(flapGeo, tentFabricInner);
-    flapL.position.set(0.8, gY + 0.7, -0.05);
-    flapL.rotation.set(0.15, 0.4, 0.5);
+    flapL.position.set(tX - 0.2, gY + 0.4, tZ + 0.9);
+    flapL.rotation.set(0.15, 0.35, 0.45);
     scene.add(flapL);
     var flapR = new THREE.Mesh(flapGeo.clone(), tentFabricInner);
-    flapR.position.set(1.6, gY + 0.7, -0.05);
-    flapR.rotation.set(0.15, -0.4, -0.5);
+    flapR.position.set(tX + 0.2, gY + 0.4, tZ + 0.9);
+    flapR.rotation.set(0.15, -0.35, -0.45);
     scene.add(flapR);
 
-    // Back wall
+    // Back wall (triangle)
     var backGeo = new THREE.BufferGeometry();
     var backVerts = new Float32Array([
-      0.2, gY, -2.95,   2.2, gY, -2.95,   1.2, gY + 1.65, -2.95
+      tX - 0.55, gY, tZ - 0.95,  tX + 0.55, gY, tZ - 0.95,  tX, gY + 1.0, tZ - 0.95
     ]);
     backGeo.setAttribute("position", new THREE.BufferAttribute(backVerts, 3));
     backGeo.computeVertexNormals();
-    var tentBack = new THREE.Mesh(backGeo, tentFabricInner);
-    scene.add(tentBack);
+    scene.add(new THREE.Mesh(backGeo, tentFabricInner));
 
     // Ridge pole
-    var ridge = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 3.1, 4), poleMat);
-    ridge.position.set(1.2, gY + 1.65, -1.5);
+    var ridge = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 2.0, 4), poleMat);
+    ridge.position.set(tX, gY + 1.0, tZ);
     ridge.rotation.x = Math.PI / 2;
     scene.add(ridge);
 
     // Front A-frame poles
-    var poleGeo = new THREE.CylinderGeometry(0.02, 0.02, 1.9, 4);
+    var poleGeo = new THREE.CylinderGeometry(0.012, 0.012, 1.2, 4);
     var poleFL = new THREE.Mesh(poleGeo, poleMat);
-    poleFL.position.set(0.6, gY + 0.85, -0.02);
-    poleFL.rotation.z = 0.55;
+    poleFL.position.set(tX - 0.25, gY + 0.5, tZ + 0.9);
+    poleFL.rotation.z = 0.5;
     scene.add(poleFL);
     var poleFR = new THREE.Mesh(poleGeo.clone(), poleMat);
-    poleFR.position.set(1.8, gY + 0.85, -0.02);
-    poleFR.rotation.z = -0.55;
+    poleFR.position.set(tX + 0.25, gY + 0.5, tZ + 0.9);
+    poleFR.rotation.z = -0.5;
     scene.add(poleFR);
-
-    // Guy ropes (thin lines stretching out from tent)
-    var ropeGeo = new THREE.CylinderGeometry(0.008, 0.008, 1.8, 3);
-    var rope1 = new THREE.Mesh(ropeGeo, ropeMat);
-    rope1.position.set(-0.2, gY + 0.4, -0.5);
-    rope1.rotation.set(0, 0.3, 0.8);
-    scene.add(rope1);
-    var rope2 = new THREE.Mesh(ropeGeo.clone(), ropeMat);
-    rope2.position.set(2.6, gY + 0.4, -0.5);
-    rope2.rotation.set(0, -0.3, -0.8);
-    scene.add(rope2);
-    var rope3 = new THREE.Mesh(ropeGeo.clone(), ropeMat);
-    rope3.position.set(-0.1, gY + 0.4, -2.5);
-    rope3.rotation.set(0, -0.3, 0.7);
-    scene.add(rope3);
 
     // === Campfire ===
     // Fire ring (stones)
@@ -512,25 +526,72 @@
     mug.position.set(figX + 0.4, gY + 0.05, figZ + 0.35);
     scene.add(mug);
 
+    // Laptop — glowing screen, developer even while camping
+    var laptopBase = new THREE.Mesh(
+      new THREE.BoxGeometry(0.35, 0.02, 0.25),
+      new THREE.MeshStandardMaterial({ color: 0x2A2A2A, roughness: 0.3, metalness: 0.6 })
+    );
+    laptopBase.position.set(figX + 0.55, gY + 0.22, figZ + 0.1);
+    laptopBase.rotation.y = 0.4;
+    scene.add(laptopBase);
+
+    // Screen (angled up)
+    var screen = new THREE.Mesh(
+      new THREE.BoxGeometry(0.33, 0.22, 0.01),
+      new THREE.MeshStandardMaterial({ color: 0x1a1a2e, roughness: 0.3, metalness: 0.2, emissive: 0x2244AA, emissiveIntensity: 0.3 })
+    );
+    screen.position.set(figX + 0.48, gY + 0.34, figZ - 0.02);
+    screen.rotation.set(-0.4, 0.4, 0);
+    scene.add(screen);
+
+    // Screen glow light
+    var screenLight = new THREE.PointLight(0x4466CC, 0.4, 3);
+    screenLight.position.set(figX + 0.5, gY + 0.4, figZ);
+    scene.add(screenLight);
+    scene._screenLight = screenLight;
+
+    // Code lines on screen (tiny green sprites)
+    var codeLine = new THREE.Mesh(
+      new THREE.PlaneGeometry(0.25, 0.005),
+      new THREE.MeshBasicMaterial({ color: 0xA3B18A, transparent: true, opacity: 0.6 })
+    );
+    codeLine.position.set(figX + 0.48, gY + 0.38, figZ - 0.01);
+    codeLine.rotation.set(-0.4, 0.4, 0);
+    scene.add(codeLine);
+    var codeLine2 = new THREE.Mesh(
+      new THREE.PlaneGeometry(0.18, 0.005),
+      new THREE.MeshBasicMaterial({ color: 0x5C7650, transparent: true, opacity: 0.5 })
+    );
+    codeLine2.position.set(figX + 0.47, gY + 0.36, figZ - 0.01);
+    codeLine2.rotation.set(-0.4, 0.4, 0);
+    scene.add(codeLine2);
+    var codeLine3 = new THREE.Mesh(
+      new THREE.PlaneGeometry(0.22, 0.005),
+      new THREE.MeshBasicMaterial({ color: 0xA3B18A, transparent: true, opacity: 0.4 })
+    );
+    codeLine3.position.set(figX + 0.46, gY + 0.34, figZ - 0.01);
+    codeLine3.rotation.set(-0.4, 0.4, 0);
+    scene.add(codeLine3);
+
     // === Brand label floats above the campsite ===
-    var brand = makeLabel("//kent.dev", { fontSize: 32, fontWeight: "700", color: "#A3B18A", scale: 2.2, opacity: 0.7 });
-    brand.position.set(0, gY + 4.5, 0); scene.add(brand); scene._brandLabel = brand;
-    var sub = makeLabel("Senior Software Developer", { fontSize: 15, fontWeight: "400", color: "rgba(163,177,138,0.45)", scale: 1.8, opacity: 0.45 });
-    sub.position.set(0, gY + 3.5, 0); scene.add(sub); scene._brandSub = sub;
+    var brand = makeLabel("//kent.dev", { fontSize: 28, fontWeight: "700", color: "#A3B18A", scale: 1.8, opacity: 0.6 });
+    brand.position.set(0, gY + 3.2, 0); scene.add(brand); scene._brandLabel = brand;
+    var sub = makeLabel("Senior Software Developer", { fontSize: 13, fontWeight: "400", color: "rgba(163,177,138,0.4)", scale: 1.4, opacity: 0.35 });
+    sub.position.set(0, gY + 2.5, 0); scene.add(sub); scene._brandSub = sub;
   }
 
   // ======================== Project Lanterns ========================
   function createProjectLanterns() {
-    var positions = [{ x: 6, z: -8 }, { x: 3, z: -14 }, { x: 9, z: -12 }, { x: -1, z: -10 }, { x: 5, z: -18 }];
+    var positions = [{ x: 12, z: -18 }, { x: 8, z: -25 }, { x: 16, z: -22 }, { x: 5, z: -20 }, { x: 10, z: -28 }];
     PROJECTS.forEach(function (proj, i) {
       var p = positions[i], y = 3 + Math.random() * 2;
       var mesh = new THREE.Mesh(new THREE.SphereGeometry(0.4, 12, 12), new THREE.MeshPhysicalMaterial({
-        color: proj.color, emissive: proj.color, emissiveIntensity: 0.5, transparent: true, opacity: 0.8,
+        color: proj.color, emissive: proj.color, emissiveIntensity: 0.1, transparent: true, opacity: 0.3,
         roughness: 0.1, clearcoat: 1.0, clearcoatRoughness: 0.05
       }));
       mesh.position.set(p.x, y, p.z); scene.add(mesh);
       var light = new THREE.PointLight(proj.color, 0.6, 8); light.position.set(p.x, y, p.z); scene.add(light);
-      var label = makeLabel(proj.name, { fontSize: 20, fontWeight: "600", color: "#DAD7CD", sub: proj.sub, scale: 1.4, opacity: 0.8 });
+      var label = makeLabel(proj.name, { fontSize: 20, fontWeight: "600", color: "#DAD7CD", sub: proj.sub, scale: 1.4, opacity: 0.01 });
       label.position.set(p.x, y + 1.2, p.z); scene.add(label);
       lanterns.push({ mesh: mesh, light: light, label: label, baseY: y, x: p.x, z: p.z });
     });
@@ -548,7 +609,7 @@
       mesh.position.set(x, y, z); scene.add(mesh);
       var light = null;
       if (!isMobile) { light = new THREE.PointLight(color, 0.3, 4); light.position.set(x, y, z); scene.add(light); }
-      var label = makeLabel(name, { fontSize: 14, fontWeight: "500", color: "rgba(218,215,205,0.6)", scale: 0.9, opacity: 0.5 });
+      var label = makeLabel(name, { fontSize: 14, fontWeight: "500", color: "rgba(218,215,205,0.6)", scale: 0.9, opacity: 0.01 });
       label.position.set(x, y + 0.6, z); scene.add(label);
       fireflies.push({
         mesh: mesh, light: light, label: label, baseX: x, baseY: y, baseZ: z, color: color,
@@ -588,9 +649,7 @@
     ];
 
     lampPositions.slice(0, PATH_LAMP_COUNT).forEach(function (lp) {
-      var gY = noise2D(lp.x, lp.z) * 1.2;
-      var dC = Math.sqrt(lp.x * lp.x + (lp.z + 10) * (lp.z + 10));
-      if (dC < 8) gY *= dC / 8;
+      var gY = getGroundY(lp.x, lp.z);
 
       // Lamp post (thin cylinder)
       var post = new THREE.Mesh(
@@ -652,6 +711,143 @@
     scene._ambientFFs = ambientFFs;
   }
 
+  // ======================== Sky — Stars + Moon ========================
+  function createSky() {
+    // Stars
+    var count = 800;
+    var positions = new Float32Array(count * 3);
+    var colors = new Float32Array(count * 3);
+    for (var i = 0; i < count; i++) {
+      // Hemisphere above (y > 0)
+      var theta = Math.random() * Math.PI * 2;
+      var phi = Math.random() * Math.PI * 0.45; // upper hemisphere only
+      var r = 80 + Math.random() * 40;
+      positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+      positions[i * 3 + 1] = r * Math.cos(phi) + 10;
+      positions[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta);
+      var brightness = 0.4 + Math.random() * 0.6;
+      colors[i * 3] = brightness;
+      colors[i * 3 + 1] = brightness;
+      colors[i * 3 + 2] = brightness * (0.9 + Math.random() * 0.1);
+    }
+    var geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    geo.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+    var stars = new THREE.Points(geo, new THREE.PointsMaterial({
+      size: 0.2, vertexColors: true, transparent: true, opacity: 0.8, sizeAttenuation: true
+    }));
+    scene.add(stars);
+    scene._stars = stars;
+
+    // Moon — simple glowing disc
+    var moonGeo = new THREE.SphereGeometry(3, 16, 16);
+    var moonMat = new THREE.MeshBasicMaterial({ color: 0xDDE8F0, transparent: true, opacity: 0.25 });
+    var moonMesh = new THREE.Mesh(moonGeo, moonMat);
+    moonMesh.position.set(-30, 50, -40);
+    scene.add(moonMesh);
+    // Moon glow
+    var glowGeo = new THREE.SphereGeometry(5, 16, 16);
+    var glowMat = new THREE.MeshBasicMaterial({ color: 0xAABBCC, transparent: true, opacity: 0.06 });
+    var moonGlow = new THREE.Mesh(glowGeo, glowMat);
+    moonGlow.position.set(-30, 50, -40);
+    scene.add(moonGlow);
+  }
+
+  // ======================== Smoke ========================
+  function createSmoke() {
+    var smokeParticles = [];
+    for (var i = 0; i < 15; i++) {
+      var smoke = new THREE.Mesh(
+        new THREE.SphereGeometry(0.15 + Math.random() * 0.2, 6, 6),
+        new THREE.MeshBasicMaterial({ color: 0x666666, transparent: true, opacity: 0 })
+      );
+      smoke.position.set(0, 0.5, 0.5);
+      smoke.userData = {
+        speed: 0.2 + Math.random() * 0.4,
+        maxH: 4 + Math.random() * 4,
+        phase: Math.random() * Math.PI * 2,
+        drift: (Math.random() - 0.5) * 0.4,
+        growRate: 1.5 + Math.random() * 1.5
+      };
+      scene.add(smoke);
+      smokeParticles.push(smoke);
+    }
+    scene._smoke = smokeParticles;
+  }
+
+  // ======================== Ground Details — rocks, bushes, fallen logs ========================
+  function createGroundDetails() {
+    var rockMat = new THREE.MeshStandardMaterial({ color: 0x4A4A4A, roughness: 0.95, flatShading: true });
+    var bushColors = [0x2D4233, 0x344E41, 0x3A5A40, 0x4A6B3F];
+
+    // Scatter rocks
+    for (var i = 0; i < 30; i++) {
+      var angle = Math.random() * Math.PI * 2;
+      var dist = 3 + Math.random() * 35;
+      var rx = Math.cos(angle) * dist;
+      var rz = Math.sin(angle) * dist;
+      var dc = Math.sqrt(rx * rx + rz * rz);
+      if (dc < 14) continue;
+      var gy = getGroundY(rx, rz);
+
+      var rock = new THREE.Mesh(
+        new THREE.DodecahedronGeometry(0.1 + Math.random() * 0.25, 0),
+        rockMat
+      );
+      rock.position.set(rx, gy + 0.1, rz);
+      rock.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
+      rock.scale.set(1, 0.5 + Math.random() * 0.5, 1);
+      scene.add(rock);
+    }
+
+    // Bushes (small clusters of spheres)
+    for (var j = 0; j < 20; j++) {
+      var ba = Math.random() * Math.PI * 2;
+      var bd = 4 + Math.random() * 30;
+      var bx = Math.cos(ba) * bd;
+      var bz = Math.sin(ba) * bd;
+      var bdc = Math.sqrt(bx * bx + bz * bz);
+      if (bdc < 14) continue;
+      var bgy = getGroundY(bx, bz);
+
+      var bushColor = bushColors[Math.floor(Math.random() * bushColors.length)];
+      var clusterCount = 2 + Math.floor(Math.random() * 2);
+      for (var k = 0; k < clusterCount; k++) {
+        var bush = new THREE.Mesh(
+          new THREE.SphereGeometry(0.15 + Math.random() * 0.2, 5, 4),
+          new THREE.MeshStandardMaterial({ color: bushColor, roughness: 0.9, flatShading: true })
+        );
+        bush.position.set(
+          bx + (Math.random() - 0.5) * 0.5,
+          bgy + 0.15 + Math.random() * 0.15,
+          bz + (Math.random() - 0.5) * 0.5
+        );
+        bush.scale.y = 0.6 + Math.random() * 0.3;
+        scene.add(bush);
+      }
+    }
+
+    // Fallen logs
+    for (var l = 0; l < 6; l++) {
+      var la = Math.random() * Math.PI * 2;
+      var ld = 6 + Math.random() * 25;
+      var lx = Math.cos(la) * ld;
+      var lz = Math.sin(la) * ld;
+      var ldc = Math.sqrt(lx * lx + lz * lz);
+      if (ldc < 14) continue;
+      var lgy = getGroundY(lx, lz);
+
+      var flog = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.1 + Math.random() * 0.1, 0.12 + Math.random() * 0.1, 1.5 + Math.random() * 2, 6),
+        new THREE.MeshStandardMaterial({ color: 0x3B2314, roughness: 0.9, flatShading: true })
+      );
+      flog.position.set(lx, lgy + 0.1, lz);
+      flog.rotation.set(0, Math.random() * Math.PI, Math.PI / 2);
+      scene.add(flog);
+    }
+  }
+
+  // ======================== Pond ========================
   // ======================== Spawn ========================
   function spawnFirefly(x, y, z) {
     var color = [0xA3B18A, 0xDAD7CD, 0xB5C99A, 0x97A97C][Math.floor(Math.random() * 4)];
@@ -768,7 +964,7 @@
     if (scene._brandSub) scene._brandSub.position.y = 3.5 + Math.sin(t * 0.4 + 0.5) * 0.08;
 
     // Lanterns
-    var inProj = scrollProgress > 0.38 && scrollProgress < 0.65;
+    var inProj = scrollProgress > 0.45 && scrollProgress < 0.65;
     for (var li = 0; li < lanterns.length; li++) {
       var lan = lanterns[li], bob = Math.sin(t * 0.6 + li * 1.2) * 0.3;
       lan.mesh.position.y = lan.baseY + bob; lan.light.position.y = lan.baseY + bob; lan.label.position.y = lan.baseY + bob + 1.2;
@@ -780,7 +976,7 @@
     }
 
     // Fireflies
-    var inTech = scrollProgress > 0.62 && scrollProgress < 0.78;
+    var inTech = scrollProgress > 0.64 && scrollProgress < 0.78;
     for (var fi = 0; fi < fireflies.length; fi++) {
       var ff = fireflies[fi];
       var fx = ff.baseX + Math.sin(t * ff.speed + ff.phase) * ff.ampX;
@@ -809,6 +1005,33 @@
       }
     }
 
+    // Stars twinkle
+    if (scene._stars) scene._stars.rotation.y = t * 0.001;
+
+    // Smoke rises from campfire
+    if (scene._smoke) {
+      for (var si = 0; si < scene._smoke.length; si++) {
+        var sm = scene._smoke[si], sd = sm.userData;
+        var cycle = ((t * sd.speed + sd.phase) % sd.maxH) / sd.maxH;
+        var h = cycle * sd.maxH;
+        sm.position.set(
+          sd.drift * cycle + Math.sin(t * 0.5 + sd.phase) * 0.2 * cycle,
+          0.5 + h,
+          0.5 + Math.cos(t * 0.3 + sd.phase) * 0.1 * cycle
+        );
+        sm.material.opacity = Math.sin(cycle * Math.PI) * 0.12 * cAmp;
+        var scale = 0.3 + cycle * sd.growRate;
+        sm.scale.setScalar(scale);
+      }
+    }
+
+
+
+    // Laptop screen flicker
+    if (scene._screenLight) {
+      scene._screenLight.intensity = 0.3 + Math.sin(t * 2) * 0.1;
+    }
+
     // Mist
     if (scene._mist) { scene._mist.rotation.y = t * 0.002; scene._mist.position.y = Math.sin(t * 0.1) * 0.2; }
 
@@ -828,6 +1051,23 @@
       tr.position.x += trd.vx; tr.position.y += trd.vy; tr.position.z += trd.vz;
       trd.life -= trd.decay; tr.material.opacity = Math.max(0, trd.life); tr.scale.setScalar(trd.life);
       if (trd.life <= 0) { scene.remove(tr); tr.geometry.dispose(); tr.material.dispose(); trails.splice(ti, 1); }
+    }
+
+    // Chapter transition burst — detect chapter boundary crossings
+    var currentChapter = Math.floor(scrollProgress * 10);
+    if (scene._lastChapter === undefined) scene._lastChapter = currentChapter;
+    if (currentChapter !== scene._lastChapter) {
+      scene._lastChapter = currentChapter;
+      // Burst of fireflies at camera position
+      for (var bi = 0; bi < 8; bi++) {
+        var ba = Math.random() * Math.PI * 2;
+        var br = 2 + Math.random() * 4;
+        spawnFirefly(
+          camera.position.x + Math.cos(ba) * br,
+          camera.position.y - 1 + Math.random() * 3,
+          camera.position.z + Math.sin(ba) * br - 3
+        );
+      }
     }
 
     // Velocity ambient fireflies

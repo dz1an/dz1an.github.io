@@ -21,6 +21,14 @@
   <link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css" />
   <link rel="stylesheet" type="text/css" href="vendor/font-awesome/css/all.min.css" />
   <link rel="stylesheet" type="text/css" href="css/style.css">
+  <!-- OpenGraph -->
+  <meta property="og:title" content="John Kent Evangelista — Senior Software Developer">
+  <meta property="og:description" content="Building connected systems — civic tech, SaaS, and digital transformation. Based in Zamboanga City, Philippines.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="images/profile.png">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="John Kent Evangelista — //kent.dev">
+  <meta name="twitter:description" content="Senior Software Developer specializing in civic tech, SaaS, and digital transformation.">
 </head>
 
 <body>
@@ -76,6 +84,20 @@
 
     <!-- Scroll progress indicator -->
     <div class="creative-scroll-progress" id="creativeProgress"></div>
+
+    <!-- Chapter progress dots -->
+    <div class="creative-dots" id="creativeDots">
+      <div class="creative-dot active" data-chapter="0"><span>Enter</span></div>
+      <div class="creative-dot" data-chapter="1"><span>Path</span></div>
+      <div class="creative-dot" data-chapter="2"><span>Clearing</span></div>
+      <div class="creative-dot" data-chapter="3"><span>Method</span></div>
+      <div class="creative-dot" data-chapter="4"><span>Vintech</span></div>
+      <div class="creative-dot" data-chapter="5"><span>Grove</span></div>
+      <div class="creative-dot" data-chapter="6"><span>Stack</span></div>
+      <div class="creative-dot" data-chapter="7"><span>Award</span></div>
+      <div class="creative-dot" data-chapter="8"><span>Rising</span></div>
+      <div class="creative-dot" data-chapter="9"><span>Connect</span></div>
+    </div>
 
     <!-- Fixed social + stats -->
     <div class="creative-hud-social">
@@ -218,7 +240,7 @@
         <button class="theme-toggle" id="themeToggle" aria-label="Toggle creative mode">
           <span class="toggle-track">
             <span class="toggle-thumb">
-              <i class="fas fa-cube icon-sun"></i>
+              <i class="fas fa-tree icon-sun"></i>
               <i class="fas fa-code icon-moon"></i>
             </span>
           </span>
@@ -937,9 +959,22 @@
   <!-- JavaScript -->
   <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
   <script src="vendor/typed/typed.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-  <script src="js/creative.js"></script>
   <script src="js/theme.js"></script>
+  <script>
+    // Lazy-load Three.js + creative.js only when needed
+    window.loadCreativeMode = function(callback) {
+      if (typeof THREE !== "undefined") { callback(); return; }
+      var s1 = document.createElement("script");
+      s1.src = "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js";
+      s1.onload = function() {
+        var s2 = document.createElement("script");
+        s2.src = "js/creative.js";
+        s2.onload = callback;
+        document.body.appendChild(s2);
+      };
+      document.body.appendChild(s1);
+    };
+  </script>
 
 </body>
 

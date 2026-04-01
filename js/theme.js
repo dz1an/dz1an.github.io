@@ -13,9 +13,18 @@
     var toggle = document.getElementById("themeToggle");
     if (!toggle) return;
 
-    // If saved as creative, start the 3D scene once DOM is ready
-    if (savedTheme === "creative" && window.creativeScene) {
-      window.creativeScene.start();
+    // If saved as creative, lazy-load and start
+    if (savedTheme === "creative") {
+      if (window.loadCreativeMode) {
+        window.loadCreativeMode(function () {
+          if (window.creativeScene) window.creativeScene.start();
+          startChapterObserver();
+          startScrollProgress();
+          startShapeCounter();
+        });
+      } else if (window.creativeScene) {
+        window.creativeScene.start();
+      }
     }
 
     function createBuildTerminal(goingCreative) {
@@ -83,12 +92,22 @@
     function activateCreative() {
       document.documentElement.setAttribute("data-theme", "creative");
       localStorage.setItem("theme", "creative");
-      if (window.creativeScene) window.creativeScene.start();
-      var scrollEl = document.getElementById("creativeScroll");
-      if (scrollEl) scrollEl.scrollTop = 0;
-      startShapeCounter();
-      startChapterObserver();
-      startScrollProgress();
+
+      function startScene() {
+        if (window.creativeScene) window.creativeScene.start();
+        var scrollEl = document.getElementById("creativeScroll");
+        if (scrollEl) scrollEl.scrollTop = 0;
+        startShapeCounter();
+        startChapterObserver();
+        startScrollProgress();
+      }
+
+      // Lazy-load Three.js + creative.js if not yet loaded
+      if (window.loadCreativeMode) {
+        window.loadCreativeMode(startScene);
+      } else {
+        startScene();
+      }
     }
 
     function deactivateCreative() {
@@ -224,12 +243,32 @@
     function startScrollProgress() {
       var scrollEl = document.getElementById("creativeScroll");
       var progressEl = document.getElementById("creativeProgress");
+      var dots = document.querySelectorAll(".creative-dot");
       if (!scrollEl || !progressEl) return;
+
+      // Click dots to jump to chapters
+      dots.forEach(function (dot) {
+        dot.addEventListener("click", function () {
+          var ch = parseInt(dot.getAttribute("data-chapter"));
+          var max = scrollEl.scrollHeight - scrollEl.clientHeight;
+          scrollEl.scrollTo({ top: (ch / 10) * max, behavior: "smooth" });
+        });
+      });
 
       scrollEl.addEventListener("scroll", function () {
         var max = scrollEl.scrollHeight - scrollEl.clientHeight;
         var pct = max > 0 ? (scrollEl.scrollTop / max) * 100 : 0;
         progressEl.style.width = pct + "%";
+
+        // Update active dot
+        var currentCh = Math.min(9, Math.floor((pct / 100) * 10));
+        dots.forEach(function (d, i) {
+          if (i === currentCh) {
+            d.classList.add("active");
+          } else {
+            d.classList.remove("active");
+          }
+        });
       });
     }
 
@@ -1264,6 +1303,8 @@ document.addEventListener("DOMContentLoaded", function () {
     "%c🎮 Hint: Try the Konami Code (↑↑↓↓←→←→BA)",
     "color: #d19a66; font-size: 10px; font-family: monospace; font-style: italic;"
   );
+
+  console.log("%c🌲 Tip: Toggle creative mode to walk through the forest.", "color: #A3B18A; font-size: 11px;");
 
   // Detect DevTools open via resize trick
   var devtoolsOpen = false;
