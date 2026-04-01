@@ -473,11 +473,15 @@ body.loaded #preloader {
   letter-spacing: -0.03em;
 }
 
+.navbar-brand .brand-slash {
+  color: var(--color-primary);
+  font-weight: 400;
+  margin-right: 0.1em;
+}
+
 .navbar-brand .brand-dot {
-  background: var(--gradient-text);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--color-text-muted);
+  font-weight: 400;
 }
 
 .navbar .nav-link {
@@ -1948,11 +1952,14 @@ body.loaded #preloader {
   letter-spacing: -0.02em;
 }
 
+.footer-brand .brand-slash {
+  color: var(--color-primary);
+  font-weight: 400;
+}
+
 .footer-brand .brand-dot {
-  background: var(--gradient-text);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--footer-text);
+  font-weight: 400;
 }
 
 .footer-social {
@@ -2115,7 +2122,7 @@ body.loaded #preloader {
   width: 56px;
   height: 30px;
   padding: 0;
-  margin-left: 0.75rem;
+  margin: 0;
   background: none;
   border: none;
   cursor: pointer;
