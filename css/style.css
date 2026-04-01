@@ -82,57 +82,57 @@
    Light Theme Override
    ======================================== */
 [data-theme="light"] {
-  /* Same accent colors — macOS style */
-  --color-primary: #5C7650;
-  --color-primary-dark: #3A5A40;
-  --color-primary-light: rgba(92, 118, 80, 0.08);
-  --color-primary-glow: rgba(92, 118, 80, 0.12);
-  --color-accent: #A3B18A;
-  --color-accent-light: rgba(163, 177, 138, 0.1);
-  --color-amber: #A3B18A;
-  --color-amber-light: rgba(163, 177, 138, 0.1);
+  /* Accent colors — deeper greens for contrast on light */
+  --color-primary: #3A5A40;
+  --color-primary-dark: #344E41;
+  --color-primary-light: rgba(58, 90, 64, 0.08);
+  --color-primary-glow: rgba(58, 90, 64, 0.12);
+  --color-accent: #5C7650;
+  --color-accent-light: rgba(92, 118, 80, 0.1);
+  --color-amber: #5C7650;
+  --color-amber-light: rgba(92, 118, 80, 0.1);
   --color-rose: #344E41;
 
-  /* Neutral light surfaces (macOS-style) */
-  --color-bg: #f5f5f7;
-  --color-bg-alt: #ececee;
-  --color-bg-muted: #e5e5e7;
-  --color-bg-card: #ffffff;
-  --color-border: rgba(0, 0, 0, 0.08);
-  --color-border-light: rgba(0, 0, 0, 0.04);
-  --color-text-muted: #6e6e73;
-  --color-text: #3a3a3c;
-  --color-text-dark: #1d1d1f;
+  /* Timberwolf / sage-tinted surfaces */
+  --color-bg: #DAD7CD;
+  --color-bg-alt: #d0cdc3;
+  --color-bg-muted: #c5c2b8;
+  --color-bg-card: #e8e5dc;
+  --color-border: rgba(52, 78, 65, 0.12);
+  --color-border-light: rgba(52, 78, 65, 0.06);
+  --color-text-muted: #5C7650;
+  --color-text: #344E41;
+  --color-text-dark: #1a2e22;
 
   --gradient-text: linear-gradient(135deg, #344E41, #3A5A40, #5C7650);
-  --gradient-card: linear-gradient(145deg, rgba(255,255,255,0.9), rgba(255,255,255,0.4));
-  --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+  --gradient-card: linear-gradient(145deg, rgba(232, 229, 220, 0.95), rgba(218, 215, 205, 0.6));
+  --gradient-glass: linear-gradient(135deg, rgba(232, 229, 220, 0.5), rgba(218, 215, 205, 0.2));
 
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.08);
-  --shadow-xl: 0 25px 50px rgba(0, 0, 0, 0.1);
-  --shadow-glow: 0 0 40px rgba(92, 118, 80, 0.1);
-  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-sm: 0 1px 3px rgba(52, 78, 65, 0.08);
+  --shadow-md: 0 4px 16px rgba(52, 78, 65, 0.1);
+  --shadow-lg: 0 8px 30px rgba(52, 78, 65, 0.12);
+  --shadow-xl: 0 20px 50px rgba(52, 78, 65, 0.15);
+  --shadow-glow: 0 0 30px rgba(58, 90, 64, 0.1);
+  --shadow-card: 0 2px 12px rgba(52, 78, 65, 0.08), 0 1px 3px rgba(52, 78, 65, 0.05);
 
-  --particle-color: 92, 118, 80;
-  --nav-scrolled-bg: rgba(245, 245, 247, 0.9);
-  --hero-badge-bg: rgba(92, 118, 80, 0.08);
-  --hero-badge-border: rgba(92, 118, 80, 0.15);
-  --hero-badge-color: #3A5A40;
-  --blob-1-color: rgba(92, 118, 80, 0.06);
-  --blob-2-color: rgba(58, 90, 64, 0.05);
+  --particle-color: 58, 90, 64;
+  --nav-scrolled-bg: rgba(218, 215, 205, 0.92);
+  --hero-badge-bg: rgba(58, 90, 64, 0.1);
+  --hero-badge-border: rgba(58, 90, 64, 0.18);
+  --hero-badge-color: #344E41;
+  --blob-1-color: rgba(58, 90, 64, 0.06);
+  --blob-2-color: rgba(92, 118, 80, 0.05);
   --blob-3-color: rgba(163, 177, 138, 0.04);
-  --dot-grid-color: rgba(0, 0, 0, 0.03);
-  --footer-bg: #1d1d1f;
-  --footer-text: rgba(255, 255, 255, 0.5);
-  --footer-icon-bg: rgba(255, 255, 255, 0.06);
-  --footer-icon-color: rgba(255, 255, 255, 0.5);
-  --footer-icon-border: rgba(255, 255, 255, 0.08);
-  --ripple-color: rgba(255, 255, 255, 0.35);
-  --cursor-ring-border: rgba(92, 118, 80, 0.4);
-  --cursor-ring-hover-bg: rgba(92, 118, 80, 0.05);
-  --cursor-ring-hover-border: rgba(92, 118, 80, 0.2);
+  --dot-grid-color: rgba(52, 78, 65, 0.04);
+  --footer-bg: #344E41;
+  --footer-text: rgba(218, 215, 205, 0.6);
+  --footer-icon-bg: rgba(218, 215, 205, 0.08);
+  --footer-icon-color: rgba(218, 215, 205, 0.5);
+  --footer-icon-border: rgba(218, 215, 205, 0.1);
+  --ripple-color: rgba(218, 215, 205, 0.35);
+  --cursor-ring-border: rgba(58, 90, 64, 0.4);
+  --cursor-ring-hover-bg: rgba(58, 90, 64, 0.05);
+  --cursor-ring-hover-border: rgba(58, 90, 64, 0.2);
 }
 
 /* ========================================
@@ -1389,7 +1389,7 @@ body.loaded #preloader {
 
 /* Section divider */
 .section-bg-alt {
-  background: var(--color-white);
+  background: var(--color-bg-alt);
 }
 
 /* ========================================
@@ -2844,97 +2844,92 @@ body.loaded #preloader {
   z-index: 99999;
 }
 
-/* Center dot — blinking terminal cursor */
-.cursor-dot {
+/* Xcode crosshair cursor */
+.xc-cursor {
   position: fixed;
-  width: 2px;
-  height: 18px;
-  border-radius: 1px;
-  background: var(--color-primary);
-  pointer-events: none;
+  width: 28px;
+  height: 28px;
   transform: translate(-50%, -50%);
+  pointer-events: none;
   z-index: 99999;
-  animation: cursor-blink 1s step-end infinite;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-@keyframes cursor-blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
+/* Horizontal line */
+.xc-h {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: var(--color-primary);
+  transform: translateY(-0.5px);
+  opacity: 0.6;
 }
 
-/* Outer ring — code bracket crosshair */
-.cursor-ring {
-  position: fixed;
-  width: 36px;
-  height: 36px;
-  border-radius: 0;
-  border: none;
-  pointer-events: none;
+/* Vertical line */
+.xc-v {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 1px;
+  height: 100%;
+  background: var(--color-primary);
+  transform: translateX(-0.5px);
+  opacity: 0.6;
+}
+
+/* Center dot */
+.xc-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: var(--color-primary);
+  border-radius: 50%;
   transform: translate(-50%, -50%);
-  z-index: 99998;
-  transition: width 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-              height 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-              opacity 0.3s ease;
+  box-shadow: 0 0 6px rgba(var(--particle-color), 0.5);
 }
 
-/* Four corner brackets via box-shadows */
-.cursor-ring::before,
-.cursor-ring::after {
-  content: '';
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  border-color: var(--cursor-ring-border);
-  border-style: solid;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+/* Coordinate label */
+.xc-label {
+  position: fixed;
+  pointer-events: none;
+  z-index: 99999;
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 0.55rem;
+  color: var(--color-primary);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  padding: 2px 6px;
+  border-radius: 3px;
+  opacity: 0.7;
+  white-space: nowrap;
+  transition: opacity 0.2s ease;
 }
 
-.cursor-ring::before {
-  top: 0;
-  left: 0;
-  border-width: 1.5px 0 0 1.5px;
+/* Hover state — crosshair becomes pointer icon */
+.xc-cursor.xc-hover {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.5);
 }
 
-.cursor-ring::after {
-  bottom: 0;
-  right: 0;
-  border-width: 0 1.5px 1.5px 0;
+.xc-cursor.xc-hover ~ .xc-label {
+  opacity: 0;
 }
 
-/* Extra bracket corners */
-.cursor-bracket {
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  border-color: var(--cursor-ring-border);
-  border-style: solid;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.cursor-br-tr {
-  top: 0;
-  right: 0;
-  border-width: 1.5px 1.5px 0 0;
-}
-
-.cursor-br-bl {
-  bottom: 0;
-  left: 0;
-  border-width: 0 0 1.5px 1.5px;
-}
-
-/* Hover state — expand brackets */
-.cursor-ring.cursor-hover {
-  width: 52px;
-  height: 52px;
-}
-
-.cursor-ring.cursor-hover::before,
-.cursor-ring.cursor-hover::after,
-.cursor-ring.cursor-hover .cursor-bracket {
-  width: 14px;
-  height: 14px;
-  border-color: var(--cursor-ring-hover-border);
+/* Hover pointer replacement */
+.custom-cursor .xc-pointer {
+  position: fixed;
+  pointer-events: none;
+  z-index: 99999;
+  font-size: 1.1rem;
+  color: var(--color-primary);
+  transform: translate(-4px, -2px);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  filter: drop-shadow(0 0 4px rgba(var(--particle-color), 0.4));
 }
 
 /* ========================================
@@ -3057,41 +3052,101 @@ body.loaded #preloader {
   transform: rotate(0deg) scale(1);
 }
 
-/* Aftershock ripple */
+/* Theme transition — translucent circular wipe + text scramble */
 .toggle-aftershock {
+  display: none;
+}
+
+.theme-wipe {
   position: fixed;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
   border-radius: 50%;
   pointer-events: none;
-  z-index: 99999;
-  opacity: 0;
-  transform: translate(-50%, -50%);
+  z-index: 99998;
+  transform: translate(-50%, -50%) scale(0);
+  backdrop-filter: blur(8px) saturate(150%);
+  -webkit-backdrop-filter: blur(8px) saturate(150%);
+  background: rgba(28, 28, 30, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.toggle-aftershock.active {
-  animation: aftershock 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+[data-theme="light"] .theme-wipe {
+  background: rgba(248, 249, 250, 0.2);
+  border-color: rgba(0, 0, 0, 0.04);
 }
 
-@keyframes aftershock {
+.theme-wipe.active {
+  animation: theme-wipe 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes theme-wipe {
   0% {
-    width: 0;
-    height: 0;
-    opacity: 0.4;
-    border: 3px solid var(--color-primary);
-    box-shadow: 0 0 20px rgba(var(--particle-color), 0.3);
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 1;
   }
-  50% {
-    opacity: 0.2;
+  80% {
+    opacity: 1;
   }
   100% {
-    width: max(200vw, 200vh);
-    height: max(200vw, 200vh);
+    transform: translate(-50%, -50%) scale(1);
     opacity: 0;
-    border: 3px solid var(--color-primary);
-    box-shadow: 0 0 60px rgba(var(--particle-color), 0.1);
+  }
+}
+
+/* Text transform during theme switch */
+html.theme-switching h1,
+html.theme-switching h2,
+html.theme-switching h3,
+html.theme-switching h4,
+html.theme-switching h5,
+html.theme-switching p,
+html.theme-switching .nav-link,
+html.theme-switching .section-title,
+html.theme-switching .section-badge,
+html.theme-switching .hero-badge,
+html.theme-switching .stat-number,
+html.theme-switching .stat-label,
+html.theme-switching .xcode-filename,
+html.theme-switching .spotlight-item-title,
+html.theme-switching .bento-award-title {
+  animation: text-wipe 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+html.theme-switching .hero-summary,
+html.theme-switching .credential,
+html.theme-switching .xcode-role,
+html.theme-switching .xcode-info p,
+html.theme-switching .skill-tag,
+html.theme-switching .xcode-tag {
+  animation: text-wipe 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.05s both;
+}
+
+html.theme-switching .btn-primary-custom,
+html.theme-switching .btn-outline-custom,
+html.theme-switching .cv-button,
+html.theme-switching .project-link {
+  animation: text-wipe 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.1s both;
+}
+
+@keyframes text-wipe {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scaleY(1);
+    filter: blur(0);
+  }
+  30% {
+    opacity: 0;
+    transform: translateY(-8px) scaleY(0.95);
+    filter: blur(3px);
+  }
+  70% {
+    opacity: 0;
+    transform: translateY(8px) scaleY(0.95);
+    filter: blur(3px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scaleY(1);
+    filter: blur(0);
   }
 }
 
@@ -3102,29 +3157,29 @@ body.loaded #preloader {
   }
 }
 
-/* ========================================
-   Section bg-alt uses card bg in dark
-   ======================================== */
-.section-bg-alt {
-  background: var(--color-bg-alt);
-}
 
-/* Smooth theme transition */
+/* Theme transition — smooth crossfade on all themed elements */
 body,
 .navbar,
 .hero,
 .section,
 .footer,
+.bento-mega-card,
+.bento-cell,
 .expertise-card,
-.project-card,
-.stat-card,
+.xcode-card,
+.xcode-titlebar,
+.xcode-sidebar,
+.xcode-console,
+.xcode-tabs,
+.xcode-preview,
+.xcode-toolbar,
 .skills-container,
-.about-card,
-.contact-wrapper,
-.contact-card,
-.cert-card,
-.award-card {
-  transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+.spotlight-container,
+.spotlight-item,
+.scroll-spy-widget,
+.mac-toast {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 /* ========================================

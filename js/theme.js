@@ -15,30 +15,54 @@
 
     toggle.addEventListener("click", function () {
       var current = document.documentElement.getAttribute("data-theme");
-      if (current === "light") {
-        document.documentElement.removeAttribute("data-theme");
-        localStorage.setItem("theme", "dark");
-      } else {
-        document.documentElement.setAttribute("data-theme", "light");
-        localStorage.setItem("theme", "light");
-      }
+      var goingLight = current !== "light";
 
-      // Update particle colors live
-      if (window.updateParticleColor) {
-        window.updateParticleColor();
-      }
+      // Get toggle position for wipe origin
+      var rect = toggle.getBoundingClientRect();
+      var x = rect.left + rect.width / 2;
+      var y = rect.top + rect.height / 2;
+      var maxDist = Math.max(
+        Math.hypot(x, y),
+        Math.hypot(window.innerWidth - x, y),
+        Math.hypot(x, window.innerHeight - y),
+        Math.hypot(window.innerWidth - x, window.innerHeight - y)
+      );
+      var diameter = maxDist * 2;
 
-      // Aftershock ripple effect
-      var aftershock = document.getElementById("toggleAftershock");
-      if (aftershock) {
-        aftershock.classList.remove("active");
-        // Force reflow to restart animation
-        void aftershock.offsetWidth;
-        aftershock.classList.add("active");
-        setTimeout(function () {
-          aftershock.classList.remove("active");
-        }, 750);
-      }
+      // Create translucent wipe circle
+      var wipe = document.createElement("div");
+      wipe.className = "theme-wipe";
+      wipe.style.left = x + "px";
+      wipe.style.top = y + "px";
+      wipe.style.width = diameter + "px";
+      wipe.style.height = diameter + "px";
+      document.body.appendChild(wipe);
+      void wipe.offsetWidth;
+      wipe.classList.add("active");
+
+      // Add text scramble class
+      document.documentElement.classList.add("theme-switching");
+
+      // Swap theme at 250ms (when text is invisible)
+      setTimeout(function () {
+        if (goingLight) {
+          document.documentElement.setAttribute("data-theme", "light");
+          localStorage.setItem("theme", "light");
+        } else {
+          document.documentElement.removeAttribute("data-theme");
+          localStorage.setItem("theme", "dark");
+        }
+
+        if (window.updateParticleColor) {
+          window.updateParticleColor();
+        }
+      }, 200);
+
+      // Remove everything after animation
+      setTimeout(function () {
+        document.documentElement.classList.remove("theme-switching");
+        wipe.remove();
+      }, 650);
     });
   });
 })();
@@ -290,58 +314,51 @@ window.addEventListener("scroll", function () {
 })();
 
 // ============================================
-// Custom Cursor
+// Custom Cursor — Xcode Crosshair
 // ============================================
 (function () {
   var cursor = document.getElementById("customCursor");
   if (!cursor || !window.matchMedia("(pointer: fine)").matches) return;
 
-  var dot = cursor.querySelector(".cursor-dot");
-  var ring = cursor.querySelector(".cursor-ring");
+  var xc = document.getElementById("xcCursor");
+  var label = document.getElementById("xcLabel");
   var curX = 0, curY = 0;
-  var ringX = 0, ringY = 0;
+  var labelX = 0, labelY = 0;
 
   document.addEventListener("mousemove", function (e) {
     curX = e.clientX;
     curY = e.clientY;
-    dot.style.left = curX + "px";
-    dot.style.top = curY + "px";
+
+    // Crosshair follows instantly
+    xc.style.left = curX + "px";
+    xc.style.top = curY + "px";
+
+    // Label follows with offset
+    label.style.left = (curX + 18) + "px";
+    label.style.top = (curY + 18) + "px";
+
+    // Update coordinates
+    label.textContent = Math.round(curX) + ", " + Math.round(curY);
   });
 
-  function ringFollow() {
-    ringX += (curX - ringX) * 0.15;
-    ringY += (curY - ringY) * 0.15;
-    ring.style.left = ringX + "px";
-    ring.style.top = ringY + "px";
-    requestAnimationFrame(ringFollow);
-  }
-  ringFollow();
-
-  // Grow cursor on interactive elements + stop blink
-  var hoverTargets = document.querySelectorAll("a, button, .tilt-card, .skill-tag, .nav-link");
+  // On interactive elements: hide crosshair, show default pointer
+  var hoverTargets = document.querySelectorAll("a, button, .tilt-card, .skill-tag, .nav-link, .xcode-tab, .spotlight-item");
   hoverTargets.forEach(function (el) {
     el.addEventListener("mouseenter", function () {
-      ring.classList.add("cursor-hover");
-      dot.style.animation = "none";
-      dot.style.opacity = "1";
-      dot.style.height = "8px";
-      dot.style.width = "8px";
-      dot.style.borderRadius = "1px";
+      xc.classList.add("xc-hover");
+      label.style.opacity = "0";
     });
     el.addEventListener("mouseleave", function () {
-      ring.classList.remove("cursor-hover");
-      dot.style.animation = "cursor-blink 1s step-end infinite";
-      dot.style.height = "18px";
-      dot.style.width = "2px";
-      dot.style.borderRadius = "1px";
+      xc.classList.remove("xc-hover");
+      label.style.opacity = "0.7";
     });
   });
 
-  // Hide default cursor
+  // Hide default cursor globally, restore on interactive elements
   document.body.style.cursor = "none";
-  document.querySelectorAll("a, button").forEach(function (el) {
-    el.style.cursor = "none";
-  });
+  var styleTag = document.createElement("style");
+  styleTag.textContent = "a, button, .tilt-card, .skill-tag, .nav-link, .xcode-tab, .spotlight-item { cursor: pointer !important; }";
+  document.head.appendChild(styleTag);
 })();
 
 // ============================================
