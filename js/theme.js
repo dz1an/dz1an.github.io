@@ -22,20 +22,26 @@
       var terminal = document.createElement("div");
       terminal.className = "xc-build-terminal";
 
-      // Title bar
-      terminal.innerHTML =
-        '<div class="xc-build-titlebar">' +
-          '<span class="xcode-dot xcode-dot-red"></span>' +
-          '<span class="xcode-dot xcode-dot-yellow"></span>' +
-          '<span class="xcode-dot xcode-dot-green"></span>' +
-          '<span class="xc-build-title">kent.dev — Build Log</span>' +
-        '</div>' +
-        '<div class="xc-build-body" id="xcBuildBody"></div>';
+      // Title bar (built with DOM API)
+      var titlebar = document.createElement("div");
+      titlebar.className = "xc-build-titlebar";
+      ["xcode-dot-red", "xcode-dot-yellow", "xcode-dot-green"].forEach(function (cls) {
+        var dot = document.createElement("span");
+        dot.className = "xcode-dot " + cls;
+        titlebar.appendChild(dot);
+      });
+      var titleText = document.createElement("span");
+      titleText.className = "xc-build-title";
+      titleText.textContent = "kent.dev \u2014 Build Log";
+      titlebar.appendChild(titleText);
+      terminal.appendChild(titlebar);
+
+      var body = document.createElement("div");
+      body.className = "xc-build-body";
+      terminal.appendChild(body);
 
       overlay.appendChild(terminal);
       document.body.appendChild(overlay);
-
-      var body = document.getElementById("xcBuildBody");
 
       var lines = [
         { text: "$ xcodebuild -scheme kent.dev -config " + mode, cls: "xc-cmd" },
@@ -1024,9 +1030,10 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!muteBtn) return;
 
     function updateIcon() {
-      muteBtn.innerHTML = muted
-        ? '<i class="fas fa-volume-mute"></i>'
-        : '<i class="fas fa-volume-up"></i>';
+      var icon = muteBtn.querySelector("i");
+      if (icon) {
+        icon.className = muted ? "fas fa-volume-mute" : "fas fa-volume-up";
+      }
     }
     updateIcon();
 
