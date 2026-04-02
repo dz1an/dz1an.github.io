@@ -240,7 +240,7 @@
         });
       }, {
         root: scrollContainer,
-        threshold: 0.3
+        threshold: 0.15
       });
 
       chapters.forEach(function (ch) { chapterObserver.observe(ch); });
@@ -926,18 +926,7 @@ document.addEventListener("DOMContentLoaded", function () {
 // ============================================
 // Parallax on Scroll
 // ============================================
-(function () {
-  var blobs = document.querySelectorAll(".blob");
-
-  window.addEventListener("scroll", function () {
-    var scrollY = window.scrollY;
-
-    blobs.forEach(function (blob, i) {
-      var speed = 0.2 + i * 0.1;
-      blob.style.transform = "translateY(" + scrollY * speed + "px)";
-    });
-  });
-})();
+// Blob parallax removed — blobs are now static positioned
 
 // ============================================
 // Navbar active link on click

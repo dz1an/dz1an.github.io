@@ -61,24 +61,25 @@
   // 10 chapters — campsite centered, clear sightlines
   var CAMERA_PATH = [
     { at: 0.00, pos: [0, 8, 40],      look: [0, 0, 0] },     // Ch0: High above, looking down into clearing
-    { at: 0.06, pos: [0, 5, 28],     look: [0, 0.5, 0] },   // Descending toward forest
-    { at: 0.12, pos: [0, 3, 18],     look: [0, 0.5, 0] },   // Ch1: The path — inside the tree ring
-    { at: 0.18, pos: [2, 2, 10],     look: [0, 0.6, 0] },   // Approaching campsite
-    { at: 0.22, pos: [3.5, 1.8, 6],  look: [0, 0.5, -0.5] },// Ch2: Campsite — clear wide view
-    { at: 0.27, pos: [2.5, 1.6, 4],  look: [0, 0.6, 0] },   // Closer — fire and figure visible
-    { at: 0.32, pos: [-1, 1.8, 4],   look: [0, 0.5, -0.3] },// Ch3: Orbit left — other side of fire
-    { at: 0.37, pos: [-2.5, 2, 3],   look: [0.5, 0.5, 0] }, // Still at campsite
-    { at: 0.42, pos: [-2, 2.5, 1],   look: [0, 0.5, -0.5] },// Lingering
-    { at: 0.48, pos: [-1, 3, -2],    look: [8, 2, -20] },   // Ch4: Turning toward lanterns
-    { at: 0.54, pos: [6, 3.5, -10],  look: [10, 2.5, -22] },// Walking to lanterns
-    { at: 0.60, pos: [10, 4, -16],   look: [8, 3, -22] },   // Ch5: Among lanterns
-    { at: 0.66, pos: [4, 3.5, -22],  look: [-4, 3, -28] },  // Into deep woods
-    { at: 0.72, pos: [-4, 3, -26],   look: [-10, 3, -30] }, // Ch6: Fireflies
-    { at: 0.78, pos: [-10, 4, -18],  look: [-4, 4, -10] },  // Ch7: The award
-    { at: 0.84, pos: [-6, 6, -6],    look: [0, 0.5, 0] },   // Ch8: Rising
-    { at: 0.90, pos: [-4, 8, 6],     look: [0, 0.5, 0] },   // Climbing into the canopy
-    { at: 0.95, pos: [16, 7, 4],     look: [0, 0.5, 0] },   // Settling into a tree
-    { at: 1.00, pos: [16, 6, 3],     look: [0, 0.5, 0] }    // Ch9: Nested in the branches, looking back at camp
+    { at: 0.05, pos: [0, 6, 34],      look: [0, 0.3, 0] },   // Gentle descent
+    { at: 0.10, pos: [0, 4.5, 24],    look: [0, 0.5, 0] },   // Ch1: The path — inside the tree ring
+    { at: 0.16, pos: [1, 3, 16],      look: [0, 0.5, 0] },   // Approaching campsite
+    { at: 0.22, pos: [3, 2, 8],       look: [0, 0.5, -0.5] },// Ch2: Campsite — clear wide view
+    { at: 0.28, pos: [2, 1.8, 5],     look: [0, 0.6, 0] },   // Closer — fire and figure visible
+    { at: 0.33, pos: [-0.5, 1.8, 4],  look: [0, 0.5, -0.3] },// Ch3: Orbit left — other side of fire
+    { at: 0.38, pos: [-2, 2.2, 2],    look: [0, 0.5, -1] },  // Transitioning out
+    { at: 0.42, pos: [-1.5, 2.8, 0],  look: [2, 1, -6] },    // Smooth bridge to lanterns
+    { at: 0.47, pos: [0, 3, -4],      look: [6, 2, -14] },   // Ch4: Turning toward lanterns
+    { at: 0.52, pos: [3, 3.2, -8],    look: [8, 2.5, -18] }, // Walking to lanterns
+    { at: 0.57, pos: [7, 3.5, -13],   look: [8, 3, -20] },   // Ch5: Among lanterns
+    { at: 0.63, pos: [5, 3.5, -18],   look: [0, 3, -24] },   // Into deep woods
+    { at: 0.69, pos: [0, 3.2, -22],   look: [-6, 3, -28] },  // Ch6: Fireflies
+    { at: 0.75, pos: [-6, 3.5, -20],  look: [-4, 4, -14] },  // Ch7: The award
+    { at: 0.81, pos: [-5, 5, -12],    look: [-2, 2, -4] },   // Ascending
+    { at: 0.87, pos: [-3, 7, -2],     look: [0, 1, 0] },     // Ch8: Rising above canopy
+    { at: 0.93, pos: [4, 8, 8],       look: [0, 0.5, 0] },   // Wide view
+    { at: 0.97, pos: [12, 7, 5],      look: [0, 0.5, 0] },   // Settling into a tree
+    { at: 1.00, pos: [14, 6.5, 4],    look: [0, 0.5, 0] }    // Ch9: Nested in the branches
   ];
 
   function lerp(a, b, t) { return a + (b - a) * t; }
@@ -92,7 +93,8 @@
     }
     var a = CAMERA_PATH[i], b = CAMERA_PATH[i + 1];
     var t = (p - a.at) / (b.at - a.at);
-    t = t * t * (3 - 2 * t);
+    // Quintic smoothstep — much smoother than cubic
+    t = t * t * t * (t * (t * 6 - 15) + 10);
     return {
       px: lerp(a.pos[0], b.pos[0], t), py: lerp(a.pos[1], b.pos[1], t), pz: lerp(a.pos[2], b.pos[2], t),
       lx: lerp(a.look[0], b.look[0], t), ly: lerp(a.look[1], b.look[1], t), lz: lerp(a.look[2], b.look[2], t)
@@ -909,16 +911,25 @@
     var t = clock.getElapsedTime();
     updateScroll(); updateAmbientAudio();
 
-    // Camera
+    // Camera — smooth damped position + lookAt
     var cam = getCameraState(scrollProgress);
-    camera.position.x += (cam.px + mouse.ndcX * 1.2 - camera.position.x) * 0.03;
-    camera.position.y += (cam.py + mouse.ndcY * 0.8 - camera.position.y) * 0.03;
-    camera.position.z += (cam.pz - camera.position.z) * 0.03;
-    camera.lookAt(cam.lx, cam.ly, cam.lz);
+    var damp = 0.025;
+    camera.position.x += (cam.px + mouse.ndcX * 1.2 - camera.position.x) * damp;
+    camera.position.y += (cam.py + mouse.ndcY * 0.8 - camera.position.y) * damp;
+    camera.position.z += (cam.pz - camera.position.z) * damp;
+    // Damped lookAt — prevent snapping
+    if (!scene._lookTarget) scene._lookTarget = { x: cam.lx, y: cam.ly, z: cam.lz };
+    scene._lookTarget.x += (cam.lx - scene._lookTarget.x) * damp;
+    scene._lookTarget.y += (cam.ly - scene._lookTarget.y) * damp;
+    scene._lookTarget.z += (cam.lz - scene._lookTarget.z) * damp;
+    camera.lookAt(scene._lookTarget.x, scene._lookTarget.y, scene._lookTarget.z);
 
     // Fog
-    scene.fog.near = lerp(10, 5, Math.min(1, scrollProgress * 1.5));
-    scene.fog.far = lerp(65, 80, scrollProgress);
+    // Smoother fog — lerp toward target instead of snapping
+    var fogNearTarget = lerp(12, 6, Math.min(1, scrollProgress * 1.2));
+    var fogFarTarget = lerp(70, 90, scrollProgress);
+    scene.fog.near += (fogNearTarget - scene.fog.near) * 0.05;
+    scene.fog.far += (fogFarTarget - scene.fog.far) * 0.05;
 
     // Lighting
     var fills = scene._fills;
