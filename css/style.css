@@ -630,6 +630,7 @@
 
 html {
   scroll-padding-top: calc(80px + env(safe-area-inset-top, 0px));
+  background-color: var(--color-bg);
 }
 
 /* Smooth scroll only for anchor clicks, not finger scrolling */
@@ -1163,16 +1164,30 @@ body.loaded #preloader {
   padding: 1.25rem 0;
   padding-top: calc(env(safe-area-inset-top, 0px) + 1.25rem);
   transition: all var(--transition-base);
+  background: transparent;
+}
+
+/* Solid background layer — Safari 26 ignores fixed element backgrounds for
+   liquid glass tinting, so we use an absolute child to block content behind */
+.navbar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
   background: var(--color-bg);
+  z-index: -1;
+  transition: all var(--transition-base);
 }
 
 .navbar.navbar-scrolled {
+  padding: 0.75rem 0;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 0.75rem);
+}
+
+.navbar.navbar-scrolled::before {
   background: var(--color-bg);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   box-shadow: 0 1px 0 var(--color-border-light), var(--shadow-sm);
-  padding: 0.75rem 0;
-  padding-top: calc(env(safe-area-inset-top, 0px) + 0.75rem);
 }
 
 .navbar-brand {
