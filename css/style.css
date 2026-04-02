@@ -651,40 +651,6 @@ body {
   overflow-x: hidden;
 }
 
-/* Safari iOS — real DOM status bar blocker with forced compositing layer */
-#safariStatusBlocker {
-  display: none;
-}
-
-.safari-ios #safariStatusBlocker {
-  display: block;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: env(safe-area-inset-top, 0px);
-  background: #000000;
-  z-index: 9999;
-  pointer-events: none;
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
-  will-change: transform;
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-}
-
-/* Safari iOS — clip scrollable content so nothing renders in status bar zone */
-.safari-ios .navbar {
-  top: env(safe-area-inset-top, 0px);
-}
-
-.safari-ios .hero {
-  padding-top: env(safe-area-inset-top, 0px);
-}
-
-[data-theme="creative"] #safariStatusBlocker {
-  display: none !important;
-}
 
 ::selection {
   background: var(--color-primary);

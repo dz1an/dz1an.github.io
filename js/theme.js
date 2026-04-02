@@ -1,15 +1,4 @@
 // ============================================
-// Safari iOS Detection — for liquid glass fixes
-// ============================================
-(function () {
-  var ua = navigator.userAgent;
-  var isSafariIOS = /iPhone|iPad|iPod/.test(ua) && /WebKit/.test(ua) && !/CriOS|FxiOS|OPiOS/.test(ua);
-  if (isSafariIOS) {
-    document.documentElement.classList.add("safari-ios");
-  }
-})();
-
-// ============================================
 // Theme Toggle — Code Mode (dark) ↔ Creative Mode (3D)
 // ============================================
 (function () {
@@ -108,7 +97,7 @@
     function activateCreative() {
       document.documentElement.setAttribute("data-theme", "creative");
       localStorage.setItem("theme", "creative");
-      updateThemeColor("#000000");
+      updateThemeColor("#1c1c1e");
 
       function startScene() {
         if (window.creativeScene) window.creativeScene.start();
@@ -130,7 +119,7 @@
     function deactivateCreative() {
       document.documentElement.removeAttribute("data-theme");
       localStorage.setItem("theme", "dark");
-      updateThemeColor("#000000");
+      updateThemeColor("#1c1c1e");
       if (window.creativeScene) window.creativeScene.stop();
       stopShapeCounter();
       stopChapterObserver();
