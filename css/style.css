@@ -347,7 +347,7 @@
   -ms-overflow-style: none;
   pointer-events: auto;
   scroll-snap-type: y mandatory;
-  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
 }
 
 .creative-scroll::-webkit-scrollbar {
@@ -628,8 +628,14 @@
 }
 
 html {
-  scroll-behavior: smooth;
   scroll-padding-top: 80px;
+}
+
+/* Smooth scroll only for anchor clicks, not finger scrolling */
+@media (prefers-reduced-motion: no-preference) {
+  html:focus-within {
+    scroll-behavior: smooth;
+  }
 }
 
 body {
