@@ -89,15 +89,9 @@
       return overlay;
     }
 
-    function updateThemeColor(color) {
-      var metas = document.querySelectorAll('meta[name="theme-color"]');
-      metas.forEach(function (m) { m.setAttribute("content", color); });
-    }
-
     function activateCreative() {
       document.documentElement.setAttribute("data-theme", "creative");
       localStorage.setItem("theme", "creative");
-      updateThemeColor("#1c1c1e");
 
       function startScene() {
         if (window.creativeScene) window.creativeScene.start();
@@ -119,7 +113,6 @@
     function deactivateCreative() {
       document.documentElement.removeAttribute("data-theme");
       localStorage.setItem("theme", "dark");
-      updateThemeColor("#1c1c1e");
       if (window.creativeScene) window.creativeScene.stop();
       stopShapeCounter();
       stopChapterObserver();
