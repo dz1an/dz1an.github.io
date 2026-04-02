@@ -651,6 +651,19 @@ body {
   overflow-x: hidden;
 }
 
+/* Safari iOS status bar blocker — solid bar behind the translucent liquid glass */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-top, 0px);
+  background: #000000;
+  z-index: 9998;
+  pointer-events: none;
+}
+
 ::selection {
   background: var(--color-primary);
   color: white;
@@ -1156,7 +1169,7 @@ body.loaded #preloader {
    ======================================== */
 .navbar {
   position: fixed;
-  top: 0;
+  top: env(safe-area-inset-top, 0px);
   left: 0;
   right: 0;
   z-index: 100;
