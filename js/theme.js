@@ -446,11 +446,17 @@
   var progressBar = document.getElementById("scrollProgress");
   if (!progressBar) return;
 
+  var ticking = false;
   window.addEventListener("scroll", function () {
-    var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
-    var scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-    var progress = (scrollTop / scrollHeight) * 100;
-    progressBar.style.width = progress + "%";
+    if (!ticking) {
+      requestAnimationFrame(function () {
+        var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+        var scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        progressBar.style.width = (scrollTop / scrollHeight) * 100 + "%";
+        ticking = false;
+      });
+      ticking = true;
+    }
   });
 })();
 
@@ -1222,7 +1228,13 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  window.addEventListener("scroll", updateSpy);
+  var spyTicking = false;
+  window.addEventListener("scroll", function () {
+    if (!spyTicking) {
+      requestAnimationFrame(function () { updateSpy(); spyTicking = false; });
+      spyTicking = true;
+    }
+  });
   updateSpy();
 })();
 

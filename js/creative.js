@@ -926,10 +926,18 @@
     var t = (3 - o.y) / d.y; if (t < 0) t = 10;
     return { x: o.x + d.x * t, y: 3, z: o.z + d.z * t };
   }
+  var lastMouseSpawn = 0;
   function onMouseMove(e) {
     mouse.ndcX = (e.clientX / window.innerWidth) * 2 - 1;
     mouse.ndcY = -(e.clientY / window.innerHeight) * 2 + 1;
-    if (isMouseDown) { var wp = getWorldPos(e.clientX, e.clientY); spawnFirefly(wp.x, wp.y, wp.z); }
+    if (isMouseDown) {
+      var now = Date.now();
+      if (now - lastMouseSpawn > 80) {
+        var wp = getWorldPos(e.clientX, e.clientY);
+        spawnFirefly(wp.x, wp.y, wp.z);
+        lastMouseSpawn = now;
+      }
+    }
   }
   function onClick(e) { var wp = getWorldPos(e.clientX, e.clientY); spawnFirefly(wp.x, wp.y, wp.z); if (window.playSound) playSound("click"); }
   function onTouch(e) { e.preventDefault(); isMouseDown = true; var t = e.touches[0]; var wp = getWorldPos(t.clientX, t.clientY); spawnFirefly(wp.x, wp.y, wp.z); lastTouchSpawn = Date.now(); }

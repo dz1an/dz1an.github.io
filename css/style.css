@@ -1082,9 +1082,9 @@ body::after {
               0 0 40px rgba(var(--particle-color), 0.15);
 }
 
-/* Stat numbers glow */
+/* Stat numbers glow — text-shadow is cheaper than drop-shadow */
 .bento-stat-item .stat-number {
-  filter: drop-shadow(0 0 8px rgba(var(--particle-color), 0.2));
+  text-shadow: 0 0 8px rgba(var(--particle-color), 0.2);
 }
 
 /* Hero badge glow pulse */
@@ -3358,7 +3358,6 @@ body.loaded #preloader {
   transform: translate(-4px, -2px);
   opacity: 0;
   transition: opacity 0.2s ease;
-  filter: drop-shadow(0 0 4px rgba(var(--particle-color), 0.4));
 }
 
 /* ========================================
