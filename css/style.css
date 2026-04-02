@@ -1023,9 +1023,15 @@ body::after {
   overflow: hidden;
 }
 
-/* Lock body scroll while preloader is active */
+/* Lock body and hide all content while preloader is active */
 body:not(.loaded) {
   overflow: hidden;
+  height: 100vh;
+  height: 100dvh;
+}
+
+body:not(.loaded) > *:not(#preloader) {
+  visibility: hidden;
 }
 
 body.loaded #preloader {

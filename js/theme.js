@@ -161,11 +161,11 @@
       document.documentElement.classList.add("theme-switching");
     });
 
-    // Back button (creative HUD) — cinematic exit
+    // Back button (creative HUD) — cinematic exit with build terminal
     var backBtn = document.getElementById("creativeBackBtn");
     if (backBtn) {
       backBtn.addEventListener("click", function () {
-        if (window.playSound) playSound("click");
+        if (window.playSound) playSound("build");
 
         var fade = document.createElement("div");
         fade.className = "creative-transition";
@@ -173,11 +173,21 @@
         fade.offsetHeight;
         fade.classList.add("ct-active");
 
+        var buildOverlay = createBuildTerminal(false);
+        document.documentElement.classList.add("theme-switching");
+
         setTimeout(function () {
           deactivateCreative();
+        }, 1800);
+
+        setTimeout(function () {
+          document.documentElement.classList.remove("theme-switching");
+          buildOverlay.classList.add("xc-build-done");
+          setTimeout(function () { buildOverlay.remove(); }, 500);
+
           fade.classList.add("ct-fade-out");
-          setTimeout(function () { fade.remove(); }, 700);
-        }, 600);
+          setTimeout(function () { fade.remove(); }, 800);
+        }, 2600);
       });
     }
 
@@ -276,49 +286,50 @@
     var contactBtn = document.getElementById("creativeContactBtn");
     var projectsBtn = document.getElementById("creativeProjectsBtn");
 
+    // Helper: cinematic exit with build terminal, then navigate to a section
+    function cinematicExitTo(sectionId) {
+      if (window.playSound) playSound("build");
+
+      var fade = document.createElement("div");
+      fade.className = "creative-transition";
+      document.body.appendChild(fade);
+      fade.offsetHeight;
+      fade.classList.add("ct-active");
+
+      var buildOverlay = createBuildTerminal(false);
+      document.documentElement.classList.add("theme-switching");
+
+      setTimeout(function () {
+        deactivateCreative();
+      }, 1800);
+
+      setTimeout(function () {
+        document.documentElement.classList.remove("theme-switching");
+        buildOverlay.classList.add("xc-build-done");
+        setTimeout(function () { buildOverlay.remove(); }, 500);
+
+        fade.classList.add("ct-fade-out");
+        setTimeout(function () {
+          fade.remove();
+          if (sectionId) {
+            var el = document.getElementById(sectionId);
+            if (el) el.scrollIntoView({ behavior: "smooth" });
+          }
+        }, 800);
+      }, 2600);
+    }
+
     if (contactBtn) {
       contactBtn.addEventListener("click", function (e) {
         e.preventDefault();
-        if (window.playSound) playSound("click");
-
-        var fade = document.createElement("div");
-        fade.className = "creative-transition";
-        document.body.appendChild(fade);
-        fade.offsetHeight;
-        fade.classList.add("ct-active");
-
-        setTimeout(function () {
-          deactivateCreative();
-          fade.classList.add("ct-fade-out");
-          setTimeout(function () {
-            fade.remove();
-            var el = document.getElementById("contact");
-            if (el) el.scrollIntoView({ behavior: "smooth" });
-          }, 500);
-        }, 600);
+        cinematicExitTo("contact");
       });
     }
 
     if (projectsBtn) {
       projectsBtn.addEventListener("click", function (e) {
         e.preventDefault();
-        if (window.playSound) playSound("click");
-
-        var fade = document.createElement("div");
-        fade.className = "creative-transition";
-        document.body.appendChild(fade);
-        fade.offsetHeight;
-        fade.classList.add("ct-active");
-
-        setTimeout(function () {
-          deactivateCreative();
-          fade.classList.add("ct-fade-out");
-          setTimeout(function () {
-            fade.remove();
-            var el = document.getElementById("projects");
-            if (el) el.scrollIntoView({ behavior: "smooth" });
-          }, 500);
-        }, 600);
+        cinematicExitTo("projects");
       });
     }
 
