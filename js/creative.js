@@ -74,8 +74,8 @@
     { at: 0.57, pos: [7, 3.5, -13],   look: [8, 3, -20] },   // Ch5: Among lanterns
     { at: 0.63, pos: [5, 3.5, -18],   look: [0, 3, -24] },   // Into deep woods
     { at: 0.69, pos: [0, 3.2, -22],   look: [-6, 3, -28] },  // Ch6: Fireflies
-    { at: 0.75, pos: [-6, 3.5, -20],  look: [-4, 4, -14] },  // Ch7: The award
-    { at: 0.81, pos: [-5, 5, -12],    look: [-2, 2, -4] },   // Ascending
+    { at: 0.75, pos: [-2, 6, -14],    look: [0, 1, 0] },     // Ch7: The award — high, looking back at camp
+    { at: 0.81, pos: [-3, 7, -8],     look: [0, 1, 0] },     // Ascending — wide view of the forest
     { at: 0.87, pos: [-3, 7, -2],     look: [0, 1, 0] },     // Ch8: Rising above canopy
     { at: 0.93, pos: [4, 8, 8],       look: [0, 0.5, 0] },   // Wide view
     { at: 0.97, pos: [12, 7, 5],      look: [0, 0.5, 0] },   // Settling into a tree
@@ -213,12 +213,42 @@
     return h;
   }
 
+  // Exclusion zones — keep trees away from lanterns, fireflies, and camera path
+  function isInClearZone(x, z) {
+    // Camera path corridor: wide clearance along the walk
+    var pathPoints = [
+      { x: 0, z: 0 },     // campsite
+      { x: 0, z: -4 },    // bridge
+      { x: 3, z: -8 },    // walk to lanterns
+      { x: 5, z: -10 },   // Vintech
+      { x: 8, z: -14 },   // ZamGo
+      { x: 10, z: -18 },  // Vintazk Uni
+      { x: 6, z: -22 },   // Barangay Connect
+      { x: 2, z: -25 },   // SmartScore
+      { x: 0, z: -22 },   // firefly zone start
+      { x: -4, z: -26 },  // firefly zone mid
+      { x: -8, z: -30 },  // firefly zone end
+    ];
+    var clearRadius = 5;
+    for (var p = 0; p < pathPoints.length; p++) {
+      var dx = x - pathPoints[p].x, dz = z - pathPoints[p].z;
+      if (dx * dx + dz * dz < clearRadius * clearRadius) return true;
+    }
+    return false;
+  }
+
   function plantForest() {
+    var attempts = 0;
     for (var i = 0; i < TREE_COUNT; i++) {
-      var angle = Math.random() * Math.PI * 2;
-      var dist = 14 + Math.random() * 45;
-      var x = Math.cos(angle) * dist;
-      var z = Math.sin(angle) * dist;
+      var angle, dist, x, z;
+      // Try to find a valid position
+      do {
+        angle = Math.random() * Math.PI * 2;
+        dist = 14 + Math.random() * 45;
+        x = Math.cos(angle) * dist;
+        z = Math.sin(angle) * dist;
+        attempts++;
+      } while (isInClearZone(x, z) && attempts < 500);
       if (Math.abs(x) > 55 || Math.abs(z) > 55) continue;
 
       var height = 3 + Math.random() * 7;
@@ -592,9 +622,18 @@
 
   // ======================== Project Lanterns ========================
   function createProjectLanterns() {
-    var positions = [{ x: 12, z: -18 }, { x: 8, z: -25 }, { x: 16, z: -22 }, { x: 5, z: -20 }, { x: 10, z: -28 }];
+    // Lanterns placed along camera path — aligned with chapters
+    // Ch4 (0.47): Vintech & ZamGo → camera looks toward (6,-14) from (0,-4)
+    // Ch5 (0.57): Grove → camera at (7,-13) looking at (8,-20)
+    var positions = [
+      { x: 5, z: -10, chapter: 0.47 },   // Vintech — visible from ch4 turn
+      { x: 8, z: -14, chapter: 0.50 },   // ZamGo — along the walk
+      { x: 10, z: -18, chapter: 0.55 },  // Vintazk Uni — ch5 start
+      { x: 6, z: -22, chapter: 0.58 },   // Barangay Connect — deeper
+      { x: 2, z: -25, chapter: 0.62 }    // SmartScore — end of grove
+    ];
     PROJECTS.forEach(function (proj, i) {
-      var p = positions[i], y = 3 + Math.random() * 2;
+      var p = positions[i], y = 2.5 + i * 0.3;
       var mesh = new THREE.Mesh(new THREE.SphereGeometry(0.4, 12, 12), new THREE.MeshPhysicalMaterial({
         color: proj.color, emissive: proj.color, emissiveIntensity: 0.1, transparent: true, opacity: 0.3,
         roughness: 0.1, clearcoat: 1.0, clearcoatRoughness: 0.05
@@ -603,17 +642,20 @@
       var light = new THREE.PointLight(proj.color, 0.6, 8); light.position.set(p.x, y, p.z); scene.add(light);
       var label = makeLabel(proj.name, { fontSize: 20, fontWeight: "600", color: "#DAD7CD", sub: proj.sub, scale: 1.4, opacity: 0.01 });
       label.position.set(p.x, y + 1.2, p.z); scene.add(label);
-      lanterns.push({ mesh: mesh, light: light, label: label, baseY: y, x: p.x, z: p.z });
+      lanterns.push({ mesh: mesh, light: light, label: label, baseY: y, x: p.x, z: p.z, chapter: p.chapter });
     });
   }
 
   // ======================== Fireflies (Tech) ========================
   function createFireflies() {
     var ffColors = [0xA3B18A, 0xB5C99A, 0xDAD7CD, 0x97A97C, 0x6B8F71];
+    // Place fireflies along the ch6 path: camera goes from (0,-22) to (-6,-28)
+    // Spread them in that corridor
     TECH.forEach(function (name, i) {
-      var angle = (i / TECH.length) * Math.PI * 2 + Math.random() * 0.5;
-      var r = 12 + Math.random() * 15;
-      var x = Math.cos(angle) * r, z = Math.sin(angle) * r - 15, y = 2 + Math.random() * 5;
+      var t = i / (TECH.length - 1); // 0 to 1 spread
+      var x = lerp(2, -8, t) + (Math.random() - 0.5) * 6;
+      var z = lerp(-20, -30, t) + (Math.random() - 0.5) * 4;
+      var y = 2 + Math.random() * 4;
       var color = ffColors[i % ffColors.length];
       var mesh = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8, 8), new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.9 }));
       mesh.position.set(x, y, z); scene.add(mesh);
@@ -987,30 +1029,41 @@
     if (scene._brandSub) scene._brandSub.position.y = 3.5 + Math.sin(t * 0.4 + 0.5) * 0.08;
 
     // Lanterns
-    var inProj = scrollProgress > 0.45 && scrollProgress < 0.65;
+    // Lanterns — each fades in when camera is near its chapter
     for (var li = 0; li < lanterns.length; li++) {
       var lan = lanterns[li], bob = Math.sin(t * 0.6 + li * 1.2) * 0.3;
       lan.mesh.position.y = lan.baseY + bob; lan.light.position.y = lan.baseY + bob; lan.label.position.y = lan.baseY + bob + 1.2;
-      var tG = inProj ? 0.8 : 0.3, tL = inProj ? 1.2 : 0.4, tO = inProj ? 0.9 : 0.5, tS = inProj ? 1.3 : 1.0;
-      lan.mesh.material.emissiveIntensity += (tG - lan.mesh.material.emissiveIntensity) * 0.03;
-      lan.light.intensity += (tL - lan.light.intensity) * 0.03;
-      lan.label.material.opacity += (tO - lan.label.material.opacity) * 0.03;
-      lan.mesh.scale.setScalar(lan.mesh.scale.x + (tS - lan.mesh.scale.x) * 0.03);
+
+      // Proximity: how close is scrollProgress to this lantern's chapter?
+      var dist = Math.abs(scrollProgress - (lan.chapter || 0.5));
+      var near = Math.max(0, 1 - dist * 10); // 1 = on top of it, 0 = far away
+
+      var tG = lerp(0.1, 1.0, near), tL = lerp(0.2, 1.5, near);
+      var tO = lerp(0.0, 0.95, near), tS = lerp(0.8, 1.4, near);
+      lan.mesh.material.emissiveIntensity += (tG - lan.mesh.material.emissiveIntensity) * 0.04;
+      lan.light.intensity += (tL - lan.light.intensity) * 0.04;
+      lan.label.material.opacity += (tO - lan.label.material.opacity) * 0.04;
+      lan.mesh.scale.setScalar(lan.mesh.scale.x + (tS - lan.mesh.scale.x) * 0.04);
     }
 
-    // Fireflies
-    var inTech = scrollProgress > 0.64 && scrollProgress < 0.78;
+    // Fireflies — glow strongest in ch6 zone (0.63-0.75)
+    var inTech = scrollProgress > 0.60 && scrollProgress < 0.78;
+    var techProximity = inTech ? Math.min(1, 1 - Math.abs(scrollProgress - 0.69) * 8) : 0;
     for (var fi = 0; fi < fireflies.length; fi++) {
       var ff = fireflies[fi];
       var fx = ff.baseX + Math.sin(t * ff.speed + ff.phase) * ff.ampX;
       var fy = ff.baseY + Math.cos(t * ff.speed * 0.7 + ff.phase) * ff.ampY;
       var fz = ff.baseZ + Math.sin(t * ff.speed * 0.5 + ff.phase * 2) * ff.ampZ;
       ff.mesh.position.set(fx, fy, fz); if (ff.light) ff.light.position.set(fx, fy, fz); ff.label.position.set(fx, fy + 0.6, fz);
-      var fO = inTech ? 0.95 : 0.4, fL = inTech ? 0.6 : 0.15, fLO = inTech ? 0.7 : 0.25, fS = inTech ? 2.0 : 1.0;
-      ff.mesh.material.opacity += (fO - ff.mesh.material.opacity) * 0.03;
-      if (ff.light) ff.light.intensity += (fL - ff.light.intensity) * 0.03;
-      ff.label.material.opacity += (fLO - ff.label.material.opacity) * 0.03;
-      ff.mesh.scale.setScalar(ff.mesh.scale.x + (fS - ff.mesh.scale.x) * 0.03);
+
+      var fO = lerp(0.15, 0.95, techProximity);
+      var fL = lerp(0.05, 0.6, techProximity);
+      var fLO = lerp(0.0, 0.8, techProximity);
+      var fS = lerp(0.6, 2.0, techProximity);
+      ff.mesh.material.opacity += (fO - ff.mesh.material.opacity) * 0.04;
+      if (ff.light) ff.light.intensity += (fL - ff.light.intensity) * 0.04;
+      ff.label.material.opacity += (fLO - ff.label.material.opacity) * 0.04;
+      ff.mesh.scale.setScalar(ff.mesh.scale.x + (fS - ff.mesh.scale.x) * 0.04);
       ff.mesh.material.opacity *= 0.85 + Math.sin(t * 5 + fi * 3) * 0.15;
     }
 
@@ -1104,39 +1157,85 @@
   }
 
   // ======================== Audio ========================
-  var audioCtx = null, ambientGain = null, ambientOsc = null, ambientOsc2 = null, currentChAudio = -1;
-  // 10 chapters of forest tones
-  var CH_FREQS = [
-    [82.41, 123.47],   // ch0: entrance — open
-    [87.31, 130.81],   // ch1: the path — walking
-    [110, 164.81],     // ch2: clearing — centered
-    [98, 146.83],      // ch3: methodology — grounded
-    [116.54, 174.61],  // ch4: first lanterns — warm
-    [103.83, 155.56],  // ch5: the grove — deeper
-    [73.42, 110],      // ch6: fireflies — deep woods
-    [130.81, 196],     // ch7: award — triumphant
-    [110, 164.81],     // ch8: rising — ascending
-    [82.41, 130.81]    // ch9: overview — resolution
-  ];
+
+  // Forest ambient audio — MP3 file
+  var forestAudio = null;
+  var audioFading = false;
 
   function initAudio() {
-    if (audioCtx) return;
+    if (forestAudio) return;
     try {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      ambientGain = audioCtx.createGain(); ambientGain.gain.value = 0; ambientGain.connect(audioCtx.destination);
-      ambientOsc = audioCtx.createOscillator(); ambientOsc.type = "sine"; ambientOsc.frequency.value = 82.41; ambientOsc.connect(ambientGain); ambientOsc.start();
-      ambientOsc2 = audioCtx.createOscillator(); ambientOsc2.type = "triangle"; ambientOsc2.frequency.value = 123.47;
-      var g2 = audioCtx.createGain(); g2.gain.value = 0.3; ambientOsc2.connect(g2); g2.connect(ambientGain); ambientOsc2.start();
+      forestAudio = new Audio("audio/forest.m4a");
+      forestAudio.loop = true;
+      forestAudio.volume = 0;
+
+      var muted = localStorage.getItem("sound-muted") === "true";
+      if (!muted) {
+        forestAudio.play().catch(function () {});
+        fadeAudio(0.3, 2000);
+      }
+
+      // Mute button
+      var muteBtn = document.getElementById("forestMuteBtn");
+      if (muteBtn) {
+        updateMuteIcon(muteBtn, muted);
+
+        muteBtn.addEventListener("click", function () {
+          muted = !muted;
+          localStorage.setItem("sound-muted", muted);
+          updateMuteIcon(muteBtn, muted);
+
+          if (muted) {
+            fadeAudio(0, 500);
+          } else {
+            forestAudio.play().catch(function () {});
+            fadeAudio(0.3, 500);
+          }
+        });
+      }
     } catch (e) {}
   }
-  function updateAmbientAudio() {
-    if (!audioCtx || !ambientGain) return;
-    var vol = localStorage.getItem("sound") !== "off" ? 0.025 : 0;
-    ambientGain.gain.value += (vol - ambientGain.gain.value) * 0.015;
-    var ch = Math.min(9, Math.floor(scrollProgress * 10));
-    if (ch !== currentChAudio) { currentChAudio = ch; ambientOsc.frequency.setTargetAtTime(CH_FREQS[ch][0], audioCtx.currentTime, 0.8); ambientOsc2.frequency.setTargetAtTime(CH_FREQS[ch][1], audioCtx.currentTime, 0.8); }
+
+  function updateMuteIcon(btn, muted) {
+    var icon = btn.querySelector("i");
+    if (icon) {
+      icon.className = muted ? "fas fa-volume-mute" : "fas fa-volume-up";
+    }
+    btn.classList.toggle("muted", muted);
   }
-  function stopAudio() { if (ambientGain) ambientGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.1); }
+
+  function fadeAudio(target, duration) {
+    if (!forestAudio) return;
+    var muted = localStorage.getItem("sound-muted") === "true";
+    var finalTarget = muted ? 0 : target;
+    var start = forestAudio.volume;
+    var startTime = Date.now();
+
+    function step() {
+      var elapsed = Date.now() - startTime;
+      var progress = Math.min(1, elapsed / duration);
+      forestAudio.volume = start + (finalTarget - start) * progress;
+      if (progress < 1) requestAnimationFrame(step);
+    }
+    step();
+  }
+
+  function updateAmbientAudio() {
+    if (!forestAudio) return;
+    var muted = localStorage.getItem("sound-muted") === "true";
+    var target = muted ? 0 : 0.3;
+    // Gentle drift toward target
+    forestAudio.volume += (target - forestAudio.volume) * 0.02;
+  }
+
+  function stopAudio() {
+    if (forestAudio) {
+      fadeAudio(0, 800);
+      setTimeout(function () {
+        if (forestAudio) { forestAudio.pause(); forestAudio.currentTime = 0; forestAudio = null; }
+      }, 900);
+    }
+  }
 
   // ======================== Cleanup ========================
   function cleanup() {
@@ -1153,8 +1252,19 @@
       if (!scene) { if (!init()) return; }
       isActive = true; canvas.style.display = "block"; canvas.style.pointerEvents = "auto";
       clock.start(); animate();
-      var initOnce = function () { initAudio(); canvas.removeEventListener("click", initOnce); canvas.removeEventListener("touchstart", initOnce); };
-      canvas.addEventListener("click", initOnce); canvas.addEventListener("touchstart", initOnce);
+      // Try to auto-play audio immediately, retry on first interaction if blocked
+      initAudio();
+      var audioRetry = function () {
+        if (forestAudio && forestAudio.paused) {
+          forestAudio.play().catch(function () {});
+        }
+        document.removeEventListener("click", audioRetry);
+        document.removeEventListener("touchstart", audioRetry);
+        document.removeEventListener("scroll", audioRetry, true);
+      };
+      document.addEventListener("click", audioRetry);
+      document.addEventListener("touchstart", audioRetry);
+      document.addEventListener("scroll", audioRetry, true);
     },
     stop: function () {
       isActive = false; stopAudio();

@@ -242,22 +242,20 @@
               var h2 = entry.target.querySelector("h2");
               if (h2 && !h2.dataset.typed) {
                 h2.dataset.typed = "1";
-                var fullHTML = h2.innerHTML;
-                h2.innerHTML = "";
-                h2.style.visibility = "visible";
+                // Decode HTML entities, replace <br> with space
+                var rawHTML = h2.innerHTML;
+                rawHTML = rawHTML.replace(/<br\s*\/?>/gi, " ");
+                var temp = document.createElement("div");
+                temp.innerHTML = rawHTML;
+                var plainText = temp.textContent || temp.innerText || "";
+                h2.textContent = "";
 
-                // Strip tags, type plain text, restore tags after
-                var plainText = fullHTML.replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]*>/g, "");
                 var chars = plainText.split("");
                 var i = 0;
 
                 function typeNext() {
                   if (i < chars.length) {
-                    if (chars[i] === "\n") {
-                      h2.innerHTML += "<br>";
-                    } else {
-                      h2.innerHTML += chars[i];
-                    }
+                    h2.textContent += chars[i];
                     i++;
                     setTimeout(typeNext, 40 + Math.random() * 30);
                   }

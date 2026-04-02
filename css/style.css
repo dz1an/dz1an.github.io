@@ -284,9 +284,9 @@
 /* Stats corner */
 .creative-hud-stats {
   position: fixed;
-  bottom: 28px;
+  bottom: 48px;
   right: 28px;
-  z-index: 1010;
+  z-index: 99999;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -297,7 +297,32 @@
   letter-spacing: 0.04em;
 }
 
-/* Social links in creative mode */
+/* Music credit */
+.creative-music-credit {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 99999;
+  font-family: var(--font-body);
+  font-size: 0.65rem;
+  font-weight: 400;
+  color: rgba(163, 177, 138, 0.3);
+  letter-spacing: 0.02em;
+}
+
+.creative-music-credit i {
+  margin-right: 3px;
+  font-size: 0.55rem;
+}
+
+
+@media (max-width: 768px) {
+  .creative-music-credit {
+    display: none;
+  }
+}
+
+/* Social links + mute in creative mode */
 .creative-hud-social {
   position: fixed;
   bottom: 28px;
@@ -305,6 +330,34 @@
   z-index: 1010;
   display: flex;
   gap: 8px;
+}
+
+.creative-mute-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: rgba(12, 18, 16, 0.25);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(163, 177, 138, 0.08);
+  border-radius: 50%;
+  color: rgba(163, 177, 138, 0.35);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  padding: 0;
+}
+
+.creative-mute-btn:hover {
+  color: #A3B18A;
+  border-color: rgba(163, 177, 138, 0.2);
+  background: rgba(12, 18, 16, 0.4);
+}
+
+.creative-mute-btn.muted i::before {
+  content: "\f6a9";
 }
 
 .creative-hud-social a {
@@ -518,7 +571,8 @@
 .chapter-content h2,
 .chapter-content p,
 .chapter-content .chapter-scroll-cue,
-.chapter-content .chapter-cta {
+.chapter-content .chapter-cta,
+.chapter-content .chapter-links {
   opacity: 0;
   transform: translateY(20px);
   filter: blur(4px);
@@ -530,12 +584,14 @@
 .chapter-content p { transition-delay: 0.3s; }
 .chapter-content .chapter-scroll-cue { transition-delay: 0.45s; }
 .chapter-content .chapter-cta { transition-delay: 0.45s; }
+.chapter-content .chapter-links { transition-delay: 0.4s; }
 
 .chapter-content.chapter-visible .chapter-label,
 .chapter-content.chapter-visible h2,
 .chapter-content.chapter-visible p,
 .chapter-content.chapter-visible .chapter-scroll-cue,
-.chapter-content.chapter-visible .chapter-cta {
+.chapter-content.chapter-visible .chapter-cta,
+.chapter-content.chapter-visible .chapter-links {
   opacity: 1;
   transform: translateY(0);
   filter: blur(0);
@@ -600,6 +656,39 @@
 }
 
 /* Chapter CTA buttons */
+.chapter-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.chapter-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #A3B18A;
+  text-decoration: none;
+  padding: 6px 14px;
+  border: 1px solid rgba(163, 177, 138, 0.15);
+  border-radius: 6px;
+  background: rgba(163, 177, 138, 0.05);
+  transition: all 0.2s ease;
+  pointer-events: auto;
+}
+
+.chapter-links a:hover {
+  background: rgba(163, 177, 138, 0.12);
+  border-color: rgba(163, 177, 138, 0.3);
+  color: #DAD7CD;
+}
+
+.chapter-links a i {
+  font-size: 0.65rem;
+}
+
 .chapter-cta {
   display: flex;
   gap: 12px;
@@ -673,13 +762,28 @@
     border-color: transparent;
     box-shadow: none;
     transition: opacity 1.2s ease 0.8s, background 1.2s ease 0.8s, border-color 1.2s ease 0.8s, box-shadow 1.2s ease 0.8s;
+    max-height: 50vh;
+    overflow-y: auto;
   }
 
   .chapter-content.chapter-visible {
     opacity: 1;
-    background: rgba(12, 18, 16, 0.35);
+    background: rgba(12, 18, 16, 0.2);
     border-color: rgba(163, 177, 138, 0.05);
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Less blur on mobile — let forest show through */
+  .chapter-content {
+    -webkit-backdrop-filter: blur(12px) saturate(120%);
+    backdrop-filter: blur(12px) saturate(120%);
+  }
+
+  /* Center chapters — compact on mobile, don't block the whole view */
+  .chapter-center {
+    margin: 0 16px;
+    text-align: center;
+    max-width: 100%;
   }
 
   /* Longer stagger delays on mobile */
@@ -688,6 +792,7 @@
   .chapter-content p { transition-delay: 1.8s; }
   .chapter-content .chapter-scroll-cue { transition-delay: 2.2s; }
   .chapter-content .chapter-cta { transition-delay: 2.2s; }
+  .chapter-content .chapter-links { transition-delay: 2.0s; }
 
   /* Typing cursor after heading — no white-space constraint */
   .chapter-content.chapter-visible h2::after {
