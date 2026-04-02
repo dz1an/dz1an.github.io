@@ -230,10 +230,43 @@
 
       var chapters = scrollContainer.querySelectorAll(".chapter-content");
 
+      var isMobileCreative = window.innerWidth <= 768;
+
       chapterObserver = new IntersectionObserver(function (entries) {
         entries.forEach(function (entry) {
           if (entry.isIntersecting) {
             entry.target.classList.add("chapter-visible");
+
+            // Mobile: type heading letter by letter
+            if (isMobileCreative) {
+              var h2 = entry.target.querySelector("h2");
+              if (h2 && !h2.dataset.typed) {
+                h2.dataset.typed = "1";
+                var fullHTML = h2.innerHTML;
+                h2.innerHTML = "";
+                h2.style.visibility = "visible";
+
+                // Strip tags, type plain text, restore tags after
+                var plainText = fullHTML.replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]*>/g, "");
+                var chars = plainText.split("");
+                var i = 0;
+
+                function typeNext() {
+                  if (i < chars.length) {
+                    if (chars[i] === "\n") {
+                      h2.innerHTML += "<br>";
+                    } else {
+                      h2.innerHTML += chars[i];
+                    }
+                    i++;
+                    setTimeout(typeNext, 40 + Math.random() * 30);
+                  }
+                }
+
+                // Start typing after card fade-in delay
+                setTimeout(typeNext, 1400);
+              }
+            }
           } else {
             entry.target.classList.remove("chapter-visible");
           }

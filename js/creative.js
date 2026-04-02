@@ -30,7 +30,7 @@
 
   var MAX_TRAILS = isMobile ? 20 : 50;
   var MAX_SPAWNED = isMobile ? 12 : 25;
-  var TREE_COUNT = isMobile ? 50 : 120;
+  var TREE_COUNT = isMobile ? 35 : 120;
   var AMBIENT_FF_COUNT = isMobile ? 15 : 40;
   var PATH_LAMP_COUNT = isMobile ? 5 : 10;
   var lastTouchSpawn = 0;
@@ -84,6 +84,10 @@
 
   function lerp(a, b, t) { return a + (b - a) * t; }
 
+  // Mobile camera offset — higher and further back
+  var MOB_Y = isMobile ? 3 : 0;
+  var MOB_Z = isMobile ? 6 : 0;
+
   function getCameraState(p) {
     p = Math.max(0, Math.min(1, p));
     var i = 0;
@@ -96,8 +100,12 @@
     // Quintic smoothstep — much smoother than cubic
     t = t * t * t * (t * (t * 6 - 15) + 10);
     return {
-      px: lerp(a.pos[0], b.pos[0], t), py: lerp(a.pos[1], b.pos[1], t), pz: lerp(a.pos[2], b.pos[2], t),
-      lx: lerp(a.look[0], b.look[0], t), ly: lerp(a.look[1], b.look[1], t), lz: lerp(a.look[2], b.look[2], t)
+      px: lerp(a.pos[0], b.pos[0], t),
+      py: lerp(a.pos[1], b.pos[1], t) + MOB_Y,
+      pz: lerp(a.pos[2], b.pos[2], t) + MOB_Z,
+      lx: lerp(a.look[0], b.look[0], t),
+      ly: lerp(a.look[1], b.look[1], t),
+      lz: lerp(a.look[2], b.look[2], t)
     };
   }
 
@@ -136,10 +144,10 @@
     if (!canvas || typeof THREE === "undefined") return false;
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0x0C1210);
-    scene.fog = new THREE.Fog(0x0C1210, 18, 75);
+    scene.fog = new THREE.Fog(0x0C1210, isMobile ? 25 : 18, isMobile ? 100 : 75);
     clock = new THREE.Clock();
-    camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 200);
-    camera.position.set(0, 8, 40);
+    camera = new THREE.PerspectiveCamera(isMobile ? 65 : 55, window.innerWidth / window.innerHeight, 0.1, 200);
+    camera.position.set(0, isMobile ? 12 : 8, isMobile ? 50 : 40);
     renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -926,8 +934,12 @@
 
     // Fog
     // Smoother fog — lerp toward target instead of snapping
-    var fogNearTarget = lerp(12, 6, Math.min(1, scrollProgress * 1.2));
-    var fogFarTarget = lerp(70, 90, scrollProgress);
+    var fogBase = isMobile ? 18 : 12;
+    var fogMin = isMobile ? 10 : 6;
+    var fogFarBase = isMobile ? 90 : 70;
+    var fogFarMax = isMobile ? 120 : 90;
+    var fogNearTarget = lerp(fogBase, fogMin, Math.min(1, scrollProgress * 1.2));
+    var fogFarTarget = lerp(fogFarBase, fogFarMax, scrollProgress);
     scene.fog.near += (fogNearTarget - scene.fog.near) * 0.05;
     scene.fog.far += (fogFarTarget - scene.fog.far) * 0.05;
 

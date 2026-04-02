@@ -658,8 +658,50 @@
 @media (max-width: 768px) {
   .chapter-content h2 { font-size: 1.8rem; }
   .chapter-content p { font-size: 0.88rem; }
-  .chapter-left, .chapter-right { margin: 0; padding: 20px; }
-  .chapter-content { max-width: 100%; padding: 24px; }
+  .chapter-left, .chapter-right { margin: 0; }
+  .chapter-content { max-width: 100%; padding: 20px; margin: 0 16px; }
+
+  .creative-chapter {
+    padding: 70px 0 80px;
+    align-items: flex-end;
+  }
+
+  /* Mobile: card fades in slowly with delay so user sees forest first */
+  .chapter-content {
+    opacity: 0;
+    background: rgba(12, 18, 16, 0);
+    border-color: transparent;
+    box-shadow: none;
+    transition: opacity 1.2s ease 0.8s, background 1.2s ease 0.8s, border-color 1.2s ease 0.8s, box-shadow 1.2s ease 0.8s;
+  }
+
+  .chapter-content.chapter-visible {
+    opacity: 1;
+    background: rgba(12, 18, 16, 0.35);
+    border-color: rgba(163, 177, 138, 0.05);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Longer stagger delays on mobile */
+  .chapter-content .chapter-label { transition-delay: 1.0s; }
+  .chapter-content h2 { transition-delay: 1.3s; }
+  .chapter-content p { transition-delay: 1.8s; }
+  .chapter-content .chapter-scroll-cue { transition-delay: 2.2s; }
+  .chapter-content .chapter-cta { transition-delay: 2.2s; }
+
+  /* Typing cursor after heading — no white-space constraint */
+  .chapter-content.chapter-visible h2::after {
+    content: '|';
+    color: var(--color-primary, #5C7650);
+    font-weight: 400;
+    animation: typing-cursor 0.6s step-end infinite;
+    margin-left: 2px;
+  }
+
+  @keyframes typing-cursor {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
 
   .creative-hud-top {
     padding: 8px 14px;
