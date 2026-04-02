@@ -1160,6 +1160,7 @@ body.loaded #preloader {
   right: 0;
   z-index: 100;
   padding: 1.25rem 0;
+  padding-top: calc(1.25rem + env(safe-area-inset-top, 0px));
   transition: all var(--transition-base);
   background: transparent;
 }
