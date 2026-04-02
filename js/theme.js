@@ -424,18 +424,43 @@
 })();
 
 // ============================================
-// Navbar scroll effect
+// Navbar scroll effect — hide on scroll down, show on scroll up
 // ============================================
-window.addEventListener("scroll", function () {
+(function () {
+  var lastScrollY = 0;
+  var ticking = false;
   var navbar = document.getElementById("mainNav");
-  if (navbar) {
-    if (window.scrollY > 50) {
-      navbar.classList.add("navbar-scrolled");
-    } else {
-      navbar.classList.remove("navbar-scrolled");
+  if (!navbar) return;
+
+  window.addEventListener("scroll", function () {
+    if (!ticking) {
+      window.requestAnimationFrame(function () {
+        var currentY = window.scrollY;
+
+        // Background blur when scrolled
+        if (currentY > 50) {
+          navbar.classList.add("navbar-scrolled");
+        } else {
+          navbar.classList.remove("navbar-scrolled");
+          navbar.classList.remove("navbar-hidden");
+        }
+
+        // Hide/show based on scroll direction (only after 100px)
+        if (currentY > 100) {
+          if (currentY > lastScrollY + 5) {
+            navbar.classList.add("navbar-hidden");
+          } else if (currentY < lastScrollY - 5) {
+            navbar.classList.remove("navbar-hidden");
+          }
+        }
+
+        lastScrollY = currentY;
+        ticking = false;
+      });
+      ticking = true;
     }
-  }
-});
+  });
+})();
 
 // ============================================
 // Particle System — Canvas-based hero particles
