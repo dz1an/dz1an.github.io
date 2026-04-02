@@ -629,7 +629,7 @@
 }
 
 html {
-  scroll-padding-top: 80px;
+  scroll-padding-top: calc(80px + env(safe-area-inset-top, 0px));
 }
 
 /* Smooth scroll only for anchor clicks, not finger scrolling */
@@ -1161,16 +1161,18 @@ body.loaded #preloader {
   right: 0;
   z-index: 100;
   padding: 1.25rem 0;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 1.25rem);
   transition: all var(--transition-base);
   background: var(--color-bg);
 }
 
 .navbar.navbar-scrolled {
-  background: var(--nav-scrolled-bg);
+  background: var(--color-bg);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   box-shadow: 0 1px 0 var(--color-border-light), var(--shadow-sm);
   padding: 0.75rem 0;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 0.75rem);
 }
 
 .navbar-brand {
