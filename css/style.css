@@ -650,6 +650,44 @@ body {
 }
 
 /* ========================================
+   Scrollbar — Xcode-style thin track
+   ======================================== */
+/* Webkit (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(163, 177, 138, 0.2);
+  border-radius: 4px;
+  border: 2px solid var(--color-bg);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(163, 177, 138, 0.35);
+}
+
+/* Firefox */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(163, 177, 138, 0.2) var(--color-bg);
+}
+
+/* Creative mode — hide scrollbar entirely */
+[data-theme="creative"] ::-webkit-scrollbar {
+  display: none;
+}
+
+[data-theme="creative"] html,
+[data-theme="creative"] body {
+  scrollbar-width: none;
+}
+
+/* ========================================
    ZZZ-Inspired — Scan Lines & Noise Overlay
    ======================================== */
 
