@@ -2,6 +2,7 @@
    Design System — CSS Custom Properties
    ======================================== */
 :root {
+  color-scheme: dark;
   /* Colors — Sage Green Palette (macOS-style: same accents both modes) */
   --color-primary: #5C7650;
   --color-primary-dark: #3A5A40;
