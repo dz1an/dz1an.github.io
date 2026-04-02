@@ -75,7 +75,7 @@
             { text: "\u2713 Build Succeeded \u2014 Code Mode Active", cls: "xc-success" },
           ];
 
-      var delay = 80;
+      var delay = 250;
       lines.forEach(function (line, i) {
         setTimeout(function () {
           var div = document.createElement("div");
@@ -138,25 +138,25 @@
       // Show build terminal on top of fade
       var buildOverlay = createBuildTerminal(goingCreative);
 
-      // At peak darkness, swap modes
+      // At peak darkness, swap modes (after lines have played)
       setTimeout(function () {
         if (goingCreative) {
           activateCreative();
         } else {
           deactivateCreative();
         }
-      }, 650);
+      }, 1800);
 
-      // Fade out after build terminal finishes
+      // Fade out after build terminal finishes + brief pause to read
       setTimeout(function () {
         document.documentElement.classList.remove("theme-switching");
         buildOverlay.classList.add("xc-build-done");
-        setTimeout(function () { buildOverlay.remove(); }, 400);
+        setTimeout(function () { buildOverlay.remove(); }, 500);
 
         // Begin fade out
         fade.classList.add("ct-fade-out");
-        setTimeout(function () { fade.remove(); }, 700);
-      }, 1100);
+        setTimeout(function () { fade.remove(); }, 800);
+      }, 2600);
 
       document.documentElement.classList.add("theme-switching");
     });

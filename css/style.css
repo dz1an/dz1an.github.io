@@ -3237,7 +3237,7 @@ body.loaded #preloader {
 .xc-build-overlay {
   position: fixed;
   inset: 0;
-  z-index: 99998;
+  z-index: 100000;
   pointer-events: none;
   display: flex;
   align-items: center;
