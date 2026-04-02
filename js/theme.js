@@ -1317,10 +1317,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
   console.log("%c🌲 Tip: Toggle creative mode to walk through the forest.", "color: #A3B18A; font-size: 11px;");
 
-  // Detect DevTools open via resize trick (desktop only — mobile triggers false positives)
-  var isMobileDevice = /Android|iPhone|iPad|iPod|webOS/i.test(navigator.userAgent) || ("ontouchstart" in window && window.innerWidth < 1024);
+  // Detect DevTools — desktop only (mobile viewport changes cause false positives)
+  var canDetectDevTools = !(
+    /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+    navigator.maxTouchPoints > 1 ||
+    window.matchMedia("(pointer: coarse)").matches ||
+    window.innerWidth < 1024
+  );
 
-  if (!isMobileDevice) {
+  if (canDetectDevTools) {
     var devtoolsOpen = false;
     var threshold = 160;
 
@@ -1340,7 +1345,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     window.addEventListener("resize", checkDevTools);
-    setTimeout(checkDevTools, 1000);
+    setTimeout(checkDevTools, 2000);
   }
 })();
 
