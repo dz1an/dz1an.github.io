@@ -652,7 +652,7 @@ body {
 }
 
 /* Safari iOS status bar blocker — solid bar behind the translucent liquid glass */
-body::after {
+body::before {
   content: '';
   position: fixed;
   top: 0;
