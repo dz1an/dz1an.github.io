@@ -1317,28 +1317,31 @@ document.addEventListener("DOMContentLoaded", function () {
 
   console.log("%c🌲 Tip: Toggle creative mode to walk through the forest.", "color: #A3B18A; font-size: 11px;");
 
-  // Detect DevTools open via resize trick
-  var devtoolsOpen = false;
-  var threshold = 160;
+  // Detect DevTools open via resize trick (desktop only — mobile triggers false positives)
+  var isMobileDevice = /Android|iPhone|iPad|iPod|webOS/i.test(navigator.userAgent) || ("ontouchstart" in window && window.innerWidth < 1024);
 
-  function checkDevTools() {
-    var widthDiff = window.outerWidth - window.innerWidth > threshold;
-    var heightDiff = window.outerHeight - window.innerHeight > threshold;
+  if (!isMobileDevice) {
+    var devtoolsOpen = false;
+    var threshold = 160;
 
-    if ((widthDiff || heightDiff) && !devtoolsOpen) {
-      devtoolsOpen = true;
-      if (window.showToast) {
-        showToast("DevTools Detected", "Welcome, fellow developer!", "fas fa-terminal");
+    function checkDevTools() {
+      var widthDiff = window.outerWidth - window.innerWidth > threshold;
+      var heightDiff = window.outerHeight - window.innerHeight > threshold;
+
+      if ((widthDiff || heightDiff) && !devtoolsOpen) {
+        devtoolsOpen = true;
+        if (window.showToast) {
+          showToast("DevTools Detected", "Welcome, fellow developer!", "fas fa-terminal");
+        }
+        if (window.playSound) playSound("success");
+      } else if (!widthDiff && !heightDiff) {
+        devtoolsOpen = false;
       }
-      if (window.playSound) playSound("success");
-    } else if (!widthDiff && !heightDiff) {
-      devtoolsOpen = false;
     }
-  }
 
-  window.addEventListener("resize", checkDevTools);
-  // Check on load too (if already open)
-  setTimeout(checkDevTools, 1000);
+    window.addEventListener("resize", checkDevTools);
+    setTimeout(checkDevTools, 1000);
+  }
 })();
 
 // Konami Code Easter Egg
