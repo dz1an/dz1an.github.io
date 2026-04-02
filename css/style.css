@@ -629,7 +629,6 @@
 
 html {
   scroll-padding-top: 80px;
-  background-color: var(--color-bg);
 }
 
 /* Smooth scroll only for anchor clicks, not finger scrolling */
@@ -650,7 +649,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
 }
-
 
 ::selection {
   background: var(--color-primary);
@@ -1163,7 +1161,7 @@ body.loaded #preloader {
   z-index: 100;
   padding: 1.25rem 0;
   transition: all var(--transition-base);
-  background: var(--color-bg);
+  background: transparent;
 }
 
 .navbar.navbar-scrolled {

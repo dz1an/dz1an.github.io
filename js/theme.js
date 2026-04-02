@@ -89,9 +89,15 @@
       return overlay;
     }
 
+    function updateThemeColor(color) {
+      var meta = document.getElementById("themeColor");
+      if (meta) meta.setAttribute("content", color);
+    }
+
     function activateCreative() {
       document.documentElement.setAttribute("data-theme", "creative");
       localStorage.setItem("theme", "creative");
+      updateThemeColor("#0C1210");
 
       function startScene() {
         if (window.creativeScene) window.creativeScene.start();
@@ -113,6 +119,7 @@
     function deactivateCreative() {
       document.documentElement.removeAttribute("data-theme");
       localStorage.setItem("theme", "dark");
+      updateThemeColor("#1c1c1e");
       if (window.creativeScene) window.creativeScene.stop();
       stopShapeCounter();
       stopChapterObserver();
