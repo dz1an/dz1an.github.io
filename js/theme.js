@@ -495,13 +495,15 @@
           navbar.classList.remove("navbar-compact");
         }
 
-        // Desktop: hide/show based on scroll direction
-        if (!isMobileView && currentY > 100) {
+        // Mobile only: hide/show based on scroll direction
+        if (isMobileView && currentY > 100) {
           if (currentY > lastScrollY + 5) {
             navbar.classList.add("navbar-hidden");
           } else if (currentY < lastScrollY - 5) {
             navbar.classList.remove("navbar-hidden");
           }
+        } else if (!isMobileView) {
+          navbar.classList.remove("navbar-hidden");
         }
 
         lastScrollY = currentY;
