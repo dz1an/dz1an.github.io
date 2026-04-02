@@ -1,4 +1,15 @@
 // ============================================
+// Safari iOS Detection — for liquid glass fixes
+// ============================================
+(function () {
+  var ua = navigator.userAgent;
+  var isSafariIOS = /iPhone|iPad|iPod/.test(ua) && /WebKit/.test(ua) && !/CriOS|FxiOS|OPiOS/.test(ua);
+  if (isSafariIOS) {
+    document.documentElement.classList.add("safari-ios");
+  }
+})();
+
+// ============================================
 // Theme Toggle — Code Mode (dark) ↔ Creative Mode (3D)
 // ============================================
 (function () {
