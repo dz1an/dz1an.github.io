@@ -463,6 +463,32 @@
 })();
 
 // ============================================
+// Mobile menu — toggle class for showing controls in overlay
+// ============================================
+(function () {
+  var navbarEl = document.getElementById("mainNav");
+  var collapseEl = document.getElementById("navbarNav");
+  if (!navbarEl || !collapseEl) return;
+
+  collapseEl.addEventListener("show.bs.collapse", function () {
+    navbarEl.classList.add("mobile-menu-open");
+  });
+
+  collapseEl.addEventListener("hide.bs.collapse", function () {
+    navbarEl.classList.remove("mobile-menu-open");
+  });
+
+  // Close menu when a nav link is clicked
+  var navLinks = collapseEl.querySelectorAll(".nav-link");
+  navLinks.forEach(function (link) {
+    link.addEventListener("click", function () {
+      var bsCollapse = bootstrap.Collapse.getInstance(collapseEl);
+      if (bsCollapse) bsCollapse.hide();
+    });
+  });
+})();
+
+// ============================================
 // Particle System — Canvas-based hero particles
 // ============================================
 (function () {
