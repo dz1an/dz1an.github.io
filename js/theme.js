@@ -437,6 +437,8 @@
       window.requestAnimationFrame(function () {
         var currentY = window.scrollY;
 
+        var isMobileView = window.innerWidth < 992;
+
         // Background blur when scrolled
         if (currentY > 50) {
           navbar.classList.add("navbar-scrolled");
@@ -445,8 +447,19 @@
           navbar.classList.remove("navbar-hidden");
         }
 
-        // Hide/show based on scroll direction (only after 100px)
-        if (currentY > 100) {
+        // Mobile: full navbar at top, compact hamburger when scrolled
+        if (isMobileView) {
+          if (currentY > 80) {
+            navbar.classList.add("navbar-compact");
+          } else {
+            navbar.classList.remove("navbar-compact");
+          }
+        } else {
+          navbar.classList.remove("navbar-compact");
+        }
+
+        // Desktop: hide/show based on scroll direction
+        if (!isMobileView && currentY > 100) {
           if (currentY > lastScrollY + 5) {
             navbar.classList.add("navbar-hidden");
           } else if (currentY < lastScrollY - 5) {

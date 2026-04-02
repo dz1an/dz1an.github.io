@@ -3629,36 +3629,76 @@ body,
    Responsive
    ======================================== */
 @media (max-width: 991.98px) {
-  /* Hide the full navbar bar on mobile */
+  /* === Mobile navbar: full at top, hamburger when scrolled === */
   .navbar {
+    padding: 0.75rem 0;
+    padding-top: calc(0.75rem + env(safe-area-inset-top, 0px));
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .navbar.navbar-scrolled {
+    padding: 0.5rem 0;
+    padding-top: calc(0.5rem + env(safe-area-inset-top, 0px));
+  }
+
+  .navbar-brand {
+    font-size: 1.1rem;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+
+  /* Dropdown panel when hamburger is clicked */
+  .navbar-collapse {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-md);
+    padding: 8px;
+    margin-top: 0.5rem;
+    box-shadow: var(--shadow-xl);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  .navbar .nav-link {
+    padding: 0.65rem 1rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+  }
+
+  .navbar .nav-link:hover,
+  .navbar .nav-link.active {
+    background: var(--color-primary-light);
+  }
+
+  /* === When scrolled: collapse to floating hamburger === */
+  .navbar.navbar-compact .navbar-brand,
+  .navbar.navbar-compact .sound-toggle,
+  .navbar.navbar-compact .theme-toggle,
+  .navbar.navbar-compact .nav-cta {
+    opacity: 0;
+    pointer-events: none;
+    position: absolute;
+    transform: scale(0.8);
+  }
+
+  .navbar.navbar-compact {
     background: none !important;
     box-shadow: none !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
-    padding: 0 !important;
     pointer-events: none;
+    padding: 0 !important;
   }
 
-  .navbar .container {
+  .navbar.navbar-compact .container {
     justify-content: flex-end;
   }
 
-  /* Hide brand, sound, theme toggle from the bar */
-  .navbar .navbar-brand,
-  .navbar .sound-toggle,
-  .navbar .theme-toggle,
-  .navbar .nav-cta {
-    display: none !important;
-  }
-
-  /* Floating hamburger button */
-  .navbar .navbar-toggler {
+  .navbar.navbar-compact .navbar-toggler {
     pointer-events: auto;
     position: fixed;
-    top: env(safe-area-inset-top, 12px);
+    top: calc(env(safe-area-inset-top, 0px) + 12px);
     right: 16px;
     z-index: 101;
-    margin-top: 12px;
     width: 44px;
     height: 44px;
     display: flex;
@@ -3673,85 +3713,39 @@ body,
     padding: 0;
   }
 
-  /* Never hide navbar when using floating hamburger */
-  .navbar.navbar-hidden {
+  /* Compact mode dropdown: floating panel */
+  .navbar.navbar-compact .navbar-collapse {
+    position: fixed;
+    top: calc(env(safe-area-inset-top, 0px) + 68px);
+    right: 16px;
+    left: auto;
+    width: 200px;
+    margin-top: 0;
+    pointer-events: auto;
+    z-index: 100;
+  }
+
+  /* Don't do the slide-up hide in compact mode */
+  .navbar.navbar-compact.navbar-hidden {
     transform: none !important;
   }
 
-  /* Expanded mobile menu — full overlay */
-  .navbar-collapse {
-    pointer-events: auto;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--color-bg);
-    background: rgba(28, 28, 30, 0.97);
-    backdrop-filter: blur(30px);
-    -webkit-backdrop-filter: blur(30px);
-    border: none;
-    border-radius: 0;
-    padding: 80px 24px 24px;
-    margin-top: 0;
-    z-index: 100;
-    display: flex !important;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-  }
-
-  .navbar-collapse.show {
+  /* Show toggles next to hamburger when compact + menu open */
+  .navbar.navbar-compact.mobile-menu-open .sound-toggle,
+  .navbar.navbar-compact.mobile-menu-open .theme-toggle {
     opacity: 1;
-    visibility: visible;
-  }
-
-  /* Show brand, sound, theme toggle inside the mobile menu */
-  .navbar-collapse::before {
-    content: '//kent.dev';
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 1.4rem;
-    color: var(--color-accent);
-    margin-bottom: 32px;
-  }
-
-  .navbar-collapse .navbar-nav {
-    text-align: center;
-    gap: 4px;
-    margin-bottom: 24px;
-  }
-
-  .navbar-collapse .nav-link {
-    font-size: 1.1rem;
-    padding: 12px 24px;
-    border-radius: var(--radius-md);
-  }
-
-  .navbar .nav-link:hover,
-  .navbar .nav-link.active {
-    background: var(--color-primary-light);
-  }
-
-  /* When menu is open, show toggles at bottom of overlay */
-  .navbar.mobile-menu-open .sound-toggle,
-  .navbar.mobile-menu-open .theme-toggle {
-    display: flex !important;
-    position: fixed;
-    bottom: 40px;
-    z-index: 101;
     pointer-events: auto;
+    position: fixed;
+    top: calc(env(safe-area-inset-top, 0px) + 18px);
+    transform: scale(1);
   }
 
-  .navbar.mobile-menu-open .sound-toggle {
-    left: calc(50% - 40px);
+  .navbar.navbar-compact.mobile-menu-open .sound-toggle {
+    right: 116px;
   }
 
-  .navbar.mobile-menu-open .theme-toggle {
-    left: calc(50% + 10px);
+  .navbar.navbar-compact.mobile-menu-open .theme-toggle {
+    right: 72px;
   }
 }
 
