@@ -14,6 +14,9 @@
   var scrollVelocity = 0;
   var lastScrollProgress = 0;
   var mouse = { ndcX: 0, ndcY: 0 };
+  var cursorTrail = [];
+  var MAX_CURSOR_TRAIL = 15;
+  var lastTrailTime = 0;
   var isMouseDown = false;
   var raycaster, mouseVec;
 
@@ -30,17 +33,38 @@
 
   var MAX_TRAILS = isMobile ? 20 : 50;
   var MAX_SPAWNED = isMobile ? 12 : 25;
+  var groundEmbers = [];
+  var MAX_EMBERS = 20;
+  // Restore embers from previous visit
+  function saveEmbers() {
+    try {
+      var data = groundEmbers.map(function(e) { return { x: e.mesh.position.x, z: e.mesh.position.z }; });
+      localStorage.setItem("forestEmbers", JSON.stringify(data));
+    } catch(e) {}
+  }
+
+  function restoreEmbers() {
+    try {
+      var data = JSON.parse(localStorage.getItem("forestEmbers") || "[]");
+      data.forEach(function(d) { spawnEmber(d.x, d.z); });
+      if (data.length > 0 && scene._brandLabel) {
+        // Show "welcome back" — temporarily change brand label
+        scene._brandLabel.material.map.dispose();
+        var wb = makeLabel("welcome back", { fontSize: 18, fontWeight: "400", color: "rgba(163,177,138,0.5)", scale: 1.0, opacity: 0.4 });
+        wb.position.copy(scene._brandSub.position);
+        wb.position.y -= 0.5;
+        scene.add(wb);
+        scene._welcomeBack = wb;
+      }
+    } catch(e) {}
+  }
+
   var TREE_COUNT = isMobile ? 35 : 120;
   var AMBIENT_FF_COUNT = isMobile ? 12 : 25;
   var PATH_LAMP_COUNT = isMobile ? 5 : 10;
   var lastTouchSpawn = 0;
 
   // === Palette ===
-  var SAGE = {
-    deep: 0x344E41, dark: 0x3A5A40, primary: 0x5C7650,
-    accent: 0xA3B18A, light: 0xDAD7CD, muted: 0x6B8F71,
-    soft: 0x97A97C, cream: 0xB5C99A
-  };
   var TRUNK_COLORS = [0x2D1B0E, 0x3B2314, 0x4A2E1A, 0x362015];
   var CANOPY_COLORS = [0x344E41, 0x3A5A40, 0x5C7650, 0x2D4233, 0x4A6B3F, 0x3D5C35];
 
@@ -68,9 +92,11 @@
     // Ch2: "Where Ideas Take Root" (LEFT card) — camp on RIGHT
     { at: 0.22, pos: [3, 2.5, 10],    look: [1, 0.5, 0] },
     { at: 0.28, pos: [3, 2, 6],       look: [0, 0.6, 0] },
-    // Ch3: "Measure Twice" (RIGHT card) — Kent+laptop on LEFT
-    { at: 0.33, pos: [-1, 2, 5],      look: [-1, 0.5, -1] },
-    { at: 0.38, pos: [-2.5, 2.5, 2],  look: [0, 0.5, -4] },
+    // Ch3: "Measure Twice" (RIGHT card) — Kent+laptop on LEFT, zoom into screen
+    { at: 0.33, pos: [-1, 2, 5],           look: [-1, 0.5, -1] },
+    { at: 0.345, pos: [-2, 1.3, 3],         look: [-1.9, 0.3, 1.5] },
+    { at: 0.36, pos: [-2.2, 1.2, 2.8],    look: [-1.9, 0.3, 1.5] },
+    { at: 0.38, pos: [-2.5, 2.5, 2],      look: [0, 0.5, -4] },
     // Ch4: "Vintech & ZamGo" (LEFT card) — lanterns on RIGHT
     { at: 0.42, pos: [-2, 3, -4],     look: [0, 2.5, -12] },
     { at: 0.47, pos: [-1, 3.2, -8],   look: [0, 3, -12] },
@@ -176,10 +202,22 @@
     var f3 = new THREE.PointLight(0x344E41, 0.2, 30); f3.position.set(0, 8, -20);
     scene.add(f1, f2, f3); scene._fills = [f1, f2, f3];
 
-    buildTerrain(); createDirtPath(); plantForest(); createCoreLantern();
-    createProjectLanterns(); createFireflies(); createMist();
+    var _lc = window._creativeLoadCallback || function(){};
+    _lc("Building terrain...");
+    buildTerrain(); createDirtPath();
+    _lc("Planting forest...");
+    plantForest();
+    _lc("Setting up campsite...");
+    createCoreLantern();
+    _lc("Lighting lanterns...");
+    createProjectLanterns();
+    _lc("Releasing fireflies...");
+    createFireflies(); createMist();
+    _lc("Painting sky...");
     createBillboardTrees(); createSky(); createSmoke(); createGroundDetails();
+    _lc("Placing path lamps...");
     createPathLamps(); createAmbientFireflies();
+    _lc("complete");
 
     canvas.addEventListener("mousemove", onMouseMove);
     canvas.addEventListener("mousedown", function () { isMouseDown = true; });
@@ -240,28 +278,6 @@
   }
 
   // Exclusion zones — keep trees away from lanterns, fireflies, and camera path
-  function isInClearZone(x, z) {
-    // Path corridor (campsite → grove → meadow)
-    var pathPoints = [
-      { x: 0, z: 0 },      // campsite
-      { x: 0, z: -4 },     // bridge
-      { x: -1, z: -10 },   // Vintech lantern
-      { x: 2, z: -14 },    // ZamGo lantern
-      { x: -2, z: -19 },   // Vintazk Uni lantern
-      { x: 1, z: -23 },    // Barangay lantern
-      { x: -1, z: -27 },   // SmartScore lantern
-      { x: -2, z: -30 },   // meadow entrance
-    ];
-    for (var p = 0; p < pathPoints.length; p++) {
-      var dx = x - pathPoints[p].x, dz = z - pathPoints[p].z;
-      if (dx * dx + dz * dz < 25) return true; // radius 5
-    }
-    // Firefly meadow (radius 10 around -3, -36)
-    var mx = x + 3, mz = z + 36;
-    if (mx * mx + mz * mz < 100) return true;
-    return false;
-  }
-
   // ======================== Dirt Path — entrance to campsite ========================
   function createDirtPath() {
     var pathMat = new THREE.MeshStandardMaterial({ color: 0x2A1F15, roughness: 0.95 });
@@ -410,6 +426,7 @@
     }
 
     // === PLACE ALL TREES — LOD: near trees get detail, far trees get minimal ===
+    var canopies = []; // for wind sway animation
     for (var i = 0; i < treePositions.length; i++) {
       var tp = treePositions[i];
       var x = tp.x, z = tp.z;
@@ -460,6 +477,7 @@
           cone.position.set(x, gY + trunkH + lh * 0.3 + j * canopyH * 0.22, z);
           cone.rotation.set(leanX, Math.random() * Math.PI, leanZ);
           scene.add(cone);
+          if (isNear && j === 0) canopies.push({ mesh: cone, phase: Math.random() * Math.PI * 2, baseRx: leanX });
         }
       } else if (tp.type === "round") {
         var count = isFar ? 1 : (isMobile ? 2 : 3);
@@ -473,6 +491,7 @@
           );
           if (!isFar) canopy.scale.set(0.8 + Math.random() * 0.3, 0.6 + Math.random() * 0.3, 0.8 + Math.random() * 0.3);
           scene.add(canopy);
+          if (isNear && j === 0) canopies.push({ mesh: canopy, phase: Math.random() * Math.PI * 2, baseRx: 0 });
         }
       } else {
         var slimH = canopyH * 1.3;
@@ -481,9 +500,11 @@
         canopy.position.set(x, gY + trunkH + slimH * 0.4, z);
         canopy.rotation.set(leanX, Math.random() * Math.PI, leanZ);
         scene.add(canopy);
+        if (isNear) canopies.push({ mesh: canopy, phase: Math.random() * Math.PI * 2, baseRx: leanX });
       }
       trees.push({ x: x, z: z });
     }
+    scene._canopies = canopies;
   }
 
   // ======================== Campsite — tent, campfire, seated figure ========================
@@ -498,7 +519,7 @@
     var stoneMat = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.95, flatShading: true });
 
     // === TENT — bigger, more detailed ===
-    var tX = 1.5, tZ = -1.8;
+    var tX = 2.5, tZ = -2.5; // pushed further back and right, away from camera sightline
 
     // Ground sheet (larger)
     var groundSheet = new THREE.Mesh(new THREE.PlaneGeometry(2.0, 2.4), new THREE.MeshStandardMaterial({ color: 0x3A5A40, roughness: 0.9 }));
@@ -670,7 +691,7 @@
     var bootMat = new THREE.MeshStandardMaterial({ color: 0x2D1B0E, roughness: 0.85 });
     var hairMat = new THREE.MeshStandardMaterial({ color: 0x0E0808, roughness: 0.9 });
 
-    var figX = -0.6, figZ = 0.9;
+    var figX = -1.2, figZ = 1.8; // further from fire, more breathing room
 
     // Log seat
     var seatLog = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 1.4, 7), logMat);
@@ -791,34 +812,7 @@
     // Backpack side pocket
     scene.add(new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.2, 0.18), new THREE.MeshStandardMaterial({ color: 0x3A5A40, roughness: 0.8 })).translateX(figX - 0.72).translateY(gY + 0.18).translateZ(figZ + 0.3).rotateY(0.3));
 
-    // Water bottle (in backpack side pocket)
-    var bottle = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.2, 6), new THREE.MeshStandardMaterial({ color: 0x4488AA, roughness: 0.3, metalness: 0.5 }));
-    bottle.position.set(figX - 0.75, gY + 0.32, figZ + 0.3);
-    scene.add(bottle);
-
-    // Metal mug near fire
-    var mugMat = new THREE.MeshStandardMaterial({ color: 0x8B8B8B, roughness: 0.4, metalness: 0.4 });
-    var mug = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.035, 0.1, 8), mugMat);
-    mug.position.set(figX + 0.42, gY + 0.05, figZ + 0.38);
-    scene.add(mug);
-    // Mug handle
-    var handle = new THREE.Mesh(new THREE.TorusGeometry(0.025, 0.006, 4, 8, Math.PI), mugMat);
-    handle.position.set(figX + 0.46, gY + 0.06, figZ + 0.38);
-    handle.rotation.set(0, Math.PI / 2, 0);
-    scene.add(handle);
-
-    // Plate with food scraps
-    var plate = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.11, 0.015, 10), new THREE.MeshStandardMaterial({ color: 0x999999, roughness: 0.5, metalness: 0.2 }));
-    plate.position.set(figX + 0.15, gY + 0.03, figZ + 0.5);
-    scene.add(plate);
-
-    // Second log seat (empty, opposite side of fire for the visitor)
-    var seatLog2 = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.18, 1.0, 6), logMat);
-    seatLog2.position.set(0.5, gY + 0.12, -0.1);
-    seatLog2.rotation.z = Math.PI / 2; seatLog2.rotation.y = -0.5;
-    scene.add(seatLog2);
-
-    // Firewood stack (neat pile near tent)
+    // Firewood stack near tent
     for (var wi = 0; wi < 4; wi++) {
       var fw = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.05, 0.6, 5), logMat);
       fw.position.set(tX - 0.8, gY + 0.06 + wi * 0.09, tZ + 0.6);
@@ -827,66 +821,130 @@
       scene.add(fw);
     }
 
-    // Lantern on the ground (small, off)
-    var groundLantern = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.06, 0.12, 6), new THREE.MeshStandardMaterial({ color: 0x444444, roughness: 0.5, metalness: 0.3 }));
-    groundLantern.position.set(0.8, gY + 0.06, 0.2);
-    scene.add(groundLantern);
-    var lanternGlass = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.08, 6), new THREE.MeshStandardMaterial({ color: 0xFFCC66, transparent: true, opacity: 0.3, roughness: 0.1 }));
-    lanternGlass.position.set(0.8, gY + 0.14, 0.2);
-    scene.add(lanternGlass);
+    // Laptop — on the ground next to Kent, clear of everything else
+    var lapX = figX + 0.4;
+    var lapZ = figZ + 0.6;
+    var lapY = gY + 0.05;
 
-    // Laptop — glowing screen, developer even while camping
     var laptopBase = new THREE.Mesh(
       new THREE.BoxGeometry(0.35, 0.02, 0.25),
       new THREE.MeshStandardMaterial({ color: 0x2A2A2A, roughness: 0.3, metalness: 0.6 })
     );
-    laptopBase.position.set(figX + 0.55, gY + 0.22, figZ + 0.1);
-    laptopBase.rotation.y = 0.4;
+    laptopBase.position.set(lapX, lapY, lapZ);
+    laptopBase.rotation.y = 0.5; // angled toward Kent
     scene.add(laptopBase);
 
-    // Screen (angled up)
+    // Screen (angled up, facing Kent but visible from camera)
     var screen = new THREE.Mesh(
       new THREE.BoxGeometry(0.33, 0.22, 0.01),
       new THREE.MeshStandardMaterial({ color: 0x1a1a2e, roughness: 0.3, metalness: 0.2, emissive: 0x2244AA, emissiveIntensity: 0.3 })
     );
-    screen.position.set(figX + 0.48, gY + 0.34, figZ - 0.02);
-    screen.rotation.set(-0.4, 0.4, 0);
+    screen.position.set(lapX - 0.05, lapY + 0.12, lapZ - 0.1);
+    screen.rotation.set(-0.4, 0.5, 0);
     scene.add(screen);
 
-    // Screen glow light
-    var screenLight = new THREE.PointLight(0x4466CC, 0.4, 3);
-    screenLight.position.set(figX + 0.5, gY + 0.4, figZ);
+    // Screen glow light — brighter so it's noticeable
+    var screenLight = new THREE.PointLight(0x4466CC, 0.6, 5);
+    screenLight.position.set(lapX, lapY + 0.2, lapZ);
     scene.add(screenLight);
     scene._screenLight = screenLight;
 
-    // Code lines on screen (tiny green sprites)
-    var codeLine = new THREE.Mesh(
-      new THREE.PlaneGeometry(0.25, 0.005),
-      new THREE.MeshBasicMaterial({ color: 0xA3B18A, transparent: true, opacity: 0.6 })
-    );
-    codeLine.position.set(figX + 0.48, gY + 0.38, figZ - 0.01);
-    codeLine.rotation.set(-0.4, 0.4, 0);
-    scene.add(codeLine);
-    var codeLine2 = new THREE.Mesh(
-      new THREE.PlaneGeometry(0.18, 0.005),
-      new THREE.MeshBasicMaterial({ color: 0x5C7650, transparent: true, opacity: 0.5 })
-    );
-    codeLine2.position.set(figX + 0.47, gY + 0.36, figZ - 0.01);
-    codeLine2.rotation.set(-0.4, 0.4, 0);
-    scene.add(codeLine2);
-    var codeLine3 = new THREE.Mesh(
-      new THREE.PlaneGeometry(0.22, 0.005),
-      new THREE.MeshBasicMaterial({ color: 0xA3B18A, transparent: true, opacity: 0.4 })
-    );
-    codeLine3.position.set(figX + 0.46, gY + 0.34, figZ - 0.01);
-    codeLine3.rotation.set(-0.4, 0.4, 0);
-    scene.add(codeLine3);
+    // Code lines on screen
+    var codeRot = [-0.4, 0.5, 0];
+    [{ w: 0.25, off: 0.04 }, { w: 0.18, off: 0.02 }, { w: 0.22, off: 0 }].forEach(function (cl, ci) {
+      var line = new THREE.Mesh(
+        new THREE.PlaneGeometry(cl.w, 0.005),
+        new THREE.MeshBasicMaterial({ color: 0xA3B18A, transparent: true, opacity: 0.6 - ci * 0.1 })
+      );
+      line.position.set(lapX - 0.05, lapY + 0.16 - ci * 0.025, lapZ - 0.09);
+      line.rotation.set(codeRot[0], codeRot[1], codeRot[2]);
+      scene.add(line);
+    });
+
+    // Store Kent's parts for idle animation
+    scene._kent = {
+      torso: torso, head: head, armR: armR, forearmR: forearmR, stick: stick,
+      figX: figX, figZ: figZ, baseY: gY
+    };
+
+    // Store laptop screen for animation
+    scene._laptopScreen = screen;
+
+    // === Ground grass/ferns around clearing ===
+    var grassMat = new THREE.MeshStandardMaterial({ color: 0x2D4233, roughness: 0.9, flatShading: true, side: THREE.DoubleSide });
+    var grassMat2 = new THREE.MeshStandardMaterial({ color: 0x3A5A40, roughness: 0.85, flatShading: true, side: THREE.DoubleSide });
+    var grassBlades = [];
+    for (var gi = 0; gi < (isMobile ? 30 : 60); gi++) {
+      var ga = Math.random() * Math.PI * 2;
+      var gr = 3 + Math.random() * 10;
+      var gx = Math.cos(ga) * gr;
+      var gz = Math.sin(ga) * gr;
+      var gy = getGroundY(gx, gz);
+      var bladeH = 0.15 + Math.random() * 0.25;
+      var blade = new THREE.Mesh(
+        new THREE.PlaneGeometry(0.04 + Math.random() * 0.04, bladeH),
+        Math.random() > 0.5 ? grassMat : grassMat2
+      );
+      blade.position.set(gx, gy + bladeH / 2, gz);
+      blade.rotation.set(0, Math.random() * Math.PI, (Math.random() - 0.5) * 0.3);
+      scene.add(blade);
+      grassBlades.push(blade);
+    }
+    scene._grass = grassBlades;
+
+    // === Visitor name carved on a tree (if they typed it in the console) ===
+    var visitorName = localStorage.getItem("visitorName");
+    if (visitorName) {
+      // Place at the edge of the clearing — visible from ch2-3 camera positions
+      // Camera at ch2: (3, 2.5, 10) looking at (1, 0.5, 0)
+      // Camera at ch3: (-1, 2, 5) looking at (-1, 0.5, -1)
+      // Tree at (2, y, 3) is right of the fire, visible from both angles
+      var carveX = 2, carveZ = 3;
+      var carveGY = getGroundY(carveX, carveZ);
+
+      // Carve tree — thicker trunk so text is readable
+      var carveTree = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.2, 0.28, 3.5, 7),
+        new THREE.MeshStandardMaterial({ color: 0x3B2314, roughness: 0.85, flatShading: true })
+      );
+      carveTree.position.set(carveX, carveGY + 1.75, carveZ);
+      scene.add(carveTree);
+
+      // Canopy
+      var carveCanopy = new THREE.Mesh(
+        new THREE.SphereGeometry(1.2, 7, 5),
+        new THREE.MeshStandardMaterial({ color: 0x3A5A40, roughness: 0.75, flatShading: true })
+      );
+      carveCanopy.position.set(carveX, carveGY + 4, carveZ);
+      carveCanopy.scale.y = 0.7;
+      scene.add(carveCanopy);
+
+      // Carving text — as a sprite facing the camera
+      var carveLabel = makeLabel("Kent + " + visitorName, {
+        fontSize: 18, fontWeight: "600", color: "#DAD7CD", scale: 1.0, opacity: 0.7
+      });
+      carveLabel.position.set(carveX, carveGY + 1.6, carveZ + 0.3);
+      scene.add(carveLabel);
+
+      // Heart above
+      var heartLabel = makeLabel("\u2665", {
+        fontSize: 16, fontWeight: "400", color: "#A3B18A", scale: 0.5, opacity: 0.6
+      });
+      heartLabel.position.set(carveX, carveGY + 2.0, carveZ + 0.3);
+      scene.add(heartLabel);
+
+      // Small warm light on the carving
+      var carveLight = new THREE.PointLight(0xE8C87A, 0.3, 4);
+      carveLight.position.set(carveX, carveGY + 1.8, carveZ + 0.5);
+      scene.add(carveLight);
+    }
 
     // === Brand label floats above the campsite ===
-    var brand = makeLabel("//kent.dev", { fontSize: 28, fontWeight: "700", color: "#A3B18A", scale: 1.8, opacity: 0.6 });
-    brand.position.set(0, gY + 3.2, 0); scene.add(brand); scene._brandLabel = brand;
-    var sub = makeLabel("Senior Software Developer", { fontSize: 13, fontWeight: "400", color: "rgba(163,177,138,0.4)", scale: 1.4, opacity: 0.35 });
-    sub.position.set(0, gY + 2.5, 0); scene.add(sub); scene._brandSub = sub;
+    // Brand label — small, off to the side so it doesn't block the campsite
+    var brand = makeLabel("//kent.dev", { fontSize: 22, fontWeight: "700", color: "#A3B18A", scale: 1.2, opacity: 0.5 });
+    brand.position.set(-3, gY + 2.2, -2); scene.add(brand); scene._brandLabel = brand;
+    var sub = makeLabel("Senior Software Developer", { fontSize: 11, fontWeight: "400", color: "rgba(163,177,138,0.35)", scale: 1.0, opacity: 0.3 });
+    sub.position.set(-3, gY + 1.7, -2); scene.add(sub); scene._brandSub = sub;
   }
 
   // ======================== Project Lanterns — branch-hung, zigzag ========================
@@ -1219,15 +1277,15 @@
     scene.add(stars);
     scene._stars = stars;
 
-    // Moon — simple glowing disc
-    var moonGeo = new THREE.SphereGeometry(3, 16, 16);
-    var moonMat = new THREE.MeshBasicMaterial({ color: 0xDDE8F0, transparent: true, opacity: 0.25 });
+    // Moon — small, far away, off to the side
+    var moonGeo = new THREE.SphereGeometry(1.5, 12, 12);
+    var moonMat = new THREE.MeshBasicMaterial({ color: 0xDDE8F0, transparent: true, opacity: 0.2 });
     var moonMesh = new THREE.Mesh(moonGeo, moonMat);
-    moonMesh.position.set(-30, 50, -40);
+    moonMesh.position.set(-60, 55, -70);
     scene.add(moonMesh);
     // Moon glow
-    var glowGeo = new THREE.SphereGeometry(5, 16, 16);
-    var glowMat = new THREE.MeshBasicMaterial({ color: 0xAABBCC, transparent: true, opacity: 0.06 });
+    var glowGeo = new THREE.SphereGeometry(3, 12, 12);
+    var glowMat = new THREE.MeshBasicMaterial({ color: 0xAABBCC, transparent: true, opacity: 0.04 });
     var moonGlow = new THREE.Mesh(glowGeo, glowMat);
     moonGlow.position.set(-30, 50, -40);
     scene.add(moonGlow);
@@ -1346,6 +1404,26 @@
     }
   }
 
+  function spawnEmber(worldX, worldZ) {
+    var eY = getGroundY(worldX, worldZ);
+    var ember = new THREE.Mesh(
+      new THREE.CircleGeometry(0.06 + Math.random() * 0.05, 6),
+      new THREE.MeshBasicMaterial({
+        color: [0xFF8833, 0xFFAA33, 0xE8C87A, 0xFFCC55][Math.floor(Math.random() * 4)],
+        transparent: true, opacity: 0.7, depthWrite: false
+      })
+    );
+    ember.rotation.x = -Math.PI / 2;
+    ember.position.set(worldX, eY + 0.03, worldZ);
+    scene.add(ember);
+    groundEmbers.push({ mesh: ember, phase: Math.random() * Math.PI * 2 });
+    saveEmbers();
+    if (groundEmbers.length > MAX_EMBERS) {
+      var old = groundEmbers.shift();
+      scene.remove(old.mesh); old.mesh.geometry.dispose(); old.mesh.material.dispose();
+    }
+  }
+
   // ======================== Events ========================
   function getWorldPos(cx, cy) {
     mouseVec.set((cx / window.innerWidth) * 2 - 1, -(cy / window.innerHeight) * 2 + 1);
@@ -1366,8 +1444,33 @@
         lastMouseSpawn = now;
       }
     }
+    // Cursor trail — small sage particles following mouse
+    var now = Date.now();
+    if (now - lastTrailTime > 50) { // throttle to 20 per second
+      lastTrailTime = now;
+      var trailWp = getWorldPos(e.clientX, e.clientY);
+      var tp = new THREE.Mesh(
+        new THREE.SphereGeometry(0.03, 4, 4),
+        new THREE.MeshBasicMaterial({ color: 0xA3B18A, transparent: true, opacity: 0.4 })
+      );
+      tp.position.set(trailWp.x, trailWp.y, trailWp.z);
+      scene.add(tp);
+      cursorTrail.push({ mesh: tp, born: now });
+      if (cursorTrail.length > MAX_CURSOR_TRAIL) {
+        var old = cursorTrail.shift();
+        scene.remove(old.mesh); old.mesh.geometry.dispose(); old.mesh.material.dispose();
+      }
+    }
   }
-  function onClick(e) { var wp = getWorldPos(e.clientX, e.clientY); spawnFirefly(wp.x, wp.y, wp.z); if (window.playSound) playSound("click"); }
+  function onClick(e) {
+    var wp = getWorldPos(e.clientX, e.clientY);
+    if (scrollProgress >= 0.20 && scrollProgress <= 0.42) {
+      spawnEmber(wp.x, wp.z);
+    } else {
+      spawnFirefly(wp.x, wp.y, wp.z);
+    }
+    if (window.playSound) playSound("click");
+  }
   function onTouch(e) { e.preventDefault(); isMouseDown = true; var t = e.touches[0]; var wp = getWorldPos(t.clientX, t.clientY); spawnFirefly(wp.x, wp.y, wp.z); lastTouchSpawn = Date.now(); }
   function onTouchDrag(e) {
     e.preventDefault(); var t = e.touches[0];
@@ -1438,9 +1541,17 @@
     if (scene._fireLight) {
       var flicker = 2.5 + Math.sin(t * 8) * 0.6 + Math.sin(t * 13) * 0.3 + Math.sin(t * 21) * 0.15;
       scene._fireLight.intensity = flicker * cAmp;
+      // Color shifts between orange → red-orange → yellow-orange
+      var colorShift = Math.sin(t * 3) * 0.5 + 0.5; // 0 to 1
+      var fireR = 1.0;
+      var fireG = 0.45 + colorShift * 0.15; // 0.45 to 0.60
+      var fireB = 0.15 + colorShift * 0.1;  // 0.15 to 0.25
+      scene._fireLight.color.setRGB(fireR, fireG, fireB);
     }
     if (scene._fireFill) {
       scene._fireFill.intensity = (0.9 + Math.sin(t * 6) * 0.3) * cAmp;
+      // Redder fill
+      scene._fireFill.color.setRGB(0.9, 0.35 + Math.sin(t * 2) * 0.1, 0.1);
     }
     if (scene._fireBounce) {
       scene._fireBounce.intensity = (0.7 + Math.sin(t * 4) * 0.2) * cAmp;
@@ -1462,8 +1573,91 @@
         em.scale.setScalar((1 - cycle) * 0.8 + 0.2);
       }
     }
-    if (scene._brandLabel) scene._brandLabel.position.y = 4.5 + Math.sin(t * 0.4) * 0.1;
-    if (scene._brandSub) scene._brandSub.position.y = 3.5 + Math.sin(t * 0.4 + 0.5) * 0.08;
+    // Brand label — fades when camera is close to campsite
+    var brandFade = scrollProgress < 0.15 ? 1.0 : (scrollProgress < 0.40 ? Math.max(0, 1 - (scrollProgress - 0.15) * 4) : 0);
+    if (scene._brandLabel) {
+      scene._brandLabel.position.y = 2.2 + Math.sin(t * 0.4) * 0.06;
+      scene._brandLabel.material.opacity = 0.5 * brandFade;
+    }
+    if (scene._brandSub) {
+      scene._brandSub.position.y = 1.7 + Math.sin(t * 0.4 + 0.5) * 0.04;
+      scene._brandSub.material.opacity = 0.3 * brandFade;
+    }
+    // Fade out welcome back after 3 seconds
+    if (scene._welcomeBack) {
+      var wbAge = t - (scene._welcomeBackTime || (scene._welcomeBackTime = t));
+      if (wbAge > 3) {
+        scene._welcomeBack.material.opacity *= 0.95;
+        if (scene._welcomeBack.material.opacity < 0.01) {
+          scene.remove(scene._welcomeBack);
+          scene._welcomeBack = null;
+        }
+      }
+    }
+
+    // === Kent idle animation — breathing, head tilt, stick poking ===
+    if (scene._kent) {
+      var k = scene._kent;
+      // Breathing — torso scale pulses
+      var breath = Math.sin(t * 1.2) * 0.008;
+      k.torso.scale.set(1 + breath, 1 + breath * 0.5, 1 + breath);
+      // Head tilts subtly toward fire
+      k.head.rotation.x = Math.sin(t * 0.4) * 0.04;
+      k.head.rotation.z = Math.sin(t * 0.3) * 0.03;
+      // Right arm — slow stick poke cycle
+      var poke = Math.sin(t * 0.6) * 0.08;
+      k.armR.rotation.x = 0.6 + poke;
+      k.forearmR.rotation.x = 0.8 + poke * 0.5;
+      k.stick.rotation.x = 0.9 + poke * 0.6;
+    }
+
+    // === Laptop screen animation — cursor blink + code scroll ===
+    if (scene._laptopScreen) {
+      var laptopZoom = 0;
+      if (scrollProgress > 0.34 && scrollProgress < 0.37) {
+        laptopZoom = 1 - Math.abs(scrollProgress - 0.355) / 0.015;
+        laptopZoom = Math.max(0, Math.min(1, laptopZoom));
+      }
+      scene._laptopScreen.material.emissiveIntensity = 0.25 + Math.sin(t * 2.5) * 0.08 + laptopZoom * 0.5;
+      if (scene._screenLight) {
+        scene._screenLight.intensity = 0.3 + Math.sin(t * 2) * 0.1 + laptopZoom * 0.6;
+      }
+    }
+
+    // === Grass sway in wind ===
+    if (scene._grass) {
+      for (var gri = 0; gri < scene._grass.length; gri++) {
+        var blade = scene._grass[gri];
+        blade.rotation.z = (Math.random() > 0.99 ? 0 : blade.rotation.z) + Math.sin(t * 1.5 + gri * 0.5) * 0.06;
+      }
+    }
+
+    // === Tree canopy wind sway ===
+    if (scene._canopies) {
+      for (var ci = 0; ci < scene._canopies.length; ci++) {
+        var cp = scene._canopies[ci];
+        cp.mesh.rotation.x = cp.baseRx + Math.sin(t * 0.8 + cp.phase) * 0.02;
+        cp.mesh.rotation.z = Math.sin(t * 0.6 + cp.phase * 1.3) * 0.015;
+      }
+    }
+
+    // Canopy reveal — all lanterns flash when camera rises above (ch8)
+    var canopyReveal = 0;
+    if (scrollProgress > 0.82 && scrollProgress < 0.90) {
+      canopyReveal = 1 - Math.abs(scrollProgress - 0.855) / 0.035;
+      canopyReveal = Math.max(0, Math.min(1, canopyReveal));
+      canopyReveal = canopyReveal * canopyReveal * (3 - 2 * canopyReveal);
+    }
+    // Burst fireflies at peak
+    if (canopyReveal > 0.95 && !scene._canopyFlashed) {
+      scene._canopyFlashed = true;
+      for (var ri = 0; ri < 15; ri++) {
+        var ra = (ri / 15) * Math.PI * 2;
+        var rr = 5 + Math.random() * 8;
+        spawnFirefly(camera.position.x + Math.cos(ra) * rr, camera.position.y - 2 + Math.random() * 4, camera.position.z + Math.sin(ra) * rr);
+      }
+    }
+    if (scrollProgress < 0.82 || scrollProgress > 0.90) scene._canopyFlashed = false;
 
     // Lanterns — globe sways gently, brightens when camera is near
     for (var li = 0; li < lanterns.length; li++) {
@@ -1480,8 +1674,9 @@
       var dist = Math.abs(scrollProgress - (lan.chapter || 0.5));
       var near = Math.max(0, 1 - dist * 8);
 
-      var tG = lerp(0.15, 1.2, near), tL = lerp(0.3, 1.8, near);
-      var tO = lerp(0.0, 0.95, near), tS = lerp(0.8, 1.3, near);
+      var revealNear = Math.max(near, canopyReveal);
+      var tG = lerp(0.15, 1.2, revealNear), tL = lerp(0.3, 1.8, revealNear);
+      var tO = lerp(0.0, 0.95, revealNear), tS = lerp(0.8, 1.3, revealNear);
       lan.mesh.material.emissiveIntensity += (tG - lan.mesh.material.emissiveIntensity) * 0.03;
       lan.light.intensity += (tL - lan.light.intensity) * 0.03;
       lan.label.material.opacity += (tO - lan.label.material.opacity) * 0.025;
@@ -1532,41 +1727,65 @@
       }
     }
 
-    // Stars twinkle
-    if (scene._stars) scene._stars.rotation.y = t * 0.001;
+    // Stars twinkle — pulse opacity of individual stars
+    if (scene._stars) {
+      scene._stars.rotation.y = t * 0.001;
+      scene._stars.material.opacity = 0.6 + Math.sin(t * 0.5) * 0.15;
+    }
 
-    // Smoke rises from campfire
+    // Smoke rises — wind drift + dispersal
+    var windX = Math.sin(t * 0.3) * 0.4; // gentle wind direction shifts
+    var windZ = Math.cos(t * 0.2) * 0.2;
     if (scene._smoke) {
       for (var si = 0; si < scene._smoke.length; si++) {
         var sm = scene._smoke[si], sd = sm.userData;
         var cycle = ((t * sd.speed + sd.phase) % sd.maxH) / sd.maxH;
         var h = cycle * sd.maxH;
+        // Wind pushes smoke sideways as it rises
         sm.position.set(
-          sd.drift * cycle + Math.sin(t * 0.5 + sd.phase) * 0.2 * cycle,
+          sd.drift * cycle + windX * cycle * 1.5 + Math.sin(t * 0.5 + sd.phase) * 0.3 * cycle,
           0.5 + h,
-          0.5 + Math.cos(t * 0.3 + sd.phase) * 0.1 * cycle
+          0.5 + windZ * cycle + Math.cos(t * 0.3 + sd.phase) * 0.15 * cycle
         );
-        sm.material.opacity = Math.sin(cycle * Math.PI) * 0.12 * cAmp;
-        var scale = 0.3 + cycle * sd.growRate;
+        // Fade: appear quickly, linger longer, fade softly
+        var fadeIn = Math.min(1, cycle * 4);
+        var fadeOut = Math.max(0, 1 - (cycle - 0.6) * 2.5);
+        sm.material.opacity = fadeIn * fadeOut * 0.1 * cAmp;
+        // Grow faster as it disperses
+        var scale = 0.2 + cycle * cycle * sd.growRate * 1.5;
         sm.scale.setScalar(scale);
       }
     }
 
 
 
-    // Laptop screen flicker
-    if (scene._screenLight) {
-      scene._screenLight.intensity = 0.3 + Math.sin(t * 2) * 0.1;
-    }
 
     // Mist
     if (scene._mist) { scene._mist.rotation.y = t * 0.002; scene._mist.position.y = Math.sin(t * 0.1) * 0.2; }
 
-    // Billboard trees face camera
-    if (scene._billboards) {
+    // Billboard trees face camera (every 3rd frame to save CPU)
+    if (scene._billboards && Math.floor(t * 20) % 3 === 0) {
       for (var bi = 0; bi < scene._billboards.length; bi++) {
         var bb = scene._billboards[bi];
         bb.rotation.y = Math.atan2(camera.position.x - bb.position.x, camera.position.z - bb.position.z);
+      }
+    }
+
+    // Ground embers pulse
+    for (var gei = 0; gei < groundEmbers.length; gei++) {
+      var ge = groundEmbers[gei];
+      ge.mesh.material.opacity = 0.35 + Math.sin(t * 2 + ge.phase) * 0.2;
+    }
+
+    // Cursor trail fade
+    for (var cti = cursorTrail.length - 1; cti >= 0; cti--) {
+      var ct = cursorTrail[cti];
+      var age = (Date.now() - ct.born) / 1000;
+      ct.mesh.material.opacity = Math.max(0, 0.4 - age * 0.5);
+      ct.mesh.scale.setScalar(Math.max(0.1, 1 - age * 1.2));
+      if (age > 1) {
+        scene.remove(ct.mesh); ct.mesh.geometry.dispose(); ct.mesh.material.dispose();
+        cursorTrail.splice(cti, 1);
       }
     }
 
@@ -1702,6 +1921,14 @@
     spawned = [];
     for (var j = trails.length - 1; j >= 0; j--) { scene.remove(trails[j]); trails[j].geometry.dispose(); trails[j].material.dispose(); }
     trails = [];
+    for (var k = groundEmbers.length - 1; k >= 0; k--) {
+      scene.remove(groundEmbers[k].mesh); groundEmbers[k].mesh.geometry.dispose(); groundEmbers[k].mesh.material.dispose();
+    }
+    groundEmbers = [];
+    for (var ct = cursorTrail.length - 1; ct >= 0; ct--) {
+      scene.remove(cursorTrail[ct].mesh); cursorTrail[ct].mesh.geometry.dispose(); cursorTrail[ct].mesh.material.dispose();
+    }
+    cursorTrail = [];
   }
 
   // ======================== Public API ========================
@@ -1711,6 +1938,8 @@
       if (!scene) { if (!init()) return; }
       isActive = true; canvas.style.display = "block"; canvas.style.pointerEvents = "auto";
       clock.start(); animate();
+      // Restore previous visit embers after scene is ready
+      setTimeout(restoreEmbers, 500);
       // Try to auto-play audio immediately, retry on first interaction if blocked
       initAudio();
       var audioRetry = function () {
@@ -1729,6 +1958,7 @@
       isActive = false; stopAudio();
       if (animationId) { cancelAnimationFrame(animationId); animationId = null; }
       if (canvas) { canvas.style.display = "none"; canvas.style.pointerEvents = "none"; }
+      saveEmbers();
       cleanup();
     },
     isRunning: function () { return isActive; }

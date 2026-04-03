@@ -57,34 +57,53 @@
       overlay.appendChild(terminal);
       document.body.appendChild(overlay);
 
-      var lines = goingCreative
-        ? [
-            { text: "$ xcodebuild -scheme kent.dev -config forest", cls: "xc-cmd" },
-            { text: "\u25b8 Loading Three.js runtime...", cls: "" },
-            { text: "\u25b8 Compiling ForestScene.swift", cls: "" },
-            { text: "\u25b8 Planting 120 trees \u2014 sage green canopy", cls: "" },
-            { text: "\u25b8 Lighting 5 lanterns + 12 fireflies", cls: "" },
-            { text: "\u2713 Build Succeeded \u2014 Entering the Forest", cls: "xc-success" },
-          ]
-        : [
-            { text: "$ xcodebuild -scheme kent.dev -config code", cls: "xc-cmd" },
-            { text: "\u25b8 Leaving the forest...", cls: "" },
-            { text: "\u25b8 Compiling ThemeProvider.swift", cls: "" },
-            { text: "\u25b8 Restoring dark palette [#1c1c1e]", cls: "" },
-            { text: "\u25b8 Linking kent.dev", cls: "" },
-            { text: "\u2713 Build Succeeded \u2014 Code Mode Active", cls: "xc-success" },
-          ];
+      if (goingCreative) {
+        // Creative mode: show real progress from scene construction
+        var cmdLine = document.createElement("div");
+        cmdLine.className = "xc-build-line xc-cmd";
+        cmdLine.textContent = "$ xcodebuild -scheme kent.dev -config forest";
+        body.appendChild(cmdLine);
 
-      var delay = 250;
-      lines.forEach(function (line, i) {
-        setTimeout(function () {
+        // Set up callback for real scene progress
+        window._creativeLoadCallback = function (msg) {
           var div = document.createElement("div");
-          div.className = "xc-build-line " + line.cls;
-          div.textContent = line.text;
+          if (msg === "complete") {
+            div.className = "xc-build-line xc-success";
+            div.textContent = "\u2713 Build Succeeded \u2014 Entering the Forest";
+          } else {
+            div.className = "xc-build-line";
+            div.textContent = "\u25b8 " + msg;
+          }
           body.appendChild(div);
           body.scrollTop = body.scrollHeight;
-        }, delay * (i + 1));
-      });
+        };
+
+        // Add initial loading line
+        var loadLine = document.createElement("div");
+        loadLine.className = "xc-build-line";
+        loadLine.textContent = "\u25b8 Loading Three.js runtime...";
+        body.appendChild(loadLine);
+      } else {
+        // Code mode: static lines
+        var codeLines = [
+          { text: "$ xcodebuild -scheme kent.dev -config code", cls: "xc-cmd" },
+          { text: "\u25b8 Leaving the forest...", cls: "" },
+          { text: "\u25b8 Compiling ThemeProvider.swift", cls: "" },
+          { text: "\u25b8 Restoring dark palette [#1c1c1e]", cls: "" },
+          { text: "\u25b8 Linking kent.dev", cls: "" },
+          { text: "\u2713 Build Succeeded \u2014 Code Mode Active", cls: "xc-success" },
+        ];
+        var delay = 250;
+        codeLines.forEach(function (line, i) {
+          setTimeout(function () {
+            var div = document.createElement("div");
+            div.className = "xc-build-line " + line.cls;
+            div.textContent = line.text;
+            body.appendChild(div);
+            body.scrollTop = body.scrollHeight;
+          }, delay * (i + 1));
+        });
+      }
 
       return overlay;
     }
@@ -124,6 +143,8 @@
       stopShapeCounter();
       stopChapterObserver();
       if (window.updateParticleColor) window.updateParticleColor();
+      // Scroll to top when returning to code mode
+      window.scrollTo(0, 0);
     }
 
     // Toggle button (navbar) — cinematic transition
@@ -145,25 +166,37 @@
       // Show build terminal on top of fade
       var buildOverlay = createBuildTerminal(goingCreative);
 
-      // At peak darkness, swap modes (after lines have played)
+      // At peak darkness, swap modes
       setTimeout(function () {
         if (goingCreative) {
+          // Wait for scene to actually load before removing fade
+          var oldCallback = window._creativeLoadCallback;
+          window._creativeLoadCallback = function (msg) {
+            if (oldCallback) oldCallback(msg);
+            if (msg === "complete") {
+              // Scene is built — now fade out
+              setTimeout(function () {
+                document.documentElement.classList.remove("theme-switching");
+                buildOverlay.classList.add("xc-build-done");
+                setTimeout(function () { buildOverlay.remove(); }, 500);
+                fade.classList.add("ct-fade-out");
+                setTimeout(function () { fade.remove(); }, 800);
+              }, 400);
+            }
+          };
           activateCreative();
         } else {
           deactivateCreative();
+          // Code mode — fade out on a fixed timer
+          setTimeout(function () {
+            document.documentElement.classList.remove("theme-switching");
+            buildOverlay.classList.add("xc-build-done");
+            setTimeout(function () { buildOverlay.remove(); }, 500);
+            fade.classList.add("ct-fade-out");
+            setTimeout(function () { fade.remove(); }, 800);
+          }, 1000);
         }
       }, 1800);
-
-      // Fade out after build terminal finishes + brief pause to read
-      setTimeout(function () {
-        document.documentElement.classList.remove("theme-switching");
-        buildOverlay.classList.add("xc-build-done");
-        setTimeout(function () { buildOverlay.remove(); }, 500);
-
-        // Begin fade out
-        fade.classList.add("ct-fade-out");
-        setTimeout(function () { fade.remove(); }, 800);
-      }, 2600);
 
       document.documentElement.classList.add("theme-switching");
     });
@@ -384,16 +417,26 @@
 // Terminal Preloader — Boot Sequence
 // ============================================
 (function () {
-  var bootLines = [
-    { text: "loading modules...", delay: 200 },
-    { text: '<span class="term-muted">[core]</span> css-variables <span class="term-success">✓</span>', delay: 150 },
-    { text: '<span class="term-muted">[core]</span> design-system <span class="term-success">✓</span>', delay: 120 },
-    { text: '<span class="term-muted">[plugin]</span> particles.js <span class="term-success">✓</span>', delay: 180 },
-    { text: '<span class="term-muted">[plugin]</span> typed.js <span class="term-success">✓</span>', delay: 100 },
-    { text: '<span class="term-muted">[plugin]</span> scroll-reveal <span class="term-success">✓</span>', delay: 130 },
-    { text: "compiling <span class='term-accent'>//kent.dev</span>...", delay: 300 },
-    { text: '<span class="term-success">ready.</span> launching portfolio ↗', delay: 400 },
-  ];
+  var isReturn = localStorage.getItem("visited") === "true";
+  localStorage.setItem("visited", "true");
+
+  var bootLines = isReturn
+    ? [
+        { text: '<span class="term-muted">[cache]</span> assets loaded from local storage <span class="term-success">✓</span>', delay: 100 },
+        { text: '<span class="term-muted">[sw]</span> service worker active <span class="term-success">✓</span>', delay: 80 },
+        { text: "restoring <span class='term-accent'>//kent.dev</span> session...", delay: 150 },
+        { text: '<span class="term-success">welcome back.</span> launching portfolio ↗', delay: 200 },
+      ]
+    : [
+        { text: "loading modules...", delay: 200 },
+        { text: '<span class="term-muted">[core]</span> css-variables <span class="term-success">✓</span>', delay: 150 },
+        { text: '<span class="term-muted">[core]</span> design-system <span class="term-success">✓</span>', delay: 120 },
+        { text: '<span class="term-muted">[plugin]</span> particles.js <span class="term-success">✓</span>', delay: 180 },
+        { text: '<span class="term-muted">[plugin]</span> typed.js <span class="term-success">✓</span>', delay: 100 },
+        { text: '<span class="term-muted">[plugin]</span> scroll-reveal <span class="term-success">✓</span>', delay: 130 },
+        { text: "compiling <span class='term-accent'>//kent.dev</span>...", delay: 300 },
+        { text: '<span class="term-success">ready.</span> launching portfolio ↗', delay: 400 },
+      ];
 
   var terminalBody = document.getElementById("terminalBody");
   if (!terminalBody) {
@@ -512,6 +555,128 @@
       ticking = true;
     }
   });
+})();
+
+// ============================================
+// Keyboard Shortcuts
+// ============================================
+(function () {
+  var sectionKeys = {
+    "1": "home", "2": "expertise", "3": "skills",
+    "4": "resume", "5": "projects", "6": "contact"
+  };
+
+  document.addEventListener("keydown", function (e) {
+    // Don't trigger when typing in inputs
+    if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA" || e.target.isContentEditable) return;
+
+    // Number keys 1-6: jump to section
+    if (sectionKeys[e.key] && !e.metaKey && !e.ctrlKey) {
+      var el = document.getElementById(sectionKeys[e.key]);
+      if (el) el.scrollIntoView({ behavior: "smooth" });
+    }
+
+    // Cmd/Ctrl + K: open command palette
+    if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+      e.preventDefault();
+      toggleCommandPalette();
+    }
+
+    // Cmd/Ctrl + /: toggle creative mode
+    if ((e.metaKey || e.ctrlKey) && e.key === "/") {
+      e.preventDefault();
+      var toggle = document.getElementById("themeToggle");
+      if (toggle) toggle.click();
+    }
+
+    // Escape: close command palette
+    if (e.key === "Escape") {
+      closeCommandPalette();
+    }
+  });
+
+  // Command Palette
+  var palette = null;
+
+  function toggleCommandPalette() {
+    if (palette) { closeCommandPalette(); return; }
+
+    palette = document.createElement("div");
+    palette.className = "cmd-palette";
+    palette.innerHTML = [
+      '<div class="cmd-palette-overlay"></div>',
+      '<div class="cmd-palette-box">',
+      '  <div class="cmd-palette-input-wrap">',
+      '    <i class="fas fa-search"></i>',
+      '    <input type="text" class="cmd-palette-input" placeholder="Type a command..." autofocus>',
+      '  </div>',
+      '  <div class="cmd-palette-results">',
+      '    <div class="cmd-item" data-action="home"><span class="cmd-label">Go to Home</span><kbd>1</kbd></div>',
+      '    <div class="cmd-item" data-action="expertise"><span class="cmd-label">Go to Expertise</span><kbd>2</kbd></div>',
+      '    <div class="cmd-item" data-action="skills"><span class="cmd-label">Go to Skills</span><kbd>3</kbd></div>',
+      '    <div class="cmd-item" data-action="resume"><span class="cmd-label">Go to Resume</span><kbd>4</kbd></div>',
+      '    <div class="cmd-item" data-action="projects"><span class="cmd-label">Go to Projects</span><kbd>5</kbd></div>',
+      '    <div class="cmd-item" data-action="contact"><span class="cmd-label">Go to Contact</span><kbd>6</kbd></div>',
+      '    <div class="cmd-item" data-action="creative"><span class="cmd-label">Enter the Forest</span><kbd>\u2318/</kbd></div>',
+      '    <div class="cmd-item" data-action="cv"><span class="cmd-label">Download CV</span></div>',
+      '    <div class="cmd-item" data-action="sound"><span class="cmd-label">Toggle Sound</span></div>',
+      '  </div>',
+      '</div>'
+    ].join("");
+
+    document.body.appendChild(palette);
+
+    var input = palette.querySelector(".cmd-palette-input");
+    var items = palette.querySelectorAll(".cmd-item");
+    var overlay = palette.querySelector(".cmd-palette-overlay");
+
+    input.focus();
+
+    // Filter items
+    input.addEventListener("input", function () {
+      var q = input.value.toLowerCase();
+      items.forEach(function (item) {
+        var match = item.textContent.toLowerCase().indexOf(q) >= 0;
+        item.style.display = match ? "" : "none";
+      });
+    });
+
+    // Click item
+    items.forEach(function (item) {
+      item.addEventListener("click", function () {
+        var action = item.getAttribute("data-action");
+        closeCommandPalette();
+        if (action === "creative") {
+          var toggle = document.getElementById("themeToggle");
+          if (toggle) toggle.click();
+        } else if (action === "cv") {
+          var cv = document.getElementById("downloadCVButton");
+          if (cv) cv.click();
+        } else if (action === "sound") {
+          var sound = document.getElementById("soundToggle");
+          if (sound) sound.click();
+        } else {
+          var el = document.getElementById(action);
+          if (el) el.scrollIntoView({ behavior: "smooth" });
+        }
+      });
+    });
+
+    // Enter selects first visible
+    input.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        var first = palette.querySelector('.cmd-item[style=""], .cmd-item:not([style])');
+        if (first) first.click();
+      }
+    });
+
+    overlay.addEventListener("click", closeCommandPalette);
+    if (window.playSound) playSound("click");
+  }
+
+  function closeCommandPalette() {
+    if (palette) { palette.remove(); palette = null; }
+  }
 })();
 
 // ============================================
@@ -935,31 +1100,252 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 // ============================================
-// Bento Cell Staggered Reveal
+// IDE Hero — Typing Animation + Staggered Reveal
 // ============================================
 (function () {
-  var grid = document.querySelector(".bento-grid");
-  if (!grid) return;
+  var ideHero = document.querySelector(".ide-hero-layout");
+  if (!ideHero) return;
 
-  var bentoCells = grid.querySelectorAll(".bento-cell");
+  // Staggered reveal for IDE panels
+  var panels = ideHero.querySelectorAll(".ide-sidebar, .ide-main, .ide-inspector");
 
-  var bentoObserver = new IntersectionObserver(
+  var ideObserver = new IntersectionObserver(
     function (entries) {
       entries.forEach(function (entry) {
         if (entry.isIntersecting) {
-          bentoCells.forEach(function (cell, i) {
+          panels.forEach(function (panel, i) {
             setTimeout(function () {
-              cell.classList.add("bento-revealed");
-            }, i * 120);
+              panel.classList.add("ide-revealed");
+            }, i * 200);
           });
-          bentoObserver.unobserve(entry.target);
+
+          // Start typing animation after panels reveal
+          setTimeout(startIDETyping, 800);
+          ideObserver.unobserve(entry.target);
         }
       });
     },
     { threshold: 0.1 }
   );
 
-  bentoObserver.observe(grid);
+  ideObserver.observe(ideHero);
+
+  // Typing animation — reveal editor content line by line
+  function startIDETyping() {
+    var editor = document.querySelector(".ide-editor");
+    if (!editor) return;
+
+    var children = editor.children;
+    // Hide all children first
+    for (var i = 0; i < children.length; i++) {
+      children[i].style.opacity = "0";
+      children[i].style.transform = "translateY(8px)";
+      children[i].style.transition = "opacity 0.4s ease, transform 0.4s ease";
+    }
+
+    // Reveal one by one
+    for (var j = 0; j < children.length; j++) {
+      (function (el, delay) {
+        setTimeout(function () {
+          el.style.opacity = "1";
+          el.style.transform = "translateY(0)";
+        }, delay);
+      })(children[j], j * 250);
+    }
+  }
+})();
+
+// ============================================
+// IDE Tab Switching + Debug Puzzle
+// ============================================
+(function () {
+  var tabs = document.querySelectorAll(".ide-main .xcode-tab[data-tab]");
+  var panels = {
+    readme: document.getElementById("tabReadme"),
+    skills: document.getElementById("tabSkills"),
+    forest: document.getElementById("tabForest"),
+    debug: document.getElementById("tabDebug")
+  };
+  var breadcrumbFile = document.getElementById("ideBcFile");
+  var statusErrors = document.getElementById("ideErrors");
+
+  if (!tabs.length) return;
+
+  var fileNames = { readme: "README.md", skills: "skills.json", forest: "forest.js", debug: "debug.js" };
+
+  tabs.forEach(function (tab) {
+    tab.addEventListener("click", function () {
+      var target = tab.getAttribute("data-tab");
+      // Switch active tab
+      tabs.forEach(function (t) { t.classList.remove("active"); });
+      tab.classList.add("active");
+      // Switch panel
+      Object.keys(panels).forEach(function (k) {
+        if (panels[k]) panels[k].style.display = k === target ? "block" : "none";
+        if (panels[k]) panels[k].classList.toggle("active", k === target);
+      });
+      // Update breadcrumb
+      if (breadcrumbFile) breadcrumbFile.textContent = fileNames[target] || target;
+      // Update status bar errors for debug tab
+      if (statusErrors) {
+        if (target === "debug" && !window._debugSolved) {
+          statusErrors.innerHTML = '<i class="fas fa-exclamation-circle" style="color:#FF6B6B"></i> 1 error';
+        } else {
+          statusErrors.innerHTML = '<i class="fas fa-check-circle"></i> 0 errors';
+        }
+      }
+      if (window.playSound) playSound("click");
+    });
+  });
+
+  // Debug puzzle logic
+  var debugInput = document.getElementById("debugInput");
+  var debugSubmit = document.getElementById("debugSubmit");
+  var debugResult = document.getElementById("debugResult");
+
+  if (!debugInput || !debugSubmit) return;
+
+  // The answer: the missing "!" at the end of "World" to make "Hello, World!"
+  var ANSWER = "!";
+
+  function checkAnswer() {
+    var val = debugInput.value.trim();
+    if (!val) return;
+
+    if (val === ANSWER) {
+      window._debugSolved = true;
+      debugResult.className = "debug-result debug-success";
+      debugResult.innerHTML = '✓ <span style="color:#34C759">Build Succeeded</span> — Output: "Hello, World!" — <strong>You found it!</strong>';
+      if (statusErrors) statusErrors.innerHTML = '<i class="fas fa-check-circle"></i> 0 errors';
+      if (window.playSound) playSound("success");
+      if (window.showToast) showToast("Bug Fixed!", "You solved the debug challenge.", "fas fa-bug");
+      // Store achievement
+      localStorage.setItem("debugSolved", "true");
+    } else {
+      debugResult.className = "debug-result debug-fail";
+      debugResult.textContent = '✗ Build Failed — Output: "Hello, World' + val + '" — Try again';
+      if (window.playSound) playSound("click");
+    }
+  }
+
+  debugSubmit.addEventListener("click", checkAnswer);
+  debugInput.addEventListener("keydown", function (e) { if (e.key === "Enter") checkAnswer(); });
+
+  // Restore solved state
+  if (localStorage.getItem("debugSolved") === "true") {
+    window._debugSolved = true;
+    debugResult.className = "debug-result debug-success";
+    debugResult.innerHTML = '✓ Already solved — <span style="color:#34C759">Bug fixed!</span>';
+  }
+
+  // Forest Run buttons — trigger creative mode
+  function runForest() {
+    var toggle = document.getElementById("themeToggle");
+    if (toggle) toggle.click();
+  }
+
+  var ideRunBtn = document.getElementById("ideRunBtn");
+  if (ideRunBtn) ideRunBtn.addEventListener("click", runForest);
+
+  // Clicking forest.js in sidebar opens the forest tab
+  var forestFile = document.querySelector(".ide-forest-file");
+  if (forestFile) {
+    forestFile.style.cursor = "pointer";
+    forestFile.addEventListener("click", function () {
+      var forestTab = document.querySelector('.xcode-tab[data-tab="forest"]');
+      if (forestTab) forestTab.click();
+    });
+  }
+})();
+
+// ============================================
+// Interactive Console — Easter Egg Commands
+// ============================================
+(function () {
+  var consoleEl = document.querySelector(".ide-console .xc-console-line");
+  if (!consoleEl) return;
+
+  // Add a hidden input for typing commands
+  var cmdInput = document.createElement("input");
+  cmdInput.className = "ide-cmd-input";
+  cmdInput.setAttribute("type", "text");
+  cmdInput.setAttribute("placeholder", "Type a command...");
+  cmdInput.setAttribute("autocomplete", "off");
+  cmdInput.setAttribute("spellcheck", "false");
+  consoleEl.parentElement.appendChild(cmdInput);
+
+  // Click on console to focus input
+  consoleEl.parentElement.addEventListener("click", function () {
+    cmdInput.focus();
+  });
+
+  var commands = {
+    "help": "Commands: ls, cat about.md, git log, whoami, clear, tree, solve, I am [name]",
+    "ls": "README.md  skills.json  awards.log  projects/  contact.swift",
+    "whoami": "John Kent Evangelista — Senior Software Developer @ VINTAZK",
+    "cat about.md": "CS graduate. National award winner. Building civic tech in Zamboanga City.",
+    "git log": "Scrolling to resume...",
+    "tree": "Entering the forest...",
+    "clear": "",
+    "pwd": "/home/kent/dev",
+    "date": new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }),
+    "echo hello": "hello 👋",
+    "npm start": "Starting kent.dev on port 3000...",
+    "solve": "Hint: Click the debug.js tab in the hero IDE. The function returns \"Hello, World\" but should return \"Hello, World!\" — what's missing?"
+  };
+
+  cmdInput.addEventListener("keydown", function (e) {
+    if (e.key !== "Enter") return;
+    var cmd = cmdInput.value.trim().toLowerCase();
+    cmdInput.value = "";
+
+    if (!cmd) return;
+
+    // Create command line
+    var line = document.createElement("div");
+    line.className = "tf-line";
+    line.innerHTML = '<span class="tf-prompt">$</span> ' + cmd;
+    consoleEl.parentElement.insertBefore(line, cmdInput);
+
+    // Handle special commands
+    if (cmd === "git log") {
+      var el = document.getElementById("resume");
+      if (el) el.scrollIntoView({ behavior: "smooth" });
+    } else if (cmd === "tree") {
+      var toggle = document.getElementById("themeToggle");
+      if (toggle) toggle.click();
+    } else if (cmd === "clear") {
+      var added = consoleEl.parentElement.querySelectorAll(".tf-line, .tf-output-line");
+      added.forEach(function (a) { a.remove(); });
+      return;
+    } else if (cmd.startsWith("i am ") || cmd.startsWith("my name is ")) {
+      // Visitor name — save for forest tree carving
+      var visitorName = cmdInput.value.trim().replace(/^(i am |my name is )/i, "");
+      localStorage.setItem("visitorName", visitorName);
+      var output = "Nice to meet you, " + visitorName + "! Check the forest — your name is carved on a tree near the campsite.";
+      var outEl = document.createElement("div");
+      outEl.className = "tf-output-line";
+      outEl.textContent = output;
+      consoleEl.parentElement.insertBefore(outEl, cmdInput);
+      consoleEl.parentElement.scrollTop = consoleEl.parentElement.scrollHeight;
+      if (window.playSound) playSound("success");
+      return;
+    }
+
+    // Show output
+    var output = commands[cmd] || 'command not found: ' + cmd + '. Try "help"';
+    if (output) {
+      var outEl = document.createElement("div");
+      outEl.className = "tf-output-line";
+      outEl.textContent = output;
+      consoleEl.parentElement.insertBefore(outEl, cmdInput);
+    }
+
+    // Auto-scroll console
+    consoleEl.parentElement.scrollTop = consoleEl.parentElement.scrollHeight;
+
+    if (window.playSound) playSound("click");
+  });
 })();
 
 // ============================================
@@ -1507,4 +1893,50 @@ document.addEventListener("DOMContentLoaded", function () {
       }, 600);
     });
   });
+})();
+
+// ============================================
+// Service Worker Registration
+// ============================================
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("/sw.js").catch(function () {});
+  });
+}
+
+// ============================================
+// Image Download Progress — Xcode-style loading
+// ============================================
+(function () {
+  var previews = document.querySelectorAll(".xcode-preview");
+  if (!previews.length) return;
+
+  var imgObserver = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        var preview = entry.target;
+        var img = preview.querySelector("img");
+        if (!img || img.complete) return;
+
+        preview.classList.add("img-loading");
+        img.style.opacity = "0.3";
+
+        img.addEventListener("load", function () {
+          setTimeout(function () {
+            preview.classList.remove("img-loading");
+            img.style.opacity = "1";
+          }, 1000); // Let the progress bar finish
+        });
+
+        // Force load if lazy
+        if (img.loading === "lazy") {
+          img.loading = "eager";
+        }
+
+        imgObserver.unobserve(preview);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  previews.forEach(function (p) { imgObserver.observe(p); });
 })();
