@@ -26,6 +26,8 @@
   var fireflies = [];
   var trails = [];
   var spawned = [];
+  var scrollEl = null;
+  var lastShapeCount = -1;
 
   // Mobile detection
   var isMobile = /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
@@ -1383,8 +1385,9 @@
   }
   function onResize() { clearTimeout(resizeTimeout); resizeTimeout = setTimeout(function () { if (!camera || !renderer) return; camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); }, 100); }
   function updateScroll() {
-    var c = document.getElementById("creativeScroll"); if (!c) return;
-    var top = c.scrollTop, max = c.scrollHeight - c.clientHeight;
+    if (!scrollEl) scrollEl = document.getElementById("creativeScroll");
+    if (!scrollEl) return;
+    var top = scrollEl.scrollTop, max = scrollEl.scrollHeight - scrollEl.clientHeight;
     scrollProgress = max > 0 ? top / max : 0;
     scrollVelocity = Math.abs(scrollProgress - lastScrollProgress);
     lastScrollProgress = scrollProgress;
@@ -1395,6 +1398,10 @@
     if (!isActive) return;
     animationId = requestAnimationFrame(animate);
     var t = clock.getElapsedTime();
+    var frame = Math.floor(t * 60) | 0;
+    // Pre-compute common trig values used across multiple loops
+    var sinT2 = Math.sin(t * 2), sinT3 = Math.sin(t * 3), sinT4 = Math.sin(t * 4);
+    var sinT5 = Math.sin(t * 5), sinT6 = Math.sin(t * 6), sinT8 = Math.sin(t * 8);
     updateScroll(); updateAmbientAudio();
 
     // Camera — smooth damped position + lookAt
@@ -1436,25 +1443,20 @@
     // Campfire: ramp up as you approach, full during camp chapters, gentle fade but never off
     var cAmp = scrollProgress < 0.20 ? Math.min(1, scrollProgress / 0.10) : (scrollProgress < 0.42 ? 1.0 : Math.max(0.15, 1 - (scrollProgress - 0.42) * 0.8));
     if (scene._fireLight) {
-      var flicker = 2.5 + Math.sin(t * 8) * 0.6 + Math.sin(t * 13) * 0.3 + Math.sin(t * 21) * 0.15;
+      var flicker = 2.5 + sinT8 * 0.6 + Math.sin(t * 13) * 0.3 + Math.sin(t * 21) * 0.15;
       scene._fireLight.intensity = flicker * cAmp;
-      // Color shifts between orange → red-orange → yellow-orange
-      var colorShift = Math.sin(t * 3) * 0.5 + 0.5; // 0 to 1
-      var fireR = 1.0;
-      var fireG = 0.45 + colorShift * 0.15; // 0.45 to 0.60
-      var fireB = 0.15 + colorShift * 0.1;  // 0.15 to 0.25
-      scene._fireLight.color.setRGB(fireR, fireG, fireB);
+      var colorShift = sinT3 * 0.5 + 0.5;
+      scene._fireLight.color.setRGB(1.0, 0.45 + colorShift * 0.15, 0.15 + colorShift * 0.1);
     }
     if (scene._fireFill) {
-      scene._fireFill.intensity = (0.9 + Math.sin(t * 6) * 0.3) * cAmp;
-      // Redder fill
-      scene._fireFill.color.setRGB(0.9, 0.35 + Math.sin(t * 2) * 0.1, 0.1);
+      scene._fireFill.intensity = (0.9 + sinT6 * 0.3) * cAmp;
+      scene._fireFill.color.setRGB(0.9, 0.35 + sinT2 * 0.1, 0.1);
     }
     if (scene._fireBounce) {
-      scene._fireBounce.intensity = (0.7 + Math.sin(t * 4) * 0.2) * cAmp;
+      scene._fireBounce.intensity = (0.7 + sinT4 * 0.2) * cAmp;
     }
     if (scene._fireUp) {
-      scene._fireUp.intensity = (0.4 + Math.sin(t * 5) * 0.15) * cAmp;
+      scene._fireUp.intensity = (0.4 + sinT5 * 0.15) * cAmp;
     }
     // Fire embers — rise, drift, loop
     if (scene._fireEmbers) {
@@ -1517,8 +1519,8 @@
       }
     }
 
-    // === Tree canopy wind sway ===
-    if (scene._canopies) {
+    // === Tree canopy wind sway (every 2nd frame) ===
+    if (scene._canopies && frame % 2 === 0) {
       for (var ci = 0; ci < scene._canopies.length; ci++) {
         var cp = scene._canopies[ci];
         cp.mesh.rotation.x = cp.baseRx + Math.sin(t * 0.8 + cp.phase) * 0.02;
@@ -1567,7 +1569,7 @@
       lan.label.material.opacity += (tO - lan.label.material.opacity) * 0.025;
       lan.mesh.scale.setScalar(lan.mesh.scale.x + (tS - lan.mesh.scale.x) * 0.03);
       // Flicker the light subtly
-      lan.light.intensity *= 0.95 + Math.sin(t * 6 + li * 2) * 0.05;
+      lan.light.intensity *= 0.95 + (sinT6 + Math.sin(li * 2) * 0.5) * 0.05;
     }
 
     // Fireflies — glow strongest in ch6 zone (0.63-0.75)
@@ -1595,11 +1597,11 @@
       ff.label.material.opacity = fLO;
       ff.mesh.scale.setScalar(fS);
       // Flicker
-      if (techProximity > 0.1) ff.mesh.material.opacity *= 0.85 + Math.sin(t * 3 + fi * 2.5) * 0.15;
+      if (techProximity > 0.1) ff.mesh.material.opacity *= 0.85 + (sinT3 + Math.sin(fi * 2.5) * 0.5) * 0.15;
     }
 
-    // Ambient fireflies wander and flicker
-    if (scene._ambientFFs) {
+    // Ambient fireflies wander and flicker (every 2nd frame, staggered from canopy)
+    if (scene._ambientFFs && frame % 2 === 1) {
       for (var ai = 0; ai < scene._ambientFFs.length; ai++) {
         var af = scene._ambientFFs[ai];
         var ax = af.baseX + Math.sin(t * af.speed + af.phase) * af.ampX;
@@ -1607,8 +1609,9 @@
         var az = af.baseZ + Math.sin(t * af.speed * 0.4 + af.phase * 2) * af.ampZ;
         af.mesh.position.set(ax, ay, az);
         if (af.light) af.light.position.set(ax, ay, az);
-        af.mesh.material.opacity = 0.4 + Math.sin(t * 4 + ai * 2.5) * 0.35;
-        if (af.light) af.light.intensity = 0.1 + Math.sin(t * 4 + ai * 2.5) * 0.1;
+        var affFlicker = sinT4 + Math.sin(ai * 2.5) * 0.5;
+        af.mesh.material.opacity = 0.4 + affFlicker * 0.35;
+        if (af.light) af.light.intensity = 0.1 + affFlicker * 0.1;
       }
     }
 
@@ -1618,10 +1621,10 @@
       scene._stars.material.opacity = 0.6 + Math.sin(t * 0.5) * 0.15;
     }
 
-    // Smoke rises — wind drift + dispersal
-    var windX = Math.sin(t * 0.3) * 0.4; // gentle wind direction shifts
+    // Smoke rises — wind drift + dispersal (every 2nd frame)
+    var windX = Math.sin(t * 0.3) * 0.4;
     var windZ = Math.cos(t * 0.2) * 0.2;
-    if (scene._smoke) {
+    if (scene._smoke && frame % 2 === 0) {
       for (var si = 0; si < scene._smoke.length; si++) {
         var sm = scene._smoke[si], sd = sm.userData;
         var cycle = ((t * sd.speed + sd.phase) % sd.maxH) / sd.maxH;
@@ -1645,8 +1648,8 @@
 
 
 
-    // Floating grimoire pages drift
-    if (scene._floatingPages) {
+    // Floating grimoire pages drift (every 3rd frame)
+    if (scene._floatingPages && frame % 3 === 1) {
       for (var fpi = 0; fpi < scene._floatingPages.length; fpi++) {
         var fp = scene._floatingPages[fpi];
         fp.mesh.position.set(
@@ -1660,8 +1663,8 @@
       }
     }
 
-    // Mist
-    if (scene._mist) { scene._mist.rotation.y = t * 0.002; scene._mist.position.y = Math.sin(t * 0.1) * 0.2; }
+    // Mist (every 3rd frame)
+    if (scene._mist && frame % 3 === 2) { scene._mist.rotation.y = t * 0.002; scene._mist.position.y = Math.sin(t * 0.1) * 0.2; }
 
     // Billboard trees face camera (every 3rd frame to save CPU)
     if (scene._billboards && Math.floor(t * 20) % 3 === 0) {
@@ -1730,7 +1733,8 @@
       spawnFirefly(camera.position.x + Math.cos(sa) * sr, camera.position.y - 1 + Math.random() * 3, camera.position.z + Math.sin(sa) * sr - 5);
     }
 
-    canvas.setAttribute("data-shapes", lanterns.length + fireflies.length + spawned.length);
+    var shapeCount = lanterns.length + fireflies.length + spawned.length;
+    if (shapeCount !== lastShapeCount) { canvas.setAttribute("data-shapes", shapeCount); lastShapeCount = shapeCount; }
     renderer.render(scene, camera);
   }
 
@@ -1848,11 +1852,11 @@
         }
         document.removeEventListener("click", audioRetry);
         document.removeEventListener("touchstart", audioRetry);
-        document.removeEventListener("scroll", audioRetry, true);
+        document.removeEventListener("scroll", audioRetry, { capture: true, passive: true });
       };
       document.addEventListener("click", audioRetry);
       document.addEventListener("touchstart", audioRetry);
-      document.addEventListener("scroll", audioRetry, true);
+      document.addEventListener("scroll", audioRetry, { capture: true, passive: true });
     },
     stop: function () {
       isActive = false; stopAudio();

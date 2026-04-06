@@ -378,7 +378,7 @@
   "languages": ["Python", "JavaScript", "Dart"],
   "frameworks": ["React", "Django", "Flutter"],
   "databases": ["Supabase", "PostgreSQL", "SQLite"],
-  "tools": ["Git", "Xcode", "Claude Code", "n8n"]
+  "tools": ["Git", "Xcode", "n8n", "Selenium"]
 }</pre>
             </div>
 
@@ -452,7 +452,7 @@ world.<span class="code-fn">render</span>();</pre>
           <div class="ide-inspector">
             <div class="xcode-sidebar-label">INSPECTOR</div>
             <div class="ide-metric">
-              <div class="ide-metric-value count-up" data-target="5" data-suffix="+">0</div>
+              <div class="ide-metric-value count-up" data-target="10" data-suffix="+">0</div>
               <div class="ide-metric-label">Projects</div>
             </div>
             <div class="ide-metric">
@@ -620,11 +620,8 @@ world.<span class="code-fn">render</span>();</pre>
               <div class="pkg-line pkg-indent2">"node-js": <span class="pkg-version">"^20.0"</span></div>
               <div class="pkg-line pkg-indent">},</div>
               <div class="pkg-line pkg-indent">"tools": {</div>
-              <div class="pkg-line pkg-indent2">"opencv": <span class="pkg-version">"^4.9"</span>,</div>
-              <div class="pkg-line pkg-indent2">"scikit-learn": <span class="pkg-version">"^1.4"</span>,</div>
               <div class="pkg-line pkg-indent2">"selenium": <span class="pkg-version">"^4.18"</span>,</div>
               <div class="pkg-line pkg-indent2">"n8n": <span class="pkg-version">"^1.30"</span>,</div>
-              <div class="pkg-line pkg-indent2">"claude-code": <span class="pkg-version">"latest"</span>,</div>
               <div class="pkg-line pkg-indent2">"git": <span class="pkg-version">"^2.44"</span>,</div>
               <div class="pkg-line pkg-indent2">"xcode": <span class="pkg-version">"^16.0"</span></div>
               <div class="pkg-line pkg-indent">},</div>
@@ -794,7 +791,7 @@ world.<span class="code-fn">render</span>();</pre>
 
       <div class="projects-grid">
 
-        <!-- Vintech -->
+        <!-- Vintech — LIVE -->
         <div class="xcode-card tilt-card reveal reveal-delay-1">
           <div class="xcode-titlebar">
             <div class="xcode-dots">
@@ -840,7 +837,7 @@ world.<span class="code-fn">render</span>();</pre>
           </div>
         </div>
 
-        <!-- ZamGo -->
+        <!-- ZamGo — LIVE -->
         <div class="xcode-card tilt-card reveal reveal-delay-2">
           <div class="xcode-titlebar">
             <div class="xcode-dots">
@@ -886,7 +883,7 @@ world.<span class="code-fn">render</span>();</pre>
           </div>
         </div>
 
-        <!-- Vintazk University -->
+        <!-- Acaddemy — LIVE -->
         <div class="xcode-card tilt-card reveal reveal-delay-3">
           <div class="xcode-titlebar">
             <div class="xcode-dots">
@@ -894,7 +891,7 @@ world.<span class="code-fn">render</span>();</pre>
               <span class="xcode-dot xcode-dot-yellow"></span>
               <span class="xcode-dot xcode-dot-green"></span>
             </div>
-            <span class="xcode-filename">VintazkUni.xcodeproj</span>
+            <span class="xcode-filename">Acaddemy.xcodeproj</span>
             <span class="xcode-badge">▶ Running</span>
           </div>
           <div class="xcode-body">
@@ -916,12 +913,12 @@ world.<span class="code-fn">render</span>();</pre>
                 <span class="xcode-tab">rbac.sql</span>
               </div>
               <div class="xcode-preview">
-                <img src="images/vintazkUniversity.png" alt="Vintazk University" loading="lazy">
+                <img src="images/vintazkUniversity.png" alt="Acaddemy LMS" loading="lazy">
               </div>
               <div class="xcode-info">
                 <div class="xcode-role">Full-Stack Developer</div>
-                <h4>Vintazk University — LMS</h4>
-                <p>Full-featured LMS supporting course management, learner tracking, content delivery, and role-based access control.</p>
+                <h4>Acaddemy — LMS</h4>
+                <p>Full-featured learning management system supporting course management, learner tracking, content delivery, and role-based access control.</p>
                 <a href="https://vintazkacademy.vintazk.com" target="_blank" rel="noopener noreferrer" class="project-link"><i class="fas fa-external-link-alt"></i> Live Site</a>
               </div>
               <div class="xcode-console">
@@ -931,8 +928,54 @@ world.<span class="code-fn">render</span>();</pre>
           </div>
         </div>
 
-        <!-- Barangay Connect -->
+        <!-- LUMI — In Development -->
         <div class="xcode-card tilt-card reveal reveal-delay-1">
+          <div class="xcode-titlebar">
+            <div class="xcode-dots">
+              <span class="xcode-dot xcode-dot-red"></span>
+              <span class="xcode-dot xcode-dot-yellow"></span>
+              <span class="xcode-dot xcode-dot-green"></span>
+            </div>
+            <span class="xcode-filename">LUMI.xcodeproj</span>
+            <span class="xcode-badge xcode-badge-build">⏳ Build</span>
+          </div>
+          <div class="xcode-body">
+            <div class="xcode-sidebar">
+              <div class="xcode-sidebar-label">TARGETS</div>
+              <div class="xcode-file active"><i class="fas fa-robot"></i> agents/</div>
+              <div class="xcode-file"><i class="fas fa-file-code"></i> Dashboard.tsx</div>
+              <div class="xcode-file"><i class="fas fa-database"></i> supabase</div>
+              <div class="xcode-file"><i class="fas fa-cog"></i> pipeline/</div>
+              <div class="xcode-sidebar-label">STACK</div>
+              <div class="xcode-tag">Python</div>
+              <div class="xcode-tag">React</div>
+              <div class="xcode-tag">Supabase</div>
+              <div class="xcode-tag">n8n</div>
+            </div>
+            <div class="xcode-main">
+              <div class="xcode-tabs">
+                <span class="xcode-tab active">agent.py</span>
+                <span class="xcode-tab">Dashboard.tsx</span>
+                <span class="xcode-tab">pipeline.py</span>
+              </div>
+              <div class="xcode-preview xcode-preview-empty">
+                <i class="fas fa-microchip"></i>
+                <span>LUMI</span>
+              </div>
+              <div class="xcode-info">
+                <div class="xcode-role">Founder & Lead Developer</div>
+                <h4>LUMI — BPO AI Platform</h4>
+                <p>AI platform built to handle real BPO day-to-day operations — automating repetitive tasks, routing workflows, and surfacing insights for agents and managers.</p>
+              </div>
+              <div class="xcode-console">
+                <span class="xc-warn">Compiling</span> — 3 targets | <span class="xc-time">...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Barangay Connect — In Development -->
+        <div class="xcode-card tilt-card reveal reveal-delay-2">
           <div class="xcode-titlebar">
             <div class="xcode-dots">
               <span class="xcode-dot xcode-dot-red"></span>
@@ -972,52 +1015,6 @@ world.<span class="code-fn">render</span>();</pre>
               </div>
               <div class="xcode-console">
                 <span class="xc-warn">Compiling</span> — 4 targets | <span class="xc-time">...</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- SmartScore -->
-        <div class="xcode-card tilt-card reveal reveal-delay-2">
-          <div class="xcode-titlebar">
-            <div class="xcode-dots">
-              <span class="xcode-dot xcode-dot-red"></span>
-              <span class="xcode-dot xcode-dot-yellow"></span>
-              <span class="xcode-dot xcode-dot-green"></span>
-            </div>
-            <span class="xcode-filename">SmartScore.xcodeproj</span>
-            <span class="xcode-badge xcode-badge-build">⏳ Build</span>
-          </div>
-          <div class="xcode-body">
-            <div class="xcode-sidebar">
-              <div class="xcode-sidebar-label">TARGETS</div>
-              <div class="xcode-file active"><i class="fas fa-folder"></i> scoring/</div>
-              <div class="xcode-file"><i class="fas fa-brain"></i> ai-model/</div>
-              <div class="xcode-file"><i class="fas fa-chart-line"></i> analytics/</div>
-              <div class="xcode-file"><i class="fas fa-database"></i> supabase</div>
-              <div class="xcode-sidebar-label">STACK</div>
-              <div class="xcode-tag">Python</div>
-              <div class="xcode-tag">Supabase</div>
-              <div class="xcode-tag">React</div>
-              <div class="xcode-tag">AI / ML</div>
-            </div>
-            <div class="xcode-main">
-              <div class="xcode-tabs">
-                <span class="xcode-tab active">model.py</span>
-                <span class="xcode-tab">Score.tsx</span>
-                <span class="xcode-tab">train.py</span>
-              </div>
-              <div class="xcode-preview xcode-preview-empty">
-                <i class="fas fa-graduation-cap"></i>
-                <span>SmartScore AI</span>
-              </div>
-              <div class="xcode-info">
-                <div class="xcode-role">Lead Developer</div>
-                <h4>SmartScore</h4>
-                <p>AI-powered scoring and evaluation platform with automated grading, analytics, and performance tracking.</p>
-              </div>
-              <div class="xcode-console">
-                <span class="xc-warn">Compiling</span> — 3 targets | <span class="xc-time">...</span>
               </div>
             </div>
           </div>
