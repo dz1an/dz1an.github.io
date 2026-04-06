@@ -183,7 +183,7 @@
     clock = new THREE.Clock();
     camera = new THREE.PerspectiveCamera(isMobile ? 65 : 55, window.innerWidth / window.innerHeight, 0.1, 200);
     camera.position.set(0, 8, 44);
-    renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+    renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: !isMobile, powerPreference: "high-performance" });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -202,22 +202,14 @@
     var f3 = new THREE.PointLight(0x344E41, 0.2, 30); f3.position.set(0, 8, -20);
     scene.add(f1, f2, f3); scene._fills = [f1, f2, f3];
 
-    var _lc = window._creativeLoadCallback || function(){};
-    _lc("Building terrain...");
     buildTerrain(); createDirtPath();
-    _lc("Planting forest...");
     plantForest();
-    _lc("Setting up campsite...");
     createCoreLantern();
-    _lc("Lighting lanterns...");
     createProjectLanterns();
-    _lc("Releasing fireflies...");
     createFireflies(); createMist();
-    _lc("Painting sky...");
+    createRuins();
     createBillboardTrees(); createSky(); createSmoke(); createGroundDetails();
-    _lc("Placing path lamps...");
     createPathLamps(); createAmbientFireflies();
-    _lc("complete");
 
     canvas.addEventListener("mousemove", onMouseMove);
     canvas.addEventListener("mousedown", function () { isMouseDown = true; });
@@ -507,111 +499,271 @@
     scene._canopies = canopies;
   }
 
+  // ======================== Ancient Ruins — stone pillars, archway, magical circle ========================
+  function createRuins() {
+    var stoneMat = new THREE.MeshStandardMaterial({ color: 0x555566, roughness: 0.9, flatShading: true });
+    var runeMat = new THREE.MeshBasicMaterial({ color: 0x8B7EC8, transparent: true, opacity: 0.3 });
+    var vineMat = new THREE.MeshStandardMaterial({ color: 0x3A5A40, roughness: 0.8 });
+
+    // Stone pillars around clearing edge
+    var pillarPositions = [
+      { x: 10, z: 3, h: 4, lean: 0.05 },
+      { x: -9, z: -2, h: 3.5, lean: -0.08 },
+      { x: 7, z: -6, h: 4.5, lean: 0.03 },
+      { x: -8, z: 5, h: 3, lean: -0.1 },  // broken/shorter
+      { x: 11, z: -4, h: 5, lean: 0.02 },
+      { x: -10, z: -7, h: 2.5, lean: 0.12 }  // very broken
+    ];
+
+    pillarPositions.forEach(function (pp, i) {
+      var gY = getGroundY(pp.x, pp.z);
+      // Pillar
+      var pillar = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.3, 0.4, pp.h, 6),
+        stoneMat
+      );
+      pillar.position.set(pp.x, gY + pp.h / 2, pp.z);
+      pillar.rotation.set(pp.lean, 0, pp.lean * 0.5);
+      scene.add(pillar);
+
+      // Glowing rune on pillar face (small plane)
+      if (pp.h > 3) {
+        var rune = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 0.4), runeMat);
+        rune.position.set(pp.x + 0.35, gY + pp.h * 0.6, pp.z);
+        rune.rotation.y = Math.atan2(-pp.x, -pp.z); // face center
+        scene.add(rune);
+        // Store for animation
+        if (!scene._runes) scene._runes = [];
+        scene._runes.push({ mesh: rune, phase: i * 1.2 });
+      }
+
+      // Vine wrapping (desktop only)
+      if (!isMobile && pp.h > 3) {
+        var vine = new THREE.Mesh(
+          new THREE.TorusGeometry(0.35, 0.02, 4, 12, Math.PI * 1.5),
+          vineMat
+        );
+        vine.position.set(pp.x, gY + pp.h * 0.4, pp.z);
+        vine.rotation.set(Math.random(), Math.random(), 0);
+        scene.add(vine);
+      }
+
+      // Pillar base (wider stone)
+      var base = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.5, 0.55, 0.2, 6),
+        stoneMat
+      );
+      base.position.set(pp.x, gY + 0.1, pp.z);
+      scene.add(base);
+    });
+
+    // Stone archway at grove entrance (z ~ -8)
+    var archGY = getGroundY(0, -8);
+    // Left pillar
+    var archL = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.3, 4, 6), stoneMat);
+    archL.position.set(-1.5, archGY + 2, -8);
+    scene.add(archL);
+    // Right pillar
+    var archR = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.3, 4, 6), stoneMat);
+    archR.position.set(1.5, archGY + 2, -8);
+    scene.add(archR);
+    // Lintel (horizontal bar, slightly cracked/tilted)
+    var lintel = new THREE.Mesh(new THREE.BoxGeometry(3.5, 0.3, 0.4), stoneMat);
+    lintel.position.set(0, archGY + 4.1, -8);
+    lintel.rotation.z = 0.03; // slightly tilted for age
+    scene.add(lintel);
+    // Rune on lintel
+    var archRune = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 0.2), runeMat);
+    archRune.position.set(0, archGY + 4.2, -7.79);
+    scene.add(archRune);
+    if (!scene._runes) scene._runes = [];
+    scene._runes.push({ mesh: archRune, phase: 3.5 });
+
+    // Magical circle on the ground in the clearing
+    var circle = new THREE.Mesh(
+      new THREE.TorusGeometry(3, 0.04, 4, 48),
+      new THREE.MeshBasicMaterial({ color: 0x8B7EC8, transparent: true, opacity: 0.15 })
+    );
+    circle.rotation.x = -Math.PI / 2;
+    circle.position.set(0, 0.03, 0);
+    scene.add(circle);
+    scene._magicCircle = circle;
+
+    // Inner circle
+    var inner = new THREE.Mesh(
+      new THREE.TorusGeometry(1.8, 0.03, 4, 36),
+      new THREE.MeshBasicMaterial({ color: 0xC4B5E0, transparent: true, opacity: 0.1 })
+    );
+    inner.rotation.x = -Math.PI / 2;
+    inner.position.set(0, 0.035, 0);
+    scene.add(inner);
+    scene._magicCircleInner = inner;
+
+    // Hexagonal pattern inside the circle
+    for (var hi = 0; hi < 6; hi++) {
+      var hAngle = (hi / 6) * Math.PI * 2;
+      var hx = Math.cos(hAngle) * 2.2;
+      var hz = Math.sin(hAngle) * 2.2;
+      // Line from center to edge
+      var hLine = new THREE.Mesh(
+        new THREE.PlaneGeometry(0.02, 2.2),
+        new THREE.MeshBasicMaterial({ color: 0x8B7EC8, transparent: true, opacity: 0.08, side: THREE.DoubleSide })
+      );
+      hLine.rotation.x = -Math.PI / 2;
+      hLine.rotation.z = hAngle;
+      hLine.position.set(hx * 0.5, 0.032, hz * 0.5);
+      scene.add(hLine);
+
+      // Small orb marker at each point
+      var marker = new THREE.Mesh(
+        new THREE.SphereGeometry(0.05, 6, 6),
+        new THREE.MeshBasicMaterial({ color: 0xC4B5E0, transparent: true, opacity: 0.3 })
+      );
+      marker.position.set(hx, 0.06, hz);
+      scene.add(marker);
+      if (!scene._runes) scene._runes = [];
+      scene._runes.push({ mesh: marker, phase: hi * 1.0 });
+    }
+
+    // Triangle inscribed in circle
+    var triPoints = [];
+    for (var ti = 0; ti < 3; ti++) {
+      var tAngle = (ti / 3) * Math.PI * 2 - Math.PI / 2;
+      triPoints.push(Math.cos(tAngle) * 2.5);
+      triPoints.push(0.033);
+      triPoints.push(Math.sin(tAngle) * 2.5);
+    }
+    var triGeo = new THREE.BufferGeometry();
+    triGeo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(triPoints), 3));
+    var triLine = new THREE.Line(triGeo, new THREE.LineBasicMaterial({ color: 0x8B7EC8, transparent: true, opacity: 0.1 }));
+    scene.add(triLine);
+
+    // Floating mana motes throughout the forest
+    var manaCount = isMobile ? 12 : 25;
+    var manaMotes = [];
+    for (var mi = 0; mi < manaCount; mi++) {
+      var mx = (Math.random() - 0.5) * 50;
+      var mz = (Math.random() - 0.5) * 60;
+      var my = 1.5 + Math.random() * 6;
+      var moteColor = [0x8B7EC8, 0xC4B5E0, 0xD4D4DC][Math.floor(Math.random() * 3)];
+      var mote = new THREE.Mesh(
+        new THREE.SphereGeometry(0.03 + Math.random() * 0.02, 4, 4),
+        new THREE.MeshBasicMaterial({ color: moteColor, transparent: true, opacity: 0.5 })
+      );
+      mote.position.set(mx, my, mz);
+      scene.add(mote);
+      manaMotes.push({
+        mesh: mote, baseX: mx, baseY: my, baseZ: mz,
+        speed: 0.2 + Math.random() * 0.5,
+        phase: Math.random() * Math.PI * 2,
+        ampY: 0.5 + Math.random() * 1.5
+      });
+    }
+    scene._manaMotes = manaMotes;
+
+    // Flowers in the meadow too
+    for (var mfi = 0; mfi < (isMobile ? 15 : 30); mfi++) {
+      var mfa = Math.random() * Math.PI * 2;
+      var mfr = Math.random() * 8;
+      var mfx = -3 + Math.cos(mfa) * mfr;
+      var mfz = -36 + Math.sin(mfa) * mfr;
+      var mfgy = getGroundY(mfx, mfz);
+      var mfmat = [0xC4B5E0, 0x8B7EC8, 0xE8E0F0, 0xDDD8E8][Math.floor(Math.random() * 4)];
+      var mfSize = 0.05 + Math.random() * 0.05;
+      var mf1 = new THREE.Mesh(
+        new THREE.PlaneGeometry(mfSize, mfSize * 1.5),
+        new THREE.MeshBasicMaterial({ color: mfmat, transparent: true, opacity: 0.7, side: THREE.DoubleSide })
+      );
+      mf1.position.set(mfx, mfgy + mfSize, mfz);
+      mf1.rotation.y = Math.random() * Math.PI;
+      scene.add(mf1);
+      var mf2 = new THREE.Mesh(
+        new THREE.PlaneGeometry(mfSize, mfSize * 1.5),
+        mf1.material
+      );
+      mf2.position.set(mfx, mfgy + mfSize, mfz);
+      mf2.rotation.y = mf1.rotation.y + Math.PI / 2;
+      scene.add(mf2);
+    }
+
+    // Floating grimoire pages — torn pages drifting in the wind
+    var pageCount = isMobile ? 5 : 12;
+    var floatingPages = [];
+    var pageMat = new THREE.MeshBasicMaterial({ color: 0xD4C5A0, transparent: true, opacity: 0.4, side: THREE.DoubleSide });
+    for (var pi = 0; pi < pageCount; pi++) {
+      var px = (Math.random() - 0.5) * 40;
+      var py = 3 + Math.random() * 8;
+      var pz = (Math.random() - 0.5) * 50;
+      var page = new THREE.Mesh(new THREE.PlaneGeometry(0.15 + Math.random() * 0.1, 0.2 + Math.random() * 0.1), pageMat);
+      page.position.set(px, py, pz);
+      page.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+      scene.add(page);
+      floatingPages.push({
+        mesh: page, baseX: px, baseY: py, baseZ: pz,
+        speed: 0.1 + Math.random() * 0.3,
+        phase: Math.random() * Math.PI * 2,
+        rotSpeed: (Math.random() - 0.5) * 0.5,
+        driftX: (Math.random() - 0.5) * 3,
+        driftZ: (Math.random() - 0.5) * 3
+      });
+    }
+    scene._floatingPages = floatingPages;
+  }
+
   // ======================== Campsite — tent, campfire, seated figure ========================
   function createCoreLantern() {
     var gY = 0;
-    var tentFabric = new THREE.MeshStandardMaterial({ color: 0x4A6B3F, roughness: 0.75, flatShading: true, side: THREE.DoubleSide });
-    var tentFabricInner = new THREE.MeshStandardMaterial({ color: 0x3D5C35, roughness: 0.8, flatShading: true, side: THREE.DoubleSide });
-    var tentAccent = new THREE.MeshStandardMaterial({ color: 0x5C7650, roughness: 0.7, flatShading: true, side: THREE.DoubleSide });
-    var poleMat = new THREE.MeshStandardMaterial({ color: 0x6B5B4B, roughness: 0.7 });
-    var ropeMat = new THREE.MeshBasicMaterial({ color: 0x8B7D6B });
     var logMat = new THREE.MeshStandardMaterial({ color: 0x3B2314, roughness: 0.9 });
     var stoneMat = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.95, flatShading: true });
 
-    // === TENT — bigger, more detailed ===
-    var tX = 2.5, tZ = -2.5; // pushed further back and right, away from camera sightline
-
-    // Ground sheet (larger)
-    var groundSheet = new THREE.Mesh(new THREE.PlaneGeometry(2.0, 2.4), new THREE.MeshStandardMaterial({ color: 0x3A5A40, roughness: 0.9 }));
-    groundSheet.rotation.x = -Math.PI / 2;
-    groundSheet.position.set(tX, gY + 0.02, tZ);
-    scene.add(groundSheet);
-
-    // Main panels (larger, steeper)
-    var panelGeo = new THREE.PlaneGeometry(1.5, 2.6);
-    var tentL = new THREE.Mesh(panelGeo, tentFabric);
-    tentL.position.set(tX - 0.55, gY + 0.7, tZ);
-    tentL.rotation.set(0, 0, 0.55);
-    scene.add(tentL);
-    var tentR = new THREE.Mesh(panelGeo.clone(), tentFabric);
-    tentR.position.set(tX + 0.55, gY + 0.7, tZ);
-    tentR.rotation.set(0, 0, -0.55);
-    scene.add(tentR);
-
-    // Accent stripe along ridge (colored band)
-    var stripe = new THREE.Mesh(new THREE.PlaneGeometry(0.15, 2.6), tentAccent);
-    stripe.position.set(tX - 0.08, gY + 1.18, tZ);
-    stripe.rotation.set(0, 0, 0.55);
-    scene.add(stripe);
-    var stripe2 = new THREE.Mesh(new THREE.PlaneGeometry(0.15, 2.6), tentAccent);
-    stripe2.position.set(tX + 0.08, gY + 1.18, tZ);
-    stripe2.rotation.set(0, 0, -0.55);
-    scene.add(stripe2);
-
-    // Front flaps (open, inviting)
-    var flapGeo = new THREE.PlaneGeometry(0.8, 1.2);
-    var flapL = new THREE.Mesh(flapGeo, tentFabricInner);
-    flapL.position.set(tX - 0.3, gY + 0.5, tZ + 1.2);
-    flapL.rotation.set(0.2, 0.4, 0.45);
-    scene.add(flapL);
-    var flapR = new THREE.Mesh(flapGeo.clone(), tentFabricInner);
-    flapR.position.set(tX + 0.3, gY + 0.5, tZ + 1.2);
-    flapR.rotation.set(0.2, -0.4, -0.45);
-    scene.add(flapR);
+    // === Ruined stone shelter (replaces tent) ===
+    var shelterMat = new THREE.MeshStandardMaterial({ color: 0x555566, roughness: 0.9, flatShading: true });
+    var shelterX = 2.5, shelterZ = -2.5;
+    var sgY = getGroundY(shelterX, shelterZ);
 
     // Back wall
-    var backGeo = new THREE.BufferGeometry();
-    backGeo.setAttribute("position", new THREE.BufferAttribute(new Float32Array([
-      tX - 0.7, gY, tZ - 1.2,  tX + 0.7, gY, tZ - 1.2,  tX, gY + 1.3, tZ - 1.2
-    ]), 3));
-    backGeo.computeVertexNormals();
-    scene.add(new THREE.Mesh(backGeo, tentFabricInner));
-
-    // Ridge pole (thicker)
-    var ridge = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 2.6, 4), poleMat);
-    ridge.position.set(tX, gY + 1.3, tZ);
-    ridge.rotation.x = Math.PI / 2;
-    scene.add(ridge);
-
-    // Front A-frame poles
-    var poleGeo = new THREE.CylinderGeometry(0.015, 0.015, 1.5, 4);
-    scene.add(new THREE.Mesh(poleGeo, poleMat).translateX(tX - 0.35).translateY(gY + 0.6).translateZ(tZ + 1.2).rotateZ(0.5));
-    scene.add(new THREE.Mesh(poleGeo.clone(), poleMat).translateX(tX + 0.35).translateY(gY + 0.6).translateZ(tZ + 1.2).rotateZ(-0.5));
-
-    // Back A-frame poles
-    scene.add(new THREE.Mesh(poleGeo.clone(), poleMat).translateX(tX - 0.35).translateY(gY + 0.6).translateZ(tZ - 1.2).rotateZ(0.5));
-    scene.add(new THREE.Mesh(poleGeo.clone(), poleMat).translateX(tX + 0.35).translateY(gY + 0.6).translateZ(tZ - 1.2).rotateZ(-0.5));
-
-    // Guy ropes (4 corners)
-    var ropeGeo = new THREE.CylinderGeometry(0.006, 0.006, 1.5, 3);
-    [[-1, 0.5], [1, -0.5], [-1, -2.5], [1, -2.5]].forEach(function (rp) {
-      var rope = new THREE.Mesh(ropeGeo, ropeMat);
-      rope.position.set(tX + rp[0] * 0.8, gY + 0.3, tZ + rp[1] * 0.4);
-      rope.rotation.set(0, Math.random(), rp[0] > 0 ? -0.7 : 0.7);
-      scene.add(rope);
-    });
-
-    // Sleeping bag visible inside (rolled out)
-    var sleepBag = new THREE.Mesh(
-      new THREE.CapsuleGeometry(0.15, 0.8, 4, 8),
-      new THREE.MeshStandardMaterial({ color: 0x2A4A3A, roughness: 0.8 })
+    var backWall = new THREE.Mesh(new THREE.BoxGeometry(2.5, 2, 0.25), shelterMat);
+    backWall.position.set(shelterX, sgY + 1, shelterZ - 1);
+    scene.add(backWall);
+    // Left wall (shorter, partially collapsed)
+    var leftWall = new THREE.Mesh(new THREE.BoxGeometry(0.25, 1.5, 2), shelterMat);
+    leftWall.position.set(shelterX - 1.1, sgY + 0.75, shelterZ);
+    scene.add(leftWall);
+    // Right wall (even shorter, more collapsed)
+    var rightWall = new THREE.Mesh(new THREE.BoxGeometry(0.25, 1, 2), shelterMat);
+    rightWall.position.set(shelterX + 1.1, sgY + 0.5, shelterZ);
+    rightWall.rotation.z = 0.05; // leaning
+    scene.add(rightWall);
+    // Partial roof slab (tilted, partially fallen)
+    var roof = new THREE.Mesh(new THREE.BoxGeometry(2, 0.15, 1.5), shelterMat);
+    roof.position.set(shelterX - 0.3, sgY + 1.9, shelterZ - 0.3);
+    roof.rotation.set(0, 0, -0.08);
+    scene.add(roof);
+    // Fallen stone block on ground
+    var fallenBlock = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.4, 0.5), shelterMat);
+    fallenBlock.position.set(shelterX + 0.8, sgY + 0.2, shelterZ + 0.8);
+    fallenBlock.rotation.set(0, 0.3, 0.15);
+    scene.add(fallenBlock);
+    // Rune on back wall
+    var shelterRune = new THREE.Mesh(
+      new THREE.PlaneGeometry(0.6, 0.4),
+      new THREE.MeshBasicMaterial({ color: 0x8B7EC8, transparent: true, opacity: 0.2 })
     );
-    sleepBag.position.set(tX + 0.3, gY + 0.1, tZ - 0.2);
+    shelterRune.position.set(shelterX, sgY + 1.2, shelterZ - 0.86);
+    scene.add(shelterRune);
+    if (!scene._runes) scene._runes = [];
+    scene._runes.push({ mesh: shelterRune, phase: 5.0 });
+
+    // Sleeping bag inside shelter
+    var sleepBag = new THREE.Mesh(new THREE.CapsuleGeometry(0.15, 0.8, 4, 8), new THREE.MeshStandardMaterial({ color: 0x3A3060, roughness: 0.8 }));
+    sleepBag.position.set(shelterX + 0.3, sgY + 0.1, shelterZ - 0.3);
     sleepBag.rotation.set(0, 0.2, Math.PI / 2);
     scene.add(sleepBag);
 
-    // Pillow
-    var pillow = new THREE.Mesh(
-      new THREE.BoxGeometry(0.25, 0.08, 0.18),
-      new THREE.MeshStandardMaterial({ color: 0xDAD7CD, roughness: 0.85 })
-    );
-    pillow.position.set(tX + 0.3, gY + 0.12, tZ - 0.7);
-    pillow.rotation.y = 0.15;
-    scene.add(pillow);
-
     // === CAMPFIRE — more detailed ===
     // Fire ring (stones, varied)
-    for (var si = 0; si < 10; si++) {
+    var stoneCount = isMobile ? 6 : 10;
+    for (var si = 0; si < stoneCount; si++) {
       var stoneAngle = (si / 10) * Math.PI * 2;
       var sr = 0.08 + Math.random() * 0.08;
       var stone = new THREE.Mesh(new THREE.DodecahedronGeometry(sr, 0), stoneMat);
@@ -663,7 +815,8 @@
 
     // Fire particles (embers rising)
     var fireEmbers = [];
-    for (var ei = 0; ei < 25; ei++) {
+    var emberCount = isMobile ? 12 : 25;
+    for (var ei = 0; ei < emberCount; ei++) {
       var eColor = [0xFF6B33, 0xFFAA33, 0xFF8833, 0xFFCC55, 0xFF5522][Math.floor(Math.random() * 5)];
       var ember = new THREE.Mesh(
         new THREE.SphereGeometry(0.02 + Math.random() * 0.03, 4, 4),
@@ -682,262 +835,6 @@
       fireEmbers.push(ember);
     }
     scene._fireEmbers = fireEmbers;
-
-    // === KENT — detailed seated figure ===
-    var skinMat = new THREE.MeshStandardMaterial({ color: 0xC4956A, roughness: 0.6 });
-    var hoodieMat = new THREE.MeshStandardMaterial({ color: 0x344E41, roughness: 0.75 });
-    var hoodieAccent = new THREE.MeshStandardMaterial({ color: 0x5C7650, roughness: 0.7 });
-    var pantsMat = new THREE.MeshStandardMaterial({ color: 0x222233, roughness: 0.85 });
-    var bootMat = new THREE.MeshStandardMaterial({ color: 0x2D1B0E, roughness: 0.85 });
-    var hairMat = new THREE.MeshStandardMaterial({ color: 0x0E0808, roughness: 0.9 });
-
-    var figX = -1.2, figZ = 1.8; // further from fire, more breathing room
-
-    // Log seat
-    var seatLog = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 1.4, 7), logMat);
-    seatLog.position.set(figX, gY + 0.14, figZ + 0.05);
-    seatLog.rotation.z = Math.PI / 2; seatLog.rotation.y = 0.3;
-    scene.add(seatLog);
-
-    // Torso (hoodie, leaning forward)
-    var torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.22, 0.5, 4, 8), hoodieMat);
-    torso.position.set(figX, gY + 0.65, figZ);
-    torso.rotation.set(0.2, 0.3, 0);
-    scene.add(torso);
-
-    // Hood (behind head, bunched)
-    var hood = new THREE.Mesh(new THREE.SphereGeometry(0.18, 8, 6, 0, Math.PI * 2, 0.3, Math.PI * 0.5), hoodieMat);
-    hood.position.set(figX + 0.02, gY + 0.95, figZ + 0.06);
-    hood.rotation.x = 0.3;
-    scene.add(hood);
-
-    // Hoodie pocket (front kangaroo pocket)
-    var pocket = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.08, 0.15), hoodieAccent);
-    pocket.position.set(figX + 0.05, gY + 0.5, figZ - 0.12);
-    pocket.rotation.set(0.2, 0.3, 0);
-    scene.add(pocket);
-
-    // Head
-    var head = new THREE.Mesh(new THREE.SphereGeometry(0.16, 10, 10), skinMat);
-    head.position.set(figX + 0.04, gY + 1.1, figZ - 0.06);
-    scene.add(head);
-
-    // Hair (short, styled)
-    var hair = new THREE.Mesh(new THREE.SphereGeometry(0.17, 10, 10, 0, Math.PI * 2, 0, Math.PI * 0.55), hairMat);
-    hair.position.set(figX + 0.04, gY + 1.16, figZ - 0.04);
-    hair.rotation.x = -0.15;
-    scene.add(hair);
-
-    // Beanie
-    var beanie = new THREE.Mesh(new THREE.SphereGeometry(0.175, 8, 6, 0, Math.PI * 2, 0, Math.PI * 0.4), hoodieAccent);
-    beanie.position.set(figX + 0.04, gY + 1.2, figZ - 0.04);
-    beanie.rotation.x = -0.1;
-    scene.add(beanie);
-    // Beanie rim
-    var beanieRim = new THREE.Mesh(new THREE.TorusGeometry(0.165, 0.025, 6, 12), hoodieMat);
-    beanieRim.position.set(figX + 0.04, gY + 1.12, figZ - 0.04);
-    beanieRim.rotation.x = Math.PI / 2 - 0.15;
-    scene.add(beanieRim);
-
-    // Neck
-    var neck = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 0.12, 6), skinMat);
-    neck.position.set(figX + 0.02, gY + 0.95, figZ - 0.03);
-    scene.add(neck);
-
-    // Left arm (resting on knee, hoodie sleeve)
-    var armL = new THREE.Mesh(new THREE.CapsuleGeometry(0.07, 0.35, 3, 6), hoodieMat);
-    armL.position.set(figX - 0.24, gY + 0.5, figZ + 0.05);
-    armL.rotation.set(0.4, 0, -0.6);
-    scene.add(armL);
-    var handL = new THREE.Mesh(new THREE.SphereGeometry(0.05, 6, 6), skinMat);
-    handL.position.set(figX - 0.38, gY + 0.32, figZ + 0.15);
-    scene.add(handL);
-
-    // Right arm + forearm (holding stick)
-    var armR = new THREE.Mesh(new THREE.CapsuleGeometry(0.07, 0.35, 3, 6), hoodieMat);
-    armR.position.set(figX + 0.24, gY + 0.52, figZ - 0.1);
-    armR.rotation.set(0.6, 0, 0.5);
-    scene.add(armR);
-    var forearmR = new THREE.Mesh(new THREE.CapsuleGeometry(0.05, 0.28, 3, 6), skinMat);
-    forearmR.position.set(figX + 0.38, gY + 0.4, figZ - 0.2);
-    forearmR.rotation.set(0.8, 0, 0.3);
-    scene.add(forearmR);
-
-    // Stick poking fire
-    var stick = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.008, 1.3, 4), new THREE.MeshStandardMaterial({ color: 0x5C4033, roughness: 0.9 }));
-    stick.position.set(figX + 0.32, gY + 0.37, figZ - 0.38);
-    stick.rotation.set(0.9, 0.2, 0.4);
-    scene.add(stick);
-
-    // Legs (jeans, sitting cross-legged)
-    var thighL = new THREE.Mesh(new THREE.CapsuleGeometry(0.1, 0.38, 3, 6), pantsMat);
-    thighL.position.set(figX - 0.12, gY + 0.3, figZ + 0.12);
-    thighL.rotation.set(0.1, 0.3, Math.PI / 2 - 0.2);
-    scene.add(thighL);
-    var thighR = new THREE.Mesh(new THREE.CapsuleGeometry(0.1, 0.38, 3, 6), pantsMat);
-    thighR.position.set(figX + 0.1, gY + 0.3, figZ - 0.05);
-    thighR.rotation.set(-0.2, -0.2, Math.PI / 2 + 0.1);
-    scene.add(thighR);
-    var shinL = new THREE.Mesh(new THREE.CapsuleGeometry(0.08, 0.32, 3, 6), pantsMat);
-    shinL.position.set(figX - 0.05, gY + 0.16, figZ + 0.32);
-    shinL.rotation.set(0.3, 0.5, 0.1);
-    scene.add(shinL);
-    var shinR = new THREE.Mesh(new THREE.CapsuleGeometry(0.08, 0.32, 3, 6), pantsMat);
-    shinR.position.set(figX + 0.15, gY + 0.16, figZ + 0.08);
-    shinR.rotation.set(-0.2, -0.3, 0.2);
-    scene.add(shinR);
-
-    // Boots (hiking style, chunkier)
-    var bootGeo = new THREE.BoxGeometry(0.12, 0.08, 0.2);
-    var bootL = new THREE.Mesh(bootGeo, bootMat);
-    bootL.position.set(figX + 0.05, gY + 0.05, figZ + 0.45);
-    scene.add(bootL);
-    // Boot sole
-    scene.add(new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.03, 0.22), new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.95 })).translateX(figX + 0.05).translateY(gY + 0.02).translateZ(figZ + 0.45));
-    var bootR = new THREE.Mesh(bootGeo.clone(), bootMat);
-    bootR.position.set(figX + 0.28, gY + 0.05, figZ + 0.2);
-    bootR.rotation.y = -0.3;
-    scene.add(bootR);
-
-    // === CAMPSITE PROPS ===
-
-    // Backpack (larger, more detailed)
-    var bpMat = new THREE.MeshStandardMaterial({ color: 0x344E41, roughness: 0.8 });
-    var backpack = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.45, 0.22), bpMat);
-    backpack.position.set(figX - 0.55, gY + 0.22, figZ + 0.3);
-    backpack.rotation.set(0, 0.3, -0.25);
-    scene.add(backpack);
-    // Backpack top flap
-    scene.add(new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.06, 0.2), hoodieAccent).translateX(figX - 0.55).translateY(gY + 0.47).translateZ(figZ + 0.28).rotateZ(-0.2).rotateY(0.3));
-    // Backpack side pocket
-    scene.add(new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.2, 0.18), new THREE.MeshStandardMaterial({ color: 0x3A5A40, roughness: 0.8 })).translateX(figX - 0.72).translateY(gY + 0.18).translateZ(figZ + 0.3).rotateY(0.3));
-
-    // Firewood stack near tent
-    for (var wi = 0; wi < 4; wi++) {
-      var fw = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.05, 0.6, 5), logMat);
-      fw.position.set(tX - 0.8, gY + 0.06 + wi * 0.09, tZ + 0.6);
-      fw.rotation.z = Math.PI / 2;
-      fw.rotation.y = (Math.random() - 0.5) * 0.2;
-      scene.add(fw);
-    }
-
-    // Laptop — on the ground next to Kent, clear of everything else
-    var lapX = figX + 0.4;
-    var lapZ = figZ + 0.6;
-    var lapY = gY + 0.05;
-
-    var laptopBase = new THREE.Mesh(
-      new THREE.BoxGeometry(0.35, 0.02, 0.25),
-      new THREE.MeshStandardMaterial({ color: 0x2A2A2A, roughness: 0.3, metalness: 0.6 })
-    );
-    laptopBase.position.set(lapX, lapY, lapZ);
-    laptopBase.rotation.y = 0.5; // angled toward Kent
-    scene.add(laptopBase);
-
-    // Screen (angled up, facing Kent but visible from camera)
-    var screen = new THREE.Mesh(
-      new THREE.BoxGeometry(0.33, 0.22, 0.01),
-      new THREE.MeshStandardMaterial({ color: 0x1a1a2e, roughness: 0.3, metalness: 0.2, emissive: 0x2244AA, emissiveIntensity: 0.3 })
-    );
-    screen.position.set(lapX - 0.05, lapY + 0.12, lapZ - 0.1);
-    screen.rotation.set(-0.4, 0.5, 0);
-    scene.add(screen);
-
-    // Screen glow light — brighter so it's noticeable
-    var screenLight = new THREE.PointLight(0x4466CC, 0.6, 5);
-    screenLight.position.set(lapX, lapY + 0.2, lapZ);
-    scene.add(screenLight);
-    scene._screenLight = screenLight;
-
-    // Code lines on screen
-    var codeRot = [-0.4, 0.5, 0];
-    [{ w: 0.25, off: 0.04 }, { w: 0.18, off: 0.02 }, { w: 0.22, off: 0 }].forEach(function (cl, ci) {
-      var line = new THREE.Mesh(
-        new THREE.PlaneGeometry(cl.w, 0.005),
-        new THREE.MeshBasicMaterial({ color: 0xA3B18A, transparent: true, opacity: 0.6 - ci * 0.1 })
-      );
-      line.position.set(lapX - 0.05, lapY + 0.16 - ci * 0.025, lapZ - 0.09);
-      line.rotation.set(codeRot[0], codeRot[1], codeRot[2]);
-      scene.add(line);
-    });
-
-    // Store Kent's parts for idle animation
-    scene._kent = {
-      torso: torso, head: head, armR: armR, forearmR: forearmR, stick: stick,
-      figX: figX, figZ: figZ, baseY: gY
-    };
-
-    // Store laptop screen for animation
-    scene._laptopScreen = screen;
-
-    // === Ground grass/ferns around clearing ===
-    var grassMat = new THREE.MeshStandardMaterial({ color: 0x2D4233, roughness: 0.9, flatShading: true, side: THREE.DoubleSide });
-    var grassMat2 = new THREE.MeshStandardMaterial({ color: 0x3A5A40, roughness: 0.85, flatShading: true, side: THREE.DoubleSide });
-    var grassBlades = [];
-    for (var gi = 0; gi < (isMobile ? 30 : 60); gi++) {
-      var ga = Math.random() * Math.PI * 2;
-      var gr = 3 + Math.random() * 10;
-      var gx = Math.cos(ga) * gr;
-      var gz = Math.sin(ga) * gr;
-      var gy = getGroundY(gx, gz);
-      var bladeH = 0.15 + Math.random() * 0.25;
-      var blade = new THREE.Mesh(
-        new THREE.PlaneGeometry(0.04 + Math.random() * 0.04, bladeH),
-        Math.random() > 0.5 ? grassMat : grassMat2
-      );
-      blade.position.set(gx, gy + bladeH / 2, gz);
-      blade.rotation.set(0, Math.random() * Math.PI, (Math.random() - 0.5) * 0.3);
-      scene.add(blade);
-      grassBlades.push(blade);
-    }
-    scene._grass = grassBlades;
-
-    // === Visitor name carved on a tree (if they typed it in the console) ===
-    var visitorName = localStorage.getItem("visitorName");
-    if (visitorName) {
-      // Place at the edge of the clearing — visible from ch2-3 camera positions
-      // Camera at ch2: (3, 2.5, 10) looking at (1, 0.5, 0)
-      // Camera at ch3: (-1, 2, 5) looking at (-1, 0.5, -1)
-      // Tree at (2, y, 3) is right of the fire, visible from both angles
-      var carveX = 2, carveZ = 3;
-      var carveGY = getGroundY(carveX, carveZ);
-
-      // Carve tree — thicker trunk so text is readable
-      var carveTree = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.2, 0.28, 3.5, 7),
-        new THREE.MeshStandardMaterial({ color: 0x3B2314, roughness: 0.85, flatShading: true })
-      );
-      carveTree.position.set(carveX, carveGY + 1.75, carveZ);
-      scene.add(carveTree);
-
-      // Canopy
-      var carveCanopy = new THREE.Mesh(
-        new THREE.SphereGeometry(1.2, 7, 5),
-        new THREE.MeshStandardMaterial({ color: 0x3A5A40, roughness: 0.75, flatShading: true })
-      );
-      carveCanopy.position.set(carveX, carveGY + 4, carveZ);
-      carveCanopy.scale.y = 0.7;
-      scene.add(carveCanopy);
-
-      // Carving text — as a sprite facing the camera
-      var carveLabel = makeLabel("Kent + " + visitorName, {
-        fontSize: 18, fontWeight: "600", color: "#DAD7CD", scale: 1.0, opacity: 0.7
-      });
-      carveLabel.position.set(carveX, carveGY + 1.6, carveZ + 0.3);
-      scene.add(carveLabel);
-
-      // Heart above
-      var heartLabel = makeLabel("\u2665", {
-        fontSize: 16, fontWeight: "400", color: "#A3B18A", scale: 0.5, opacity: 0.6
-      });
-      heartLabel.position.set(carveX, carveGY + 2.0, carveZ + 0.3);
-      scene.add(heartLabel);
-
-      // Small warm light on the carving
-      var carveLight = new THREE.PointLight(0xE8C87A, 0.3, 4);
-      carveLight.position.set(carveX, carveGY + 1.8, carveZ + 0.5);
-      scene.add(carveLight);
-    }
 
     // === Brand label floats above the campsite ===
     // Brand label — small, off to the side so it doesn't block the campsite
@@ -1069,7 +966,7 @@
 
   // ======================== Fireflies (Tech) ========================
   function createFireflies() {
-    var ffColors = [0xA3B18A, 0xB5C99A, 0xDAD7CD, 0x97A97C, 0x6B8F71];
+    var ffColors = [0x8B7EC8, 0xC4B5E0, 0xD4D4DC, 0x9B8ED8, 0xB0A0E0];
     // Camera at ch6: pos (0, 3.2, -22) looking at (-6, 3, -28)
     // Place fireflies IN FRONT of camera — between camera and lookAt point, spread to sides
     // Two rows: close row and far row so they don't all stack
@@ -1160,7 +1057,7 @@
       var x = (Math.random() - 0.5) * 60;
       var z = (Math.random() - 0.5) * 70 - 5;
       var y = 1.5 + Math.random() * 5;
-      var color = [0xA3B18A, 0xB5C99A, 0xDAD7CD, 0x97A97C][Math.floor(Math.random() * 4)];
+      var color = [0x8B7EC8, 0xC4B5E0, 0xD4D4DC, 0x9B8ED8][Math.floor(Math.random() * 4)];
 
       var mesh = new THREE.Mesh(
         new THREE.SphereGeometry(0.05, 6, 6),
@@ -1388,7 +1285,7 @@
   // ======================== Pond ========================
   // ======================== Spawn ========================
   function spawnFirefly(x, y, z) {
-    var color = [0xA3B18A, 0xDAD7CD, 0xB5C99A, 0x97A97C][Math.floor(Math.random() * 4)];
+    var color = [0x8B7EC8, 0xC4B5E0, 0xD4D4DC, 0x9B8ED8][Math.floor(Math.random() * 4)];
     var mesh = new THREE.Mesh(new THREE.SphereGeometry(0.06, 6, 6), new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.9 }));
     mesh.position.set(x, y, z);
     mesh.userData = { vx: (Math.random() - 0.5) * 0.04, vy: 0.02 + Math.random() * 0.03, vz: (Math.random() - 0.5) * 0.04, life: 1.0, decay: 0.003 + Math.random() * 0.003 };
@@ -1451,7 +1348,7 @@
       var trailWp = getWorldPos(e.clientX, e.clientY);
       var tp = new THREE.Mesh(
         new THREE.SphereGeometry(0.03, 4, 4),
-        new THREE.MeshBasicMaterial({ color: 0xA3B18A, transparent: true, opacity: 0.4 })
+        new THREE.MeshBasicMaterial({ color: 0x8B7EC8, transparent: true, opacity: 0.4 })
       );
       tp.position.set(trailWp.x, trailWp.y, trailWp.z);
       scene.add(tp);
@@ -1573,6 +1470,31 @@
         em.scale.setScalar((1 - cycle) * 0.8 + 0.2);
       }
     }
+    // Rune glow pulse on pillars
+    if (scene._runes) {
+      for (var rri = 0; rri < scene._runes.length; rri++) {
+        var rr = scene._runes[rri];
+        rr.mesh.material.opacity = 0.15 + Math.sin(t * 1.5 + rr.phase) * 0.12;
+      }
+    }
+
+    // Magic circle slow rotation
+    if (scene._magicCircle) scene._magicCircle.rotation.z = t * 0.05;
+    if (scene._magicCircleInner) scene._magicCircleInner.rotation.z = -t * 0.08;
+
+    // Floating mana motes drift
+    if (scene._manaMotes) {
+      for (var mmi = 0; mmi < scene._manaMotes.length; mmi++) {
+        var mm = scene._manaMotes[mmi];
+        mm.mesh.position.set(
+          mm.baseX + Math.sin(t * mm.speed + mm.phase) * 0.5,
+          mm.baseY + Math.sin(t * mm.speed * 0.6 + mm.phase) * mm.ampY,
+          mm.baseZ + Math.cos(t * mm.speed * 0.4 + mm.phase) * 0.5
+        );
+        mm.mesh.material.opacity = 0.3 + Math.sin(t * 2 + mmi) * 0.2;
+      }
+    }
+
     // Brand label — fades when camera is close to campsite
     var brandFade = scrollProgress < 0.15 ? 1.0 : (scrollProgress < 0.40 ? Math.max(0, 1 - (scrollProgress - 0.15) * 4) : 0);
     if (scene._brandLabel) {
@@ -1592,43 +1514,6 @@
           scene.remove(scene._welcomeBack);
           scene._welcomeBack = null;
         }
-      }
-    }
-
-    // === Kent idle animation — breathing, head tilt, stick poking ===
-    if (scene._kent) {
-      var k = scene._kent;
-      // Breathing — torso scale pulses
-      var breath = Math.sin(t * 1.2) * 0.008;
-      k.torso.scale.set(1 + breath, 1 + breath * 0.5, 1 + breath);
-      // Head tilts subtly toward fire
-      k.head.rotation.x = Math.sin(t * 0.4) * 0.04;
-      k.head.rotation.z = Math.sin(t * 0.3) * 0.03;
-      // Right arm — slow stick poke cycle
-      var poke = Math.sin(t * 0.6) * 0.08;
-      k.armR.rotation.x = 0.6 + poke;
-      k.forearmR.rotation.x = 0.8 + poke * 0.5;
-      k.stick.rotation.x = 0.9 + poke * 0.6;
-    }
-
-    // === Laptop screen animation — cursor blink + code scroll ===
-    if (scene._laptopScreen) {
-      var laptopZoom = 0;
-      if (scrollProgress > 0.34 && scrollProgress < 0.37) {
-        laptopZoom = 1 - Math.abs(scrollProgress - 0.355) / 0.015;
-        laptopZoom = Math.max(0, Math.min(1, laptopZoom));
-      }
-      scene._laptopScreen.material.emissiveIntensity = 0.25 + Math.sin(t * 2.5) * 0.08 + laptopZoom * 0.5;
-      if (scene._screenLight) {
-        scene._screenLight.intensity = 0.3 + Math.sin(t * 2) * 0.1 + laptopZoom * 0.6;
-      }
-    }
-
-    // === Grass sway in wind ===
-    if (scene._grass) {
-      for (var gri = 0; gri < scene._grass.length; gri++) {
-        var blade = scene._grass[gri];
-        blade.rotation.z = (Math.random() > 0.99 ? 0 : blade.rotation.z) + Math.sin(t * 1.5 + gri * 0.5) * 0.06;
       }
     }
 
@@ -1759,6 +1644,21 @@
 
 
 
+
+    // Floating grimoire pages drift
+    if (scene._floatingPages) {
+      for (var fpi = 0; fpi < scene._floatingPages.length; fpi++) {
+        var fp = scene._floatingPages[fpi];
+        fp.mesh.position.set(
+          fp.baseX + Math.sin(t * fp.speed + fp.phase) * fp.driftX,
+          fp.baseY + Math.sin(t * fp.speed * 0.7 + fp.phase) * 1.5,
+          fp.baseZ + Math.cos(t * fp.speed * 0.5 + fp.phase) * fp.driftZ
+        );
+        fp.mesh.rotation.x += fp.rotSpeed * 0.01;
+        fp.mesh.rotation.z += fp.rotSpeed * 0.008;
+        fp.mesh.material.opacity = 0.25 + Math.sin(t * 0.8 + fpi) * 0.15;
+      }
+    }
 
     // Mist
     if (scene._mist) { scene._mist.rotation.y = t * 0.002; scene._mist.position.y = Math.sin(t * 0.1) * 0.2; }

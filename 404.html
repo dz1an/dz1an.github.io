@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 — Lost in the Forest | //kent.dev</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0C1210;
+      color: #DAD7CD;
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .error-container {
+      max-width: 520px;
+      text-align: center;
+    }
+    .error-terminal {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(163,177,138,0.1);
+      border-radius: 12px;
+      overflow: hidden;
+      text-align: left;
+      margin-bottom: 24px;
+    }
+    .error-titlebar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 14px;
+      background: rgba(0,0,0,0.2);
+      border-bottom: 1px solid rgba(163,177,138,0.08);
+    }
+    .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+    .dot-red { background: #FF5F56; }
+    .dot-yellow { background: #FFBD2E; }
+    .dot-green { background: #27C93F; }
+    .titlebar-text {
+      font-size: 0.7rem;
+      color: rgba(163,177,138,0.4);
+      margin-left: 8px;
+    }
+    .error-body { padding: 20px; line-height: 1.8; font-size: 0.82rem; }
+    .prompt { color: #8B7EC8; }
+    .error-text { color: #FF6B6B; }
+    .success-text { color: #34C759; }
+    .muted { color: rgba(163,177,138,0.4); }
+    .error-code {
+      font-size: 4rem;
+      font-weight: 800;
+      color: #8B7EC8;
+      opacity: 0.15;
+      margin-bottom: -10px;
+    }
+    .error-msg {
+      font-size: 1.1rem;
+      color: #DAD7CD;
+      font-family: 'Inter', system-ui, sans-serif;
+      margin-bottom: 8px;
+    }
+    .error-sub {
+      font-size: 0.8rem;
+      color: rgba(163,177,138,0.5);
+      font-family: 'Inter', system-ui, sans-serif;
+      margin-bottom: 24px;
+    }
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      background: rgba(139,126,200,0.1);
+      border: 1px solid rgba(139,126,200,0.2);
+      border-radius: 9999px;
+      color: #C4B5E0;
+      font-family: 'SF Mono', monospace;
+      font-size: 0.8rem;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    .back-btn:hover {
+      background: rgba(139,126,200,0.2);
+      border-color: rgba(139,126,200,0.4);
+      color: #DAD7CD;
+    }
+  </style>
+</head>
+<body>
+  <div class="error-container">
+    <div class="error-code">404</div>
+    <p class="error-msg">You've wandered off the path.</p>
+    <p class="error-sub">This page doesn't exist — but the journey continues.</p>
+
+    <div class="error-terminal">
+      <div class="error-titlebar">
+        <span class="dot dot-red"></span>
+        <span class="dot dot-yellow"></span>
+        <span class="dot dot-green"></span>
+        <span class="titlebar-text">kent.dev — Build Log</span>
+      </div>
+      <div class="error-body">
+        <div><span class="prompt">$</span> xcodebuild -scheme kent.dev -find page</div>
+        <div><span class="error-text">✗ Build Failed — page not found</span></div>
+        <div><span class="muted">▸ Searched /projects, /skills, /resume...</span></div>
+        <div><span class="muted">▸ 0 matches in kent.dev.xcworkspace</span></div>
+        <div>&nbsp;</div>
+        <div><span class="prompt">$</span> cd /home</div>
+        <div><span class="success-text">✓ Returning to the clearing...</span></div>
+      </div>
+    </div>
+
+    <a href="/" class="back-btn">← Return to //kent.dev</a>
+  </div>
+</body>
+</html>

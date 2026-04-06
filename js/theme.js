@@ -58,36 +58,29 @@
       document.body.appendChild(overlay);
 
       if (goingCreative) {
-        // Creative mode: show real progress from scene construction
-        var cmdLine = document.createElement("div");
-        cmdLine.className = "xc-build-line xc-cmd";
-        cmdLine.textContent = "$ xcodebuild -scheme kent.dev -config forest";
-        body.appendChild(cmdLine);
-
-        // Set up callback for real scene progress
-        window._creativeLoadCallback = function (msg) {
-          var div = document.createElement("div");
-          if (msg === "complete") {
-            div.className = "xc-build-line xc-success";
-            div.textContent = "\u2713 Build Succeeded \u2014 Entering the Forest";
-          } else {
-            div.className = "xc-build-line";
-            div.textContent = "\u25b8 " + msg;
-          }
-          body.appendChild(div);
-          body.scrollTop = body.scrollHeight;
-        };
-
-        // Add initial loading line
-        var loadLine = document.createElement("div");
-        loadLine.className = "xc-build-line";
-        loadLine.textContent = "\u25b8 Loading Three.js runtime...";
-        body.appendChild(loadLine);
+        var creativeLines = [
+          { text: "$ xcodebuild -scheme kent.dev -config journey", cls: "xc-cmd" },
+          { text: "\u25b8 Loading Three.js runtime...", cls: "" },
+          { text: "\u25b8 Raising ancient ruins...", cls: "" },
+          { text: "\u25b8 Planting forest \u2014 sage & purple palette", cls: "" },
+          { text: "\u25b8 Summoning mana particles", cls: "" },
+          { text: "\u2713 Build Succeeded \u2014 The Journey Begins", cls: "xc-success" },
+        ];
+        var delay = 250;
+        creativeLines.forEach(function (line, i) {
+          setTimeout(function () {
+            var div = document.createElement("div");
+            div.className = "xc-build-line " + line.cls;
+            div.textContent = line.text;
+            body.appendChild(div);
+            body.scrollTop = body.scrollHeight;
+          }, delay * (i + 1));
+        });
       } else {
         // Code mode: static lines
         var codeLines = [
           { text: "$ xcodebuild -scheme kent.dev -config code", cls: "xc-cmd" },
-          { text: "\u25b8 Leaving the forest...", cls: "" },
+          { text: "\u25b8 Closing the grimoire...", cls: "" },
           { text: "\u25b8 Compiling ThemeProvider.swift", cls: "" },
           { text: "\u25b8 Restoring dark palette [#1c1c1e]", cls: "" },
           { text: "\u25b8 Linking kent.dev", cls: "" },
@@ -169,33 +162,18 @@
       // At peak darkness, swap modes
       setTimeout(function () {
         if (goingCreative) {
-          // Wait for scene to actually load before removing fade
-          var oldCallback = window._creativeLoadCallback;
-          window._creativeLoadCallback = function (msg) {
-            if (oldCallback) oldCallback(msg);
-            if (msg === "complete") {
-              // Scene is built — now fade out
-              setTimeout(function () {
-                document.documentElement.classList.remove("theme-switching");
-                buildOverlay.classList.add("xc-build-done");
-                setTimeout(function () { buildOverlay.remove(); }, 500);
-                fade.classList.add("ct-fade-out");
-                setTimeout(function () { fade.remove(); }, 800);
-              }, 400);
-            }
-          };
           activateCreative();
         } else {
           deactivateCreative();
-          // Code mode — fade out on a fixed timer
-          setTimeout(function () {
-            document.documentElement.classList.remove("theme-switching");
-            buildOverlay.classList.add("xc-build-done");
-            setTimeout(function () { buildOverlay.remove(); }, 500);
-            fade.classList.add("ct-fade-out");
-            setTimeout(function () { fade.remove(); }, 800);
-          }, 1000);
         }
+        // Fade out after brief pause
+        setTimeout(function () {
+          document.documentElement.classList.remove("theme-switching");
+          buildOverlay.classList.add("xc-build-done");
+          setTimeout(function () { buildOverlay.remove(); }, 500);
+          fade.classList.add("ct-fade-out");
+          setTimeout(function () { fade.remove(); }, 800);
+        }, 800);
       }, 1800);
 
       document.documentElement.classList.add("theme-switching");
@@ -1893,6 +1871,78 @@ document.addEventListener("DOMContentLoaded", function () {
       }, 600);
     });
   });
+})();
+
+// ============================================
+// Contact Form — Code Editor Style
+// ============================================
+(function () {
+  var sendBtn = document.getElementById("contactSend");
+  var copyBtn = document.getElementById("contactCopyEmail");
+  var resultEl = document.getElementById("contactResult");
+
+  if (!sendBtn) return;
+
+  // Email parts (obfuscated)
+  var emailUser = "dzian2k17";
+  var emailDomain = "gmail.com";
+  var fullEmail = emailUser + "@" + emailDomain;
+
+  sendBtn.addEventListener("click", function () {
+    var name = document.getElementById("contactName").value.trim();
+    var email = document.getElementById("contactEmail").value.trim();
+    var message = document.getElementById("contactMessage").value.trim();
+
+    if (!name || !email || !message) {
+      resultEl.className = "ce-result ce-error";
+      resultEl.textContent = "✗ Error: all fields are required";
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      resultEl.className = "ce-result ce-error";
+      resultEl.textContent = "✗ Error: invalid email format";
+      return;
+    }
+
+    resultEl.className = "ce-result";
+    resultEl.textContent = "▸ Sending...";
+
+    // Try Formspree first
+    fetch("https://formspree.io/f/xwpkgjvl", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Accept": "application/json" },
+      body: JSON.stringify({ name: name, email: email, message: message })
+    }).then(function (res) {
+      if (res.ok) {
+        resultEl.className = "ce-result ce-success";
+        resultEl.textContent = "✓ Message sent successfully — I'll get back to you!";
+        document.getElementById("contactName").value = "";
+        document.getElementById("contactEmail").value = "";
+        document.getElementById("contactMessage").value = "";
+        if (window.playSound) playSound("success");
+        if (window.showToast) showToast("Message Sent!", "Thanks for reaching out.", "fas fa-check");
+      } else {
+        throw new Error("Formspree error");
+      }
+    }).catch(function () {
+      // Fallback to mailto
+      var subject = encodeURIComponent("Portfolio Contact from " + name);
+      var body = encodeURIComponent("Name: " + name + "\nEmail: " + email + "\n\n" + message);
+      window.open("mailto:" + fullEmail + "?subject=" + subject + "&body=" + body);
+      resultEl.className = "ce-result ce-success";
+      resultEl.textContent = "✓ Opening email client as fallback...";
+    });
+  });
+
+  if (copyBtn) {
+    copyBtn.addEventListener("click", function () {
+      navigator.clipboard.writeText(fullEmail).then(function () {
+        if (window.showToast) showToast("Email Copied!", fullEmail, "fas fa-copy");
+        if (window.playSound) playSound("click");
+      });
+    });
+  }
 })();
 
 // ============================================
