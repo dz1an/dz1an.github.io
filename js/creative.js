@@ -187,7 +187,7 @@
     camera.position.set(0, 8, 44);
     renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: !isMobile, powerPreference: "high-performance" });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.8;
     renderer.shadowMap.enabled = false;
@@ -986,7 +986,7 @@
       var mesh = new THREE.Mesh(new THREE.SphereGeometry(0.08, 6, 6), new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.9 }));
       mesh.position.set(x, y, z); scene.add(mesh);
       var light = null;
-      if (!isMobile && i % 3 === 0) { light = new THREE.PointLight(color, 0.4, 6); light.position.set(x, y, z); scene.add(light); }
+      if (!isMobile && i % 5 === 0) { light = new THREE.PointLight(color, 0.5, 6); light.position.set(x, y, z); scene.add(light); }
       var label = makeLabel(name, { fontSize: 22, fontWeight: "600", color: "#DAD7CD", scale: 1.8, opacity: 0.01 });
       label.position.set(x, y + 0.8, z); scene.add(label);
       fireflies.push({
@@ -1070,8 +1070,8 @@
 
       // Light on every 3rd firefly (desktop only) — saves GPU
       var light = null;
-      if (!isMobile && i % 3 === 0) {
-        light = new THREE.PointLight(color, 0.25, 5);
+      if (!isMobile && i % 6 === 0) {
+        light = new THREE.PointLight(color, 0.35, 5);
         light.position.set(x, y, z);
         scene.add(light);
       }

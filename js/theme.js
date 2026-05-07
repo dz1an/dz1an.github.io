@@ -1990,3 +1990,60 @@ if ("serviceWorker" in navigator) {
 
   previews.forEach(function (p) { imgObserver.observe(p); });
 })();
+
+// ============================================
+// Word-by-word reveal on section titles
+// ============================================
+(function () {
+  var titles = document.querySelectorAll(".section-title");
+  if (!titles.length) return;
+
+  titles.forEach(function (el) {
+    if (el.dataset.wordSplit) return;
+    el.dataset.wordSplit = "1";
+    var text = el.textContent.trim();
+    el.innerHTML = text.split(/\s+/).map(function (word, i) {
+      return '<span class="word-mask"><span class="word" style="transition-delay:' + (i * 80) + 'ms">' + word + '</span></span>';
+    }).join(" ");
+    el.classList.add("title-reveal");
+  });
+
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) {
+        e.target.classList.add("title-reveal-active");
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.4 });
+
+  document.querySelectorAll(".title-reveal").forEach(function (el) { io.observe(el); });
+})();
+
+// ============================================
+// Subtle parallax — opt-in via data-parallax="0.2"
+// ============================================
+(function () {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  var els = document.querySelectorAll("[data-parallax]");
+  if (!els.length) return;
+
+  var ticking = false;
+  function update() {
+    var vh = window.innerHeight;
+    for (var i = 0; i < els.length; i++) {
+      var el = els[i];
+      var speed = parseFloat(el.getAttribute("data-parallax")) || 0.15;
+      var rect = el.getBoundingClientRect();
+      if (rect.bottom < -100 || rect.top > vh + 100) continue;
+      var center = rect.top + rect.height / 2;
+      var offset = (center - vh / 2) * -speed;
+      el.style.transform = "translate3d(0, " + offset.toFixed(1) + "px, 0)";
+    }
+    ticking = false;
+  }
+  window.addEventListener("scroll", function () {
+    if (!ticking) { ticking = true; requestAnimationFrame(update); }
+  }, { passive: true });
+  update();
+})();
