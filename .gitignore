@@ -1,0 +1,14 @@
+# Claude Code — internal dev notes & machine-local settings (keep out of the public repo)
+CLAUDE.md
+.claude/settings.local.json
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*~
+
+# Tooling artifacts (this is a no-build static site, but just in case)
+node_modules/
+*.log

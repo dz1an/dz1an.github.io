@@ -2543,7 +2543,26 @@ body.loaded #preloader {
   .ide-editor { padding: 16px 20px; }
   .ide-inspector { gap: 4px; }
   .ide-inspector .ide-award { display: none; }
-  .ide-titlebar .xcode-badge { display: none; }
+
+  /* Keep the Build & Run CTA visible on mobile (was display:none) — it's the
+     hero's primary interaction and forest.js tells users to press it. */
+  .ide-titlebar .xcode-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.62rem;
+    padding: 6px 10px;
+    min-height: 32px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  /* Let the filename truncate so the button always has room */
+  .ide-filename {
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 
 @media (max-width: 375px) {
@@ -3779,12 +3798,40 @@ body.loaded #preloader {
 
 /* Xcode card responsive */
 @media (max-width: 767.98px) {
+  /* Stack the card body so the sidebar can reflow full-width */
+  .xcode-body {
+    flex-direction: column;
+  }
+
+  /* Re-show the sidebar as a horizontal STACK-tag strip (was display:none,
+     which dropped every card's tech stack on mobile) */
   .xcode-sidebar {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    min-width: 0;
+    border-right: none;
+    border-top: 1px solid var(--color-border-light);
+    padding: 10px 14px;
+  }
+
+  /* Drop the decorative file-navigator rows; keep only the tech tags */
+  .xcode-sidebar .xcode-sidebar-label,
+  .xcode-sidebar .xcode-file {
     display: none;
   }
 
+  .xcode-tag {
+    font-size: 0.64rem;
+    padding: 3px 8px;
+  }
+
+  /* Taller preview now that cards are full-width (was 140px → letterboxed) */
   .xcode-preview {
-    height: 140px;
+    height: 200px;
   }
 
   .xcode-toolbar {
@@ -4053,8 +4100,9 @@ body.loaded #preloader {
 
 @media (max-width: 767.98px) {
   .ce-body { padding: 14px 16px; font-size: 0.75rem; }
-  .ce-input { width: 160px; max-width: 45%; font-size: 0.72rem; }
-  .ce-textarea { font-size: 0.72rem; }
+  /* 16px prevents iOS Safari from auto-zooming the page on focus */
+  .ce-input { width: 160px; max-width: 45%; font-size: 16px; }
+  .ce-textarea { font-size: 16px; }
   .ce-imports { font-size: 0.65rem; padding: 10px 16px; }
 }
 
@@ -5037,5 +5085,276 @@ html.konami-active .xc-build-terminal {
   .reveal {
     opacity: 1;
     transform: none;
+  }
+}
+
+/* ========================================================================
+   MOBILE POLISH — code-mode responsive refinements (audit pass)
+   Every rule is scoped to a max-width media query, so desktop (>=992px) is
+   never touched. Ordered widest -> narrowest so the narrower breakpoints win
+   by source order. Creative mode is unaffected.
+   ======================================================================== */
+
+@media (max-width: 991.98px) {
+  /* Remove the default grey/blue tap-flash on touch — desktop uses hover
+     states the touch UI never shows, so the flash reads as "cheap". */
+  a,
+  button,
+  [role="button"],
+  .nav-cta,
+  .btn-primary-custom,
+  .btn-outline-custom,
+  .cv-button,
+  .project-link,
+  .xcode-tab,
+  .git-tab,
+  .footer-social a,
+  .navbar-toggler {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Mirror body's overflow-x clip onto html (the real iOS scroll container)
+     to kill stray horizontal rubber-banding. */
+  html {
+    overflow-x: hidden;
+  }
+
+  /* Grow the top-of-page nav controls to a 44px tap target. Only the outer
+     button grows; the inner 36px toggle thumb stays visually centered.
+     Excludes the floating .navbar-compact cluster (deliberately spaced, and
+     its hamburger is already 44px). */
+  .navbar:not(.navbar-compact) .navbar-toggler,
+  .navbar:not(.navbar-compact) .sound-toggle,
+  .navbar:not(.navbar-compact) .theme-toggle {
+    width: 44px;
+    height: 44px;
+  }
+
+  /* Comfortable 44px rows in the open dropdown menu */
+  .navbar .nav-link {
+    min-height: 44px;
+    padding-top: 0.7rem;
+    padding-bottom: 0.7rem;
+    display: flex;
+    align-items: center;
+  }
+
+  /* Floating dropdown: adapt width to the device and scroll internally if it
+     ever gets taller than the viewport (landscape / short phones). */
+  .navbar.navbar-compact .navbar-collapse {
+    width: auto;
+    min-width: 200px;
+    max-width: calc(100vw - 32px);
+    max-height: calc(100vh - env(safe-area-inset-top, 0px) - 84px);
+    max-height: calc(100dvh - env(safe-area-inset-top, 0px) - 84px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+
+  /* Lead with identity on mobile: reorder the IDE hero column so the
+     avatar/name/social card sits under the titlebar, ahead of the editor.
+     (.ide-hero-layout is a flex column; these are its only children.) */
+  .ide-titlebar { order: 0; }
+  .ide-mobile-header { order: 1; }
+  .ide-body { order: 2; }
+  .ide-console { order: 3; }
+}
+
+@media (max-width: 767.98px) {
+  /* Trim the large empty gap above the first card in each section */
+  .section-subtitle {
+    font-size: 0.95rem;
+    margin: 0 auto 2rem;
+  }
+
+  /* Project "Live Site" link -> a real, button-like 44px tap target */
+  .xcode-info .project-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 10px 14px;
+    margin-top: 10px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-primary-light);
+    font-size: 0.8rem;
+  }
+  .xcode-info .project-link:active {
+    transform: scale(0.98);
+  }
+
+  /* In-development preview placeholders read as intentional, not unloaded */
+  .xcode-preview-empty {
+    opacity: 0.6;
+  }
+  .xcode-preview-empty i {
+    font-size: 2.4rem;
+  }
+
+  /* Resume work/education toggles -> 44px tap target */
+  .git-tab {
+    padding: 12px 18px;
+    min-height: 44px;
+    font-size: 0.7rem;
+  }
+
+  /* Let long git-log commit text wrap instead of clipping at the card edge */
+  .git-commit {
+    overflow-wrap: anywhere;
+  }
+  .git-commit > span,
+  .git-msg,
+  .git-detail {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  /* Cert/award test-result headings wrap with their inline status badge */
+  .cert-card h6,
+  .award-card h6,
+  .xctest-result h6 {
+    font-size: 0.82rem;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  .xctest-status,
+  .xctest-gold-text {
+    display: inline-block;
+  }
+
+  /* Footer social links: real tap padding + legible size */
+  .tf-links {
+    row-gap: 4px;
+    column-gap: 16px;
+  }
+  .tf-links a {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 0;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  /* One consistent outer page gutter (up from Bootstrap's cramped ~12px) */
+  .container {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  /* Hero code blocks: shrink slightly + let long tokens break (no clipping) */
+  .ide-code-block {
+    font-size: 0.7rem;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  /* skills.json package block: stop the tiny internal sideways scroll */
+  .pkg-json {
+    font-size: 0.68rem;
+    padding: 1rem 0.85rem;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+  .pkg-indent { padding-left: 1rem; }
+  .pkg-indent2 { padding-left: 2rem; }
+  .pkg-line {
+    white-space: normal;
+    word-break: normal;
+    overflow-wrap: break-word;
+  }
+
+  /* IDE status bar wraps instead of clipping "Ln 1, Col 1" */
+  .ide-statusbar {
+    flex-wrap: wrap;
+    gap: 6px 12px;
+    padding: 4px 14px;
+  }
+
+  /* Even, balanced inspector metric columns ("Businesses Indexed" no longer
+     makes the middle column taller than its neighbours) */
+  .ide-inspector .ide-metric {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 8px 4px;
+    text-align: center;
+  }
+  .ide-inspector .ide-metric-label {
+    font-size: 0.55rem;
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+  }
+
+  /* Expertise card meta text: legible (was ~9.6px micro-text) */
+  .xcode-target .xt-scheme,
+  .xcode-target .xt-badge,
+  .xcode-target .xt-build {
+    font-size: 0.68rem;
+  }
+  .xcode-target .xt-scheme {
+    opacity: 0.75;
+  }
+
+  /* Contact "code" inputs: break onto their own full-width line so the email
+     placeholder/value isn't clipped by the Swift prefix text */
+  .ce-input {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    margin-top: 4px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  /* Contact buttons: wrap, equal width, 44px tall */
+  .ce-actions {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .ce-send,
+  .ce-copy {
+    flex: 1 1 0;
+    justify-content: center;
+    min-height: 44px;
+    padding-top: 0;
+    padding-bottom: 0;
+    font-size: 0.78rem;
+  }
+
+  /* Import-style social links: legible + a little tap padding */
+  .ce-imports {
+    font-size: 0.72rem;
+    line-height: 2.1;
+  }
+  .ce-imports a {
+    display: inline-block;
+    padding: 2px 3px;
+  }
+
+  /* A touch more breathing room now that cards are full-width */
+  .xcode-info {
+    padding: 16px 16px 18px;
+  }
+}
+
+@media (max-width: 400px) {
+  /* Hero IDE tab strip: fit all four tabs; scoped to .ide-main so the project
+     cards' reused tab strips are untouched. Mask hints at scroll if needed. */
+  .ide-main .xcode-tab {
+    padding: 7px 9px;
+    font-size: 0.6rem;
+  }
+  .ide-main .xcode-tabs {
+    -webkit-mask-image: linear-gradient(to right, #000 92%, transparent);
+    mask-image: linear-gradient(to right, #000 92%, transparent);
+  }
+
+  /* Expertise card footer: let the badge + build text wrap before touching */
+  .xcode-target .xt-footer {
+    flex-wrap: wrap;
+    gap: 4px 10px;
   }
 }

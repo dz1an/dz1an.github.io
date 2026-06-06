@@ -1883,62 +1883,86 @@ document.addEventListener("DOMContentLoaded", function () {
 
   if (!sendBtn) return;
 
-  // Email parts (obfuscated)
-  var emailUser = "dzian2k17";
-  var emailDomain = "gmail.com";
-  var fullEmail = emailUser + "@" + emailDomain;
+  // Single source of truth — assembled at runtime by _e() to dodge scrapers
+  function getEmail() {
+    return (window._e && window._e()) || "dzian2k17" + "@" + "gmail.com";
+  }
+
+  function setResult(state, text) {
+    resultEl.className = "ce-result" + (state ? " " + state : "");
+    resultEl.textContent = text;
+  }
+
+  function openMailFallback(name, email, message) {
+    // location.href (not window.open) so it survives popup blockers
+    var subject = encodeURIComponent("Portfolio Contact from " + name);
+    var body = encodeURIComponent("Name: " + name + "\nEmail: " + email + "\n\n" + message);
+    window.location.href = "mailto:" + getEmail() + "?subject=" + subject + "&body=" + body;
+  }
 
   sendBtn.addEventListener("click", function () {
-    var name = document.getElementById("contactName").value.trim();
-    var email = document.getElementById("contactEmail").value.trim();
-    var message = document.getElementById("contactMessage").value.trim();
+    var nameEl = document.getElementById("contactName");
+    var emailEl = document.getElementById("contactEmail");
+    var msgEl = document.getElementById("contactMessage");
+    var honeyEl = document.getElementById("contactHoney");
+
+    var name = nameEl.value.trim();
+    var email = emailEl.value.trim();
+    var message = msgEl.value.trim();
+
+    // Honeypot — humans never see this field; bots fill it
+    if (honeyEl && honeyEl.value) {
+      setResult("ce-success", "✓ Message sent — thanks! I'll get back to you.");
+      return;
+    }
 
     if (!name || !email || !message) {
-      resultEl.className = "ce-result ce-error";
-      resultEl.textContent = "✗ Error: all fields are required";
+      setResult("ce-error", "✗ Error: all fields are required");
       return;
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      resultEl.className = "ce-result ce-error";
-      resultEl.textContent = "✗ Error: invalid email format";
+      setResult("ce-error", "✗ Error: invalid email format");
       return;
     }
 
-    resultEl.className = "ce-result";
-    resultEl.textContent = "▸ Sending...";
+    setResult("", "▸ Sending...");
+    sendBtn.disabled = true;
 
-    // Try Formspree first
-    fetch("https://formspree.io/f/xwpkgjvl", {
+    // FormSubmit.co AJAX — endpoint email assembled at runtime, not stored as plain text
+    fetch("https://formsubmit.co/ajax/" + getEmail(), {
       method: "POST",
       headers: { "Content-Type": "application/json", "Accept": "application/json" },
-      body: JSON.stringify({ name: name, email: email, message: message })
+      body: JSON.stringify({
+        name: name,
+        email: email,            // FormSubmit uses this as the reply-to address
+        message: message,
+        _subject: "Portfolio Contact from " + name,
+        _template: "table",
+        _captcha: "false"
+      })
     }).then(function (res) {
-      if (res.ok) {
-        resultEl.className = "ce-result ce-success";
-        resultEl.textContent = "✓ Message sent successfully — I'll get back to you!";
-        document.getElementById("contactName").value = "";
-        document.getElementById("contactEmail").value = "";
-        document.getElementById("contactMessage").value = "";
-        if (window.playSound) playSound("success");
-        if (window.showToast) showToast("Message Sent!", "Thanks for reaching out.", "fas fa-check");
-      } else {
-        throw new Error("Formspree error");
-      }
+      return res.json().then(function (data) { return { ok: res.ok, data: data }; });
+    }).then(function (r) {
+      var ok = r.ok && (r.data.success === "true" || r.data.success === true);
+      if (!ok) throw new Error(r.data && r.data.message ? r.data.message : "send failed");
+      setResult("ce-success", "✓ Message sent — thanks! I'll get back to you soon.");
+      nameEl.value = ""; emailEl.value = ""; msgEl.value = "";
+      if (window.playSound) playSound("success");
+      if (window.showToast) showToast("Message Sent!", "Thanks for reaching out.", "fas fa-check");
     }).catch(function () {
-      // Fallback to mailto
-      var subject = encodeURIComponent("Portfolio Contact from " + name);
-      var body = encodeURIComponent("Name: " + name + "\nEmail: " + email + "\n\n" + message);
-      window.open("mailto:" + fullEmail + "?subject=" + subject + "&body=" + body);
-      resultEl.className = "ce-result ce-success";
-      resultEl.textContent = "✓ Opening email client as fallback...";
+      // Endpoint/network failure → open the visitor's mail client pre-filled
+      setResult("ce-success", "✓ Opening your email app so you can send directly…");
+      openMailFallback(name, email, message);
+    }).then(function () {
+      sendBtn.disabled = false;
     });
   });
 
   if (copyBtn) {
     copyBtn.addEventListener("click", function () {
-      navigator.clipboard.writeText(fullEmail).then(function () {
-        if (window.showToast) showToast("Email Copied!", fullEmail, "fas fa-copy");
+      navigator.clipboard.writeText(getEmail()).then(function () {
+        if (window.showToast) showToast("Email Copied!", getEmail(), "fas fa-copy");
         if (window.playSound) playSound("click");
       });
     });
