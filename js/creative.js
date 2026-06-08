@@ -33,6 +33,9 @@
   var isMobile = /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
     || (window.innerWidth < 768 && "ontouchstart" in window);
 
+  // Respect reduced-motion for opt-in idle animations (characters, etc.)
+  var reduceMotion = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+
   var MAX_TRAILS = isMobile ? 20 : 50;
   var MAX_SPAWNED = isMobile ? 12 : 25;
   var groundEmbers = [];
@@ -207,6 +210,7 @@
     buildTerrain(); createDirtPath();
     plantForest();
     createCoreLantern();
+    createCampCharacters();
     createProjectLanterns();
     createFireflies(); createMist();
     createRuins();
@@ -501,10 +505,9 @@
     scene._canopies = canopies;
   }
 
-  // ======================== Ancient Ruins — stone pillars, archway, magical circle ========================
+  // ======================== Forest ruins — weathered stone pillars + archway ========================
   function createRuins() {
     var stoneMat = new THREE.MeshStandardMaterial({ color: 0x555566, roughness: 0.9, flatShading: true });
-    var runeMat = new THREE.MeshBasicMaterial({ color: 0x8B7EC8, transparent: true, opacity: 0.3 });
     var vineMat = new THREE.MeshStandardMaterial({ color: 0x3A5A40, roughness: 0.8 });
 
     // Stone pillars around clearing edge
@@ -528,18 +531,7 @@
       pillar.rotation.set(pp.lean, 0, pp.lean * 0.5);
       scene.add(pillar);
 
-      // Glowing rune on pillar face (small plane)
-      if (pp.h > 3) {
-        var rune = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 0.4), runeMat);
-        rune.position.set(pp.x + 0.35, gY + pp.h * 0.6, pp.z);
-        rune.rotation.y = Math.atan2(-pp.x, -pp.z); // face center
-        scene.add(rune);
-        // Store for animation
-        if (!scene._runes) scene._runes = [];
-        scene._runes.push({ mesh: rune, phase: i * 1.2 });
-      }
-
-      // Vine wrapping (desktop only)
+      // Mossy vine wrapping (desktop only)
       if (!isMobile && pp.h > 3) {
         var vine = new THREE.Mesh(
           new THREE.TorusGeometry(0.35, 0.02, 4, 12, Math.PI * 1.5),
@@ -574,103 +566,15 @@
     lintel.position.set(0, archGY + 4.1, -8);
     lintel.rotation.z = 0.03; // slightly tilted for age
     scene.add(lintel);
-    // Rune on lintel
-    var archRune = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 0.2), runeMat);
-    archRune.position.set(0, archGY + 4.2, -7.79);
-    scene.add(archRune);
-    if (!scene._runes) scene._runes = [];
-    scene._runes.push({ mesh: archRune, phase: 3.5 });
 
-    // Magical circle on the ground in the clearing
-    var circle = new THREE.Mesh(
-      new THREE.TorusGeometry(3, 0.04, 4, 48),
-      new THREE.MeshBasicMaterial({ color: 0x8B7EC8, transparent: true, opacity: 0.15 })
-    );
-    circle.rotation.x = -Math.PI / 2;
-    circle.position.set(0, 0.03, 0);
-    scene.add(circle);
-    scene._magicCircle = circle;
-
-    // Inner circle
-    var inner = new THREE.Mesh(
-      new THREE.TorusGeometry(1.8, 0.03, 4, 36),
-      new THREE.MeshBasicMaterial({ color: 0xC4B5E0, transparent: true, opacity: 0.1 })
-    );
-    inner.rotation.x = -Math.PI / 2;
-    inner.position.set(0, 0.035, 0);
-    scene.add(inner);
-    scene._magicCircleInner = inner;
-
-    // Hexagonal pattern inside the circle
-    for (var hi = 0; hi < 6; hi++) {
-      var hAngle = (hi / 6) * Math.PI * 2;
-      var hx = Math.cos(hAngle) * 2.2;
-      var hz = Math.sin(hAngle) * 2.2;
-      // Line from center to edge
-      var hLine = new THREE.Mesh(
-        new THREE.PlaneGeometry(0.02, 2.2),
-        new THREE.MeshBasicMaterial({ color: 0x8B7EC8, transparent: true, opacity: 0.08, side: THREE.DoubleSide })
-      );
-      hLine.rotation.x = -Math.PI / 2;
-      hLine.rotation.z = hAngle;
-      hLine.position.set(hx * 0.5, 0.032, hz * 0.5);
-      scene.add(hLine);
-
-      // Small orb marker at each point
-      var marker = new THREE.Mesh(
-        new THREE.SphereGeometry(0.05, 6, 6),
-        new THREE.MeshBasicMaterial({ color: 0xC4B5E0, transparent: true, opacity: 0.3 })
-      );
-      marker.position.set(hx, 0.06, hz);
-      scene.add(marker);
-      if (!scene._runes) scene._runes = [];
-      scene._runes.push({ mesh: marker, phase: hi * 1.0 });
-    }
-
-    // Triangle inscribed in circle
-    var triPoints = [];
-    for (var ti = 0; ti < 3; ti++) {
-      var tAngle = (ti / 3) * Math.PI * 2 - Math.PI / 2;
-      triPoints.push(Math.cos(tAngle) * 2.5);
-      triPoints.push(0.033);
-      triPoints.push(Math.sin(tAngle) * 2.5);
-    }
-    var triGeo = new THREE.BufferGeometry();
-    triGeo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(triPoints), 3));
-    var triLine = new THREE.Line(triGeo, new THREE.LineBasicMaterial({ color: 0x8B7EC8, transparent: true, opacity: 0.1 }));
-    scene.add(triLine);
-
-    // Floating mana motes throughout the forest
-    var manaCount = isMobile ? 12 : 25;
-    var manaMotes = [];
-    for (var mi = 0; mi < manaCount; mi++) {
-      var mx = (Math.random() - 0.5) * 50;
-      var mz = (Math.random() - 0.5) * 60;
-      var my = 1.5 + Math.random() * 6;
-      var moteColor = [0x8B7EC8, 0xC4B5E0, 0xD4D4DC][Math.floor(Math.random() * 3)];
-      var mote = new THREE.Mesh(
-        new THREE.SphereGeometry(0.03 + Math.random() * 0.02, 4, 4),
-        new THREE.MeshBasicMaterial({ color: moteColor, transparent: true, opacity: 0.5 })
-      );
-      mote.position.set(mx, my, mz);
-      scene.add(mote);
-      manaMotes.push({
-        mesh: mote, baseX: mx, baseY: my, baseZ: mz,
-        speed: 0.2 + Math.random() * 0.5,
-        phase: Math.random() * Math.PI * 2,
-        ampY: 0.5 + Math.random() * 1.5
-      });
-    }
-    scene._manaMotes = manaMotes;
-
-    // Flowers in the meadow too
+    // Wildflowers in the meadow
     for (var mfi = 0; mfi < (isMobile ? 15 : 30); mfi++) {
       var mfa = Math.random() * Math.PI * 2;
       var mfr = Math.random() * 8;
       var mfx = -3 + Math.cos(mfa) * mfr;
       var mfz = -36 + Math.sin(mfa) * mfr;
       var mfgy = getGroundY(mfx, mfz);
-      var mfmat = [0xC4B5E0, 0x8B7EC8, 0xE8E0F0, 0xDDD8E8][Math.floor(Math.random() * 4)];
+      var mfmat = [0xFFFFFF, 0xF0E68C, 0xE8E6DC, 0xC8D8A0][Math.floor(Math.random() * 4)];
       var mfSize = 0.05 + Math.random() * 0.05;
       var mf1 = new THREE.Mesh(
         new THREE.PlaneGeometry(mfSize, mfSize * 1.5),
@@ -688,28 +592,6 @@
       scene.add(mf2);
     }
 
-    // Floating grimoire pages — torn pages drifting in the wind
-    var pageCount = isMobile ? 5 : 12;
-    var floatingPages = [];
-    var pageMat = new THREE.MeshBasicMaterial({ color: 0xD4C5A0, transparent: true, opacity: 0.4, side: THREE.DoubleSide });
-    for (var pi = 0; pi < pageCount; pi++) {
-      var px = (Math.random() - 0.5) * 40;
-      var py = 3 + Math.random() * 8;
-      var pz = (Math.random() - 0.5) * 50;
-      var page = new THREE.Mesh(new THREE.PlaneGeometry(0.15 + Math.random() * 0.1, 0.2 + Math.random() * 0.1), pageMat);
-      page.position.set(px, py, pz);
-      page.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
-      scene.add(page);
-      floatingPages.push({
-        mesh: page, baseX: px, baseY: py, baseZ: pz,
-        speed: 0.1 + Math.random() * 0.3,
-        phase: Math.random() * Math.PI * 2,
-        rotSpeed: (Math.random() - 0.5) * 0.5,
-        driftX: (Math.random() - 0.5) * 3,
-        driftZ: (Math.random() - 0.5) * 3
-      });
-    }
-    scene._floatingPages = floatingPages;
   }
 
   // ======================== Campsite — tent, campfire, seated figure ========================
@@ -718,46 +600,30 @@
     var logMat = new THREE.MeshStandardMaterial({ color: 0x3B2314, roughness: 0.9 });
     var stoneMat = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.95, flatShading: true });
 
-    // === Ruined stone shelter (replaces tent) ===
-    var shelterMat = new THREE.MeshStandardMaterial({ color: 0x555566, roughness: 0.9, flatShading: true });
+    // === Camp tent (teepee-style, entrance facing the fire) ===
     var shelterX = 2.5, shelterZ = -2.5;
     var sgY = getGroundY(shelterX, shelterZ);
-
-    // Back wall
-    var backWall = new THREE.Mesh(new THREE.BoxGeometry(2.5, 2, 0.25), shelterMat);
-    backWall.position.set(shelterX, sgY + 1, shelterZ - 1);
-    scene.add(backWall);
-    // Left wall (shorter, partially collapsed)
-    var leftWall = new THREE.Mesh(new THREE.BoxGeometry(0.25, 1.5, 2), shelterMat);
-    leftWall.position.set(shelterX - 1.1, sgY + 0.75, shelterZ);
-    scene.add(leftWall);
-    // Right wall (even shorter, more collapsed)
-    var rightWall = new THREE.Mesh(new THREE.BoxGeometry(0.25, 1, 2), shelterMat);
-    rightWall.position.set(shelterX + 1.1, sgY + 0.5, shelterZ);
-    rightWall.rotation.z = 0.05; // leaning
-    scene.add(rightWall);
-    // Partial roof slab (tilted, partially fallen)
-    var roof = new THREE.Mesh(new THREE.BoxGeometry(2, 0.15, 1.5), shelterMat);
-    roof.position.set(shelterX - 0.3, sgY + 1.9, shelterZ - 0.3);
-    roof.rotation.set(0, 0, -0.08);
-    scene.add(roof);
-    // Fallen stone block on ground
-    var fallenBlock = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.4, 0.5), shelterMat);
-    fallenBlock.position.set(shelterX + 0.8, sgY + 0.2, shelterZ + 0.8);
-    fallenBlock.rotation.set(0, 0.3, 0.15);
-    scene.add(fallenBlock);
-    // Rune on back wall
-    var shelterRune = new THREE.Mesh(
-      new THREE.PlaneGeometry(0.6, 0.4),
-      new THREE.MeshBasicMaterial({ color: 0x8B7EC8, transparent: true, opacity: 0.2 })
+    var tentMat = new THREE.MeshStandardMaterial({ color: 0x6E7A55, roughness: 0.92, flatShading: true });
+    var tent = new THREE.Group();
+    var tentBody = new THREE.Mesh(new THREE.ConeGeometry(0.95, 1.6, 8), tentMat);
+    tentBody.position.y = 0.8; tent.add(tentBody);
+    // Dark entrance flap, facing the campfire (+z toward z:0.5)
+    var tentDoor = new THREE.Mesh(
+      new THREE.PlaneGeometry(0.4, 0.8),
+      new THREE.MeshStandardMaterial({ color: 0x24251C, roughness: 1 })
     );
-    shelterRune.position.set(shelterX, sgY + 1.2, shelterZ - 0.86);
-    scene.add(shelterRune);
-    if (!scene._runes) scene._runes = [];
-    scene._runes.push({ mesh: shelterRune, phase: 5.0 });
+    tentDoor.position.set(0, 0.42, 0.9); tent.add(tentDoor);
+    // Support poles poking out the top
+    var tentPoleMat = new THREE.MeshStandardMaterial({ color: 0x3B2A1A, roughness: 0.9 });
+    for (var tp = 0; tp < 3; tp++) {
+      var tpole = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.5, 4), tentPoleMat);
+      tpole.position.set(0, 1.6, 0); tpole.rotation.z = (tp - 1) * 0.18; tent.add(tpole);
+    }
+    tent.position.set(shelterX, sgY, shelterZ);
+    scene.add(tent);
 
-    // Sleeping bag inside shelter
-    var sleepBag = new THREE.Mesh(new THREE.CapsuleGeometry(0.15, 0.8, 4, 8), new THREE.MeshStandardMaterial({ color: 0x3A3060, roughness: 0.8 }));
+    // Bedroll just inside the tent
+    var sleepBag = new THREE.Mesh(new THREE.CapsuleGeometry(0.15, 0.8, 4, 8), new THREE.MeshStandardMaterial({ color: 0x4A3B2A, roughness: 0.8 }));
     sleepBag.position.set(shelterX + 0.3, sgY + 0.1, shelterZ - 0.3);
     sleepBag.rotation.set(0, 0.2, Math.PI / 2);
     scene.add(sleepBag);
@@ -842,8 +708,44 @@
     // Brand label — small, off to the side so it doesn't block the campsite
     var brand = makeLabel("//kent.dev", { fontSize: 22, fontWeight: "700", color: "#A3B18A", scale: 1.2, opacity: 0.5 });
     brand.position.set(-3, gY + 2.2, -2); scene.add(brand); scene._brandLabel = brand;
-    var sub = makeLabel("Senior Software Developer", { fontSize: 11, fontWeight: "400", color: "rgba(163,177,138,0.35)", scale: 1.0, opacity: 0.3 });
+    var sub = makeLabel("Software Developer", { fontSize: 11, fontWeight: "400", color: "rgba(163,177,138,0.35)", scale: 1.0, opacity: 0.3 });
     sub.position.set(-3, gY + 1.7, -2); scene.add(sub); scene._brandSub = sub;
+  }
+
+  // ======================== Visitor-name carving near the camp ========================
+  function createCampCharacters() {
+    var woodMat = new THREE.MeshStandardMaterial({ color: 0x3B2A1A, roughness: 0.9 });
+
+    // ---- Visitor-name carving on a wooden marker near the camp ----
+    try {
+      var visitor = localStorage.getItem("visitorName");
+      if (visitor) {
+        var mx = -3.2, mz = 1.2, mgy = getGroundY(mx, mz);
+        var post = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.07, 1.7, 6), woodMat);
+        post.position.set(mx, mgy + 0.85, mz); scene.add(post);
+        var plaque = makeCarving("Kent + " + visitor);
+        plaque.position.set(mx, mgy + 1.55, mz + 0.05);
+        scene.add(plaque); scene._carving = plaque;
+      }
+    } catch (e) {}
+  }
+
+  // Wood-plaque "carved" label rendered to a canvas texture
+  function makeCarving(text) {
+    var cvs = document.createElement("canvas");
+    cvs.width = 320; cvs.height = 120;
+    var c = cvs.getContext("2d");
+    c.fillStyle = "#3B2A1A"; c.fillRect(0, 0, 320, 120);
+    c.strokeStyle = "rgba(0,0,0,0.45)"; c.lineWidth = 6; c.strokeRect(4, 4, 312, 112);
+    c.font = "700 40px 'Inter', system-ui, sans-serif"; c.textAlign = "center"; c.textBaseline = "middle";
+    c.fillStyle = "rgba(0,0,0,0.5)"; c.fillText(text, 161, 63);
+    c.fillStyle = "#A3B18A"; c.fillText(text, 160, 60);
+    var tex = new THREE.CanvasTexture(cvs); tex.minFilter = THREE.LinearFilter;
+    var plane = new THREE.Mesh(
+      new THREE.PlaneGeometry(1.1, 0.41),
+      new THREE.MeshBasicMaterial({ map: tex, transparent: true, opacity: 0.95, side: THREE.DoubleSide })
+    );
+    return plane;
   }
 
   // ======================== Project Lanterns — branch-hung, zigzag ========================
@@ -968,7 +870,7 @@
 
   // ======================== Fireflies (Tech) ========================
   function createFireflies() {
-    var ffColors = [0x8B7EC8, 0xC4B5E0, 0xD4D4DC, 0x9B8ED8, 0xB0A0E0];
+    var ffColors = [0xFFE066, 0xFFD24A, 0xC8E07A, 0xA9C46C, 0xE8C87A];
     // Camera at ch6: pos (0, 3.2, -22) looking at (-6, 3, -28)
     // Place fireflies IN FRONT of camera — between camera and lookAt point, spread to sides
     // Two rows: close row and far row so they don't all stack
@@ -1059,7 +961,7 @@
       var x = (Math.random() - 0.5) * 60;
       var z = (Math.random() - 0.5) * 70 - 5;
       var y = 1.5 + Math.random() * 5;
-      var color = [0x8B7EC8, 0xC4B5E0, 0xD4D4DC, 0x9B8ED8][Math.floor(Math.random() * 4)];
+      var color = [0xFFE066, 0xC8E07A, 0xA9C46C, 0xE8C87A][Math.floor(Math.random() * 4)];
 
       var mesh = new THREE.Mesh(
         new THREE.SphereGeometry(0.05, 6, 6),
@@ -1287,7 +1189,7 @@
   // ======================== Pond ========================
   // ======================== Spawn ========================
   function spawnFirefly(x, y, z) {
-    var color = [0x8B7EC8, 0xC4B5E0, 0xD4D4DC, 0x9B8ED8][Math.floor(Math.random() * 4)];
+    var color = [0xFFE066, 0xC8E07A, 0xA9C46C, 0xE8C87A][Math.floor(Math.random() * 4)];
     var mesh = new THREE.Mesh(new THREE.SphereGeometry(0.06, 6, 6), new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.9 }));
     mesh.position.set(x, y, z);
     mesh.userData = { vx: (Math.random() - 0.5) * 0.04, vy: 0.02 + Math.random() * 0.03, vz: (Math.random() - 0.5) * 0.04, life: 1.0, decay: 0.003 + Math.random() * 0.003 };
@@ -1350,7 +1252,7 @@
       var trailWp = getWorldPos(e.clientX, e.clientY);
       var tp = new THREE.Mesh(
         new THREE.SphereGeometry(0.03, 4, 4),
-        new THREE.MeshBasicMaterial({ color: 0x8B7EC8, transparent: true, opacity: 0.4 })
+        new THREE.MeshBasicMaterial({ color: 0xA3B18A, transparent: true, opacity: 0.4 })
       );
       tp.position.set(trailWp.x, trailWp.y, trailWp.z);
       scene.add(tp);
@@ -1472,30 +1374,7 @@
         em.scale.setScalar((1 - cycle) * 0.8 + 0.2);
       }
     }
-    // Rune glow pulse on pillars
-    if (scene._runes) {
-      for (var rri = 0; rri < scene._runes.length; rri++) {
-        var rr = scene._runes[rri];
-        rr.mesh.material.opacity = 0.15 + Math.sin(t * 1.5 + rr.phase) * 0.12;
-      }
-    }
-
-    // Magic circle slow rotation
-    if (scene._magicCircle) scene._magicCircle.rotation.z = t * 0.05;
-    if (scene._magicCircleInner) scene._magicCircleInner.rotation.z = -t * 0.08;
-
-    // Floating mana motes drift
-    if (scene._manaMotes) {
-      for (var mmi = 0; mmi < scene._manaMotes.length; mmi++) {
-        var mm = scene._manaMotes[mmi];
-        mm.mesh.position.set(
-          mm.baseX + Math.sin(t * mm.speed + mm.phase) * 0.5,
-          mm.baseY + Math.sin(t * mm.speed * 0.6 + mm.phase) * mm.ampY,
-          mm.baseZ + Math.cos(t * mm.speed * 0.4 + mm.phase) * 0.5
-        );
-        mm.mesh.material.opacity = 0.3 + Math.sin(t * 2 + mmi) * 0.2;
-      }
-    }
+    // Forest mode: pillars/archway are static; no magic or characters to animate here.
 
     // Brand label — fades when camera is close to campsite
     var brandFade = scrollProgress < 0.15 ? 1.0 : (scrollProgress < 0.40 ? Math.max(0, 1 - (scrollProgress - 0.15) * 4) : 0);
@@ -1648,20 +1527,6 @@
 
 
 
-    // Floating grimoire pages drift (every 3rd frame)
-    if (scene._floatingPages && frame % 3 === 1) {
-      for (var fpi = 0; fpi < scene._floatingPages.length; fpi++) {
-        var fp = scene._floatingPages[fpi];
-        fp.mesh.position.set(
-          fp.baseX + Math.sin(t * fp.speed + fp.phase) * fp.driftX,
-          fp.baseY + Math.sin(t * fp.speed * 0.7 + fp.phase) * 1.5,
-          fp.baseZ + Math.cos(t * fp.speed * 0.5 + fp.phase) * fp.driftZ
-        );
-        fp.mesh.rotation.x += fp.rotSpeed * 0.01;
-        fp.mesh.rotation.z += fp.rotSpeed * 0.008;
-        fp.mesh.material.opacity = 0.25 + Math.sin(t * 0.8 + fpi) * 0.15;
-      }
-    }
 
     // Mist (every 3rd frame)
     if (scene._mist && frame % 3 === 2) { scene._mist.rotation.y = t * 0.002; scene._mist.position.y = Math.sin(t * 0.1) * 0.2; }

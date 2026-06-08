@@ -61,9 +61,9 @@
         var creativeLines = [
           { text: "$ xcodebuild -scheme kent.dev -config journey", cls: "xc-cmd" },
           { text: "\u25b8 Loading Three.js runtime...", cls: "" },
-          { text: "\u25b8 Raising ancient ruins...", cls: "" },
-          { text: "\u25b8 Planting forest \u2014 sage & purple palette", cls: "" },
-          { text: "\u25b8 Summoning mana particles", cls: "" },
+          { text: "\u25b8 Growing the forest canopy...", cls: "" },
+          { text: "\u25b8 Planting the forest \u2014 sage & amber palette", cls: "" },
+          { text: "\u25b8 Lighting the fireflies", cls: "" },
           { text: "\u2713 Build Succeeded \u2014 The Journey Begins", cls: "xc-success" },
         ];
         var delay = 250;
@@ -80,7 +80,7 @@
         // Code mode: static lines
         var codeLines = [
           { text: "$ xcodebuild -scheme kent.dev -config code", cls: "xc-cmd" },
-          { text: "\u25b8 Closing the grimoire...", cls: "" },
+          { text: "\u25b8 Packing up camp...", cls: "" },
           { text: "\u25b8 Compiling ThemeProvider.swift", cls: "" },
           { text: "\u25b8 Restoring dark palette [#1c1c1e]", cls: "" },
           { text: "\u25b8 Linking kent.dev", cls: "" },
@@ -837,8 +837,14 @@
   });
 
   init();
-  heroObserver.observe(canvas.parentElement);
-  animate();
+  // Respect reduced-motion: render one static frame, skip the animation loop
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (var pi = 0; pi < particles.length; pi++) drawParticle(particles[pi]);
+  } else {
+    heroObserver.observe(canvas.parentElement);
+    animate();
+  }
 })();
 
 // ============================================
@@ -965,6 +971,12 @@
     var original = el.getAttribute("data-text");
     if (!original) return;
 
+    // Respect reduced-motion: show the final text immediately, no scramble
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      el.textContent = original;
+      return;
+    }
+
     var iteration = 0;
     var interval = setInterval(function () {
       el.textContent = original
@@ -1014,6 +1026,12 @@
           var el = entry.target;
           var target = parseInt(el.getAttribute("data-target"), 10);
           var suffix = el.getAttribute("data-suffix") || "";
+          // Respect reduced-motion: jump straight to the final value
+          if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+            el.textContent = target + suffix;
+            counterObserver.unobserve(el);
+            return;
+          }
           var duration = 2000;
           var start = 0;
           var startTime = null;
@@ -1151,28 +1169,53 @@ document.addEventListener("DOMContentLoaded", function () {
 
   var fileNames = { readme: "README.md", skills: "skills.json", forest: "forest.js", debug: "debug.js" };
 
-  tabs.forEach(function (tab) {
-    tab.addEventListener("click", function () {
-      var target = tab.getAttribute("data-tab");
-      // Switch active tab
-      tabs.forEach(function (t) { t.classList.remove("active"); });
-      tab.classList.add("active");
-      // Switch panel
-      Object.keys(panels).forEach(function (k) {
-        if (panels[k]) panels[k].style.display = k === target ? "block" : "none";
-        if (panels[k]) panels[k].classList.toggle("active", k === target);
-      });
-      // Update breadcrumb
-      if (breadcrumbFile) breadcrumbFile.textContent = fileNames[target] || target;
-      // Update status bar errors for debug tab
-      if (statusErrors) {
-        if (target === "debug" && !window._debugSolved) {
-          statusErrors.innerHTML = '<i class="fas fa-exclamation-circle" style="color:#FF6B6B"></i> 1 error';
-        } else {
-          statusErrors.innerHTML = '<i class="fas fa-check-circle"></i> 0 errors';
-        }
+  function activate(tab, focusIt) {
+    var target = tab.getAttribute("data-tab");
+    // Switch active tab + roving tabindex / aria-selected (a11y)
+    tabs.forEach(function (t) {
+      var on = t === tab;
+      t.classList.toggle("active", on);
+      t.setAttribute("aria-selected", on ? "true" : "false");
+      t.setAttribute("tabindex", on ? "0" : "-1");
+    });
+    // Switch panel
+    Object.keys(panels).forEach(function (k) {
+      if (panels[k]) panels[k].style.display = k === target ? "block" : "none";
+      if (panels[k]) panels[k].classList.toggle("active", k === target);
+    });
+    // Update breadcrumb
+    if (breadcrumbFile) breadcrumbFile.textContent = fileNames[target] || target;
+    // Update status bar errors for debug tab
+    if (statusErrors) {
+      if (target === "debug" && !window._debugSolved) {
+        statusErrors.innerHTML = '<i class="fas fa-exclamation-circle" style="color:#FF6B6B"></i> 1 error';
+      } else {
+        statusErrors.innerHTML = '<i class="fas fa-check-circle"></i> 0 errors';
       }
-      if (window.playSound) playSound("click");
+    }
+    if (focusIt) tab.focus();
+    if (window.playSound) playSound("click");
+  }
+
+  tabs.forEach(function (tab, idx) {
+    tab.addEventListener("click", function () { activate(tab); });
+    // Keyboard: Enter/Space activate; Arrow/Home/End move (WAI-ARIA tabs)
+    tab.addEventListener("keydown", function (e) {
+      var key = e.key;
+      if (key === "Enter" || key === " " || key === "Spacebar") {
+        e.preventDefault();
+        activate(tab);
+      } else if (key === "ArrowRight" || key === "ArrowLeft") {
+        e.preventDefault();
+        var dir = key === "ArrowRight" ? 1 : -1;
+        activate(tabs[(idx + dir + tabs.length) % tabs.length], true);
+      } else if (key === "Home") {
+        e.preventDefault();
+        activate(tabs[0], true);
+      } else if (key === "End") {
+        e.preventDefault();
+        activate(tabs[tabs.length - 1], true);
+      }
     });
   });
 
@@ -1260,7 +1303,7 @@ document.addEventListener("DOMContentLoaded", function () {
   var commands = {
     "help": "Commands: ls, cat about.md, git log, whoami, clear, tree, solve, I am [name]",
     "ls": "README.md  skills.json  awards.log  projects/  contact.swift",
-    "whoami": "John Kent Evangelista — Senior Software Developer @ VINTAZK",
+    "whoami": "John Kent Evangelista — Software Developer @ VINTAZK",
     "cat about.md": "CS graduate. National award winner. Building civic tech in Zamboanga City.",
     "git log": "Scrolling to resume...",
     "tree": "Entering the forest...",
@@ -1274,7 +1317,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   cmdInput.addEventListener("keydown", function (e) {
     if (e.key !== "Enter") return;
-    var cmd = cmdInput.value.trim().toLowerCase();
+    var raw = cmdInput.value.trim();
+    var cmd = raw.toLowerCase();
     cmdInput.value = "";
 
     if (!cmd) return;
@@ -1297,10 +1341,15 @@ document.addEventListener("DOMContentLoaded", function () {
       added.forEach(function (a) { a.remove(); });
       return;
     } else if (cmd.startsWith("i am ") || cmd.startsWith("my name is ")) {
-      // Visitor name — save for forest tree carving
-      var visitorName = cmdInput.value.trim().replace(/^(i am |my name is )/i, "");
-      localStorage.setItem("visitorName", visitorName);
-      var output = "Nice to meet you, " + visitorName + "! Check the forest — your name is carved on a tree near the campsite.";
+      // Visitor name — read the RAW input (not the just-cleared field) and keep original casing
+      var visitorName = raw.replace(/^(i am |my name is )/i, "").trim();
+      var output;
+      if (visitorName) {
+        localStorage.setItem("visitorName", visitorName);
+        output = "Nice to meet you, " + visitorName + "! Check the forest — your name is carved on a marker near the campsite.";
+      } else {
+        output = "Tell me your name like: I am Alice";
+      }
       var outEl = document.createElement("div");
       outEl.className = "tf-output-line";
       outEl.textContent = output;
@@ -1415,21 +1464,26 @@ document.addEventListener("DOMContentLoaded", function () {
 // ============================================
 document.addEventListener("DOMContentLoaded", function () {
   var typingElement = document.querySelector(".typing");
-  if (typingElement) {
-    new Typed(".typing", {
-      strings: [
-        "Senior Software Developer",
-        "Digital Transformation",
-        "Civic Tech Builder",
-        "Project Lead",
-      ],
-      loop: true,
-      typeSpeed: 50,
-      backSpeed: 30,
-      backDelay: 2500,
-      startDelay: 500,
-    });
+  if (!typingElement) return;
+  var roles = [
+    "Software Developer",
+    "Digital Transformation",
+    "Civic Tech Builder",
+    "Project Lead",
+  ];
+  // Respect reduced-motion: show the first role statically, skip Typed.js
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    typingElement.textContent = roles[0];
+    return;
   }
+  new Typed(".typing", {
+    strings: roles,
+    loop: true,
+    typeSpeed: 50,
+    backSpeed: 30,
+    backDelay: 2500,
+    startDelay: 500,
+  });
 });
 
 // ============================================
@@ -1762,7 +1816,7 @@ document.addEventListener("DOMContentLoaded", function () {
   );
 
   console.log(
-    "%c$ whoami%c\n  John Kent Evangelista\n  Senior Software Developer @ VINTAZK Outsourcing\n  Zamboanga City, Philippines",
+    "%c$ whoami%c\n  John Kent Evangelista\n  Software Developer @ VINTAZK Outsourcing\n  Zamboanga City, Philippines",
     "color: #5C7650; font-weight: 700; font-size: 12px; font-family: monospace;",
     "color: #A3B18A; font-size: 11px; font-family: monospace;"
   );

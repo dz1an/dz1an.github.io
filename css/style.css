@@ -5358,3 +5358,39 @@ html.konami-active .xc-build-terminal {
     gap: 4px 10px;
   }
 }
+
+/* ========================================================================
+   ACCESSIBILITY — skip link + keyboard focus rings
+   ======================================================================== */
+.skip-link {
+  position: absolute;
+  left: 8px;
+  top: -56px;
+  z-index: 10001;
+  padding: 10px 16px;
+  background: var(--color-bg-card, #1c1c1e);
+  color: var(--color-text, #fff);
+  border: 1px solid var(--color-border, rgba(255, 255, 255, 0.15));
+  border-radius: var(--radius-sm, 6px);
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: top 0.2s ease;
+}
+.skip-link:focus {
+  top: calc(env(safe-area-inset-top, 0px) + 8px);
+}
+
+/* Visible focus ring for keyboard users (mouse focus stays clean via :focus-visible). */
+:focus-visible {
+  outline: 2px solid var(--color-primary, #5C7650);
+  outline-offset: 2px;
+}
+/* These inputs clear the default outline in their base rule — restore a ring on keyboard focus. */
+.ce-input:focus-visible,
+.ce-textarea:focus-visible,
+.debug-input:focus-visible,
+.ide-cmd-input:focus-visible,
+.cmd-palette-input:focus-visible {
+  outline: 2px solid var(--color-primary, #5C7650);
+  outline-offset: 2px;
+}

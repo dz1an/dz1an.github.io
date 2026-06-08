@@ -6,9 +6,9 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1.0, shrink-to-fit=no, viewport-fit=cover">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <title>John Kent Evangelista — Senior Software Developer</title>
+  <title>John Kent Evangelista — Software Developer</title>
   <meta name="author" content="John Kent Evangelista">
-  <meta name="description" content="Senior Software Developer specializing in civic tech, SaaS, and digital transformation. Based in Zamboanga City, Philippines.">
+  <meta name="description" content="Software Developer specializing in civic tech, SaaS, and digital transformation. Based in Zamboanga City, Philippines.">
   <meta name="referrer" content="strict-origin-when-cross-origin">
 
   <!-- Safari / iOS — status bar + URL bar color -->
@@ -26,16 +26,54 @@
   <link rel="stylesheet" type="text/css" href="vendor/font-awesome/css/all.min.css" />
   <link rel="stylesheet" type="text/css" href="css/style.css">
   <!-- OpenGraph -->
-  <meta property="og:title" content="John Kent Evangelista — Senior Software Developer">
+  <meta property="og:title" content="John Kent Evangelista — Software Developer">
   <meta property="og:description" content="Building connected systems — civic tech, SaaS, and digital transformation. Based in Zamboanga City, Philippines.">
   <meta property="og:type" content="website">
-  <meta property="og:image" content="images/profile.png">
-  <meta name="twitter:card" content="summary">
+  <meta property="og:url" content="https://dz1an.github.io/">
+  <link rel="canonical" href="https://dz1an.github.io/">
+  <meta property="og:image" content="https://dz1an.github.io/images/profile.png">
+  <meta property="og:image:width" content="741">
+  <meta property="og:image:height" content="685">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://dz1an.github.io/images/profile.png">
   <meta name="twitter:title" content="John Kent Evangelista — //kent.dev">
-  <meta name="twitter:description" content="Senior Software Developer specializing in civic tech, SaaS, and digital transformation.">
+  <meta name="twitter:description" content="Software Developer specializing in civic tech, SaaS, and digital transformation.">
+  <!-- Structured data (schema.org Person) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "John Kent Evangelista",
+    "jobTitle": "Software Developer",
+    "url": "https://dz1an.github.io/",
+    "image": "https://dz1an.github.io/images/profile.png",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Zamboanga City",
+      "addressCountry": "PH"
+    },
+    "sameAs": [
+      "https://www.linkedin.com/in/john-kent-evangelista-lsswb-482435307/",
+      "https://github.com/kent-vintazk",
+      "https://www.facebook.com/tabibito12/",
+      "https://www.instagram.com/dziannn/"
+    ]
+  }
+  </script>
 </head>
 
 <body>
+
+  <!-- Skip to content (keyboard accessibility) -->
+  <a class="skip-link" href="#home">Skip to content</a>
+
+  <!-- No-JS fallback: reveal the static page if the loader's JS never runs -->
+  <noscript>
+    <style>
+      body:not(.loaded) { overflow: auto !important; }
+      #preloader { display: none !important; }
+    </style>
+  </noscript>
 
   <!-- macOS Notification Toast -->
   <div class="mac-toast" id="macToast">
@@ -136,7 +174,7 @@
       <div class="creative-chapter" data-chapter="1">
         <div class="chapter-content chapter-right">
           <span class="chapter-label">002 / Origin</span>
-          <h2>A Mage's<br>Origin</h2>
+          <h2>Where the<br>Path Began</h2>
           <p>Born in Zamboanga City. Forged in computer science. Some travelers chase the horizon — I chose to walk toward the people nobody else was going to help.</p>
         </div>
       </div>
@@ -150,12 +188,12 @@
         </div>
       </div>
 
-      <!-- Ch 3: Grimoire -->
+      <!-- Ch 3: The Journal -->
       <div class="creative-chapter" data-chapter="3">
         <div class="chapter-content chapter-right">
-          <span class="chapter-label">004 / Grimoire</span>
-          <h2>The<br>Grimoire</h2>
-          <p>LSSWB certified. Sprint planning, feature scoping. Every traveler carries a grimoire — not for power, but to remember what they've learned and why it mattered.</p>
+          <span class="chapter-label">004 / The Journal</span>
+          <h2>The<br>Journal</h2>
+          <p>LSSWB certified. Sprint planning, feature scoping. Every traveler keeps a journal — not for power, but to remember what they've learned and why it mattered.</p>
         </div>
       </div>
 
@@ -181,7 +219,7 @@
         </div>
       </div>
 
-      <!-- Ch 6: Spells -->
+      <!-- Ch 6: Tools -->
       <div class="creative-chapter" data-chapter="6">
         <div class="chapter-content chapter-left">
           <span class="chapter-label">007 / Tools</span>
@@ -345,11 +383,11 @@
 
           <!-- CENTER: Editor -->
           <div class="ide-main">
-            <div class="xcode-tabs">
-              <span class="xcode-tab active" data-tab="readme">README.md</span>
-              <span class="xcode-tab" data-tab="skills">skills.json</span>
-              <span class="xcode-tab" data-tab="forest"><i class="fas fa-tree" style="color:#5C7650;font-size:0.6rem;margin-right:3px"></i> forest.js</span>
-              <span class="xcode-tab" data-tab="debug"><i class="fas fa-bug" style="color:#FF6B6B;font-size:0.6rem;margin-right:3px"></i> debug.js</span>
+            <div class="xcode-tabs" role="tablist" aria-label="Editor files">
+              <span class="xcode-tab active" data-tab="readme" id="tab-readme" role="tab" tabindex="0" aria-selected="true" aria-controls="tabReadme">README.md</span>
+              <span class="xcode-tab" data-tab="skills" id="tab-skills" role="tab" tabindex="-1" aria-selected="false" aria-controls="tabSkills">skills.json</span>
+              <span class="xcode-tab" data-tab="forest" id="tab-forest" role="tab" tabindex="-1" aria-selected="false" aria-controls="tabForest"><i class="fas fa-tree" style="color:#5C7650;font-size:0.6rem;margin-right:3px"></i> forest.js</span>
+              <span class="xcode-tab" data-tab="debug" id="tab-debug" role="tab" tabindex="-1" aria-selected="false" aria-controls="tabDebug"><i class="fas fa-bug" style="color:#FF6B6B;font-size:0.6rem;margin-right:3px"></i> debug.js</span>
             </div>
             <!-- Breadcrumb -->
             <div class="ide-breadcrumb" id="ideBreadcrumb">
@@ -359,12 +397,12 @@
             </div>
 
             <!-- Tab: README.md -->
-            <div class="ide-editor ide-tab-panel active" id="tabReadme">
+            <div class="ide-editor ide-tab-panel active" id="tabReadme" role="tabpanel" tabindex="0" aria-labelledby="tab-readme">
               <div class="ide-comment">// kent.dev — README.md</div>
               <div class="hero-badge"><span class="pulse-dot"></span> Open to Opportunities</div>
               <h1><span class="name-gradient text-scramble glitch-text" data-text="John Kent">John Kent</span><br><span class="text-scramble glitch-text" data-text="Evangelista">Evangelista</span></h1>
               <p class="credential">LSSWB &mdash; Lean Six Sigma White Belt</p>
-              <p class="hero-summary">Results-driven Senior Software Developer building civic tech platforms, SaaS systems, and business directory solutions. National award winner as part of the VINTAZK Outsourcing core team.</p>
+              <p class="hero-summary">Results-driven Software Developer building civic tech platforms, SaaS systems, and business directory solutions for VINTAZK Outsourcing.</p>
               <div class="hero-buttons">
                 <a href="#projects" class="btn-primary-custom magnetic-btn">View My Work <i class="fas fa-arrow-right"></i></a>
                 <a href="#contact" class="btn-outline-custom magnetic-btn">Get in Touch</a>
@@ -372,7 +410,7 @@
             </div>
 
             <!-- Tab: skills.json (mini version) -->
-            <div class="ide-editor ide-tab-panel" id="tabSkills" style="display:none">
+            <div class="ide-editor ide-tab-panel" id="tabSkills" style="display:none" role="tabpanel" tabindex="0" aria-labelledby="tab-skills">
               <div class="ide-comment">// kent.dev — skills.json</div>
               <pre class="ide-code-block">{
   "languages": ["Python", "JavaScript", "Dart"],
@@ -383,28 +421,28 @@
             </div>
 
             <!-- Tab: forest.js (THE CODE FOR THE FOREST) -->
-            <div class="ide-editor ide-tab-panel" id="tabForest" style="display:none">
-              <div class="ide-comment">// journey.js — the code that builds my world</div>
-              <pre class="ide-code-block"><span class="code-keyword">import</span> { Scene, Ruins, Mage } <span class="code-keyword">from</span> <span class="code-string">"three"</span>;
+            <div class="ide-editor ide-tab-panel" id="tabForest" style="display:none" role="tabpanel" tabindex="0" aria-labelledby="tab-forest">
+              <div class="ide-comment">// forest.js — the code that builds my world</div>
+              <pre class="ide-code-block"><span class="code-keyword">import</span> { Scene, Forest, Camp } <span class="code-keyword">from</span> <span class="code-string">"three"</span>;
 
 <span class="code-keyword">const</span> <span class="code-fn">world</span> = <span class="code-keyword">new</span> Scene({
-  terrain:   <span class="code-string">"ancient forest"</span>,
-  ruins:     <span class="code-string">"overgrown"</span>,
-  mood:      <span class="code-string">"moonlit"</span>
+  terrain:   <span class="code-string">"moonlit forest"</span>,
+  path:      <span class="code-string">"winding trail"</span>,
+  mood:      <span class="code-string">"fireflies"</span>
 });
 
-world.<span class="code-fn">add</span>(Mage, {
-  shelter:   <span class="code-string">"stone ruins"</span>,
-  grimoire:  <span class="code-keyword">true</span>,
-  staff:     <span class="code-string">"glowing"</span>
+world.<span class="code-fn">add</span>(Camp, {
+  tent:      <span class="code-keyword">true</span>,
+  campfire:  <span class="code-string">"glowing"</span>,
+  bedroll:   <span class="code-keyword">true</span>
 });
 
-world.<span class="code-fn">add</span>(Waypoints, [
+world.<span class="code-fn">add</span>(Lanterns, [
   <span class="code-string">"Vintech"</span>, <span class="code-string">"ZamGo"</span>, <span class="code-string">"Vintazk Uni"</span>,
   <span class="code-string">"Barangay Connect"</span>, <span class="code-string">"SmartScore"</span>
 ]);
 
-world.<span class="code-fn">add</span>(Spells, [
+world.<span class="code-fn">add</span>(Fireflies, [
   <span class="code-string">"React"</span>, <span class="code-string">"Supabase"</span>, <span class="code-string">"Python"</span>,
   <span class="code-string">"Flutter"</span>, <span class="code-string">"Node.js"</span>, <span class="code-string">"Django"</span>
 ]);
@@ -417,7 +455,7 @@ world.<span class="code-fn">render</span>();</pre>
             </div>
 
             <!-- Tab: debug.js (THE PUZZLE) -->
-            <div class="ide-editor ide-tab-panel" id="tabDebug" style="display:none">
+            <div class="ide-editor ide-tab-panel" id="tabDebug" style="display:none" role="tabpanel" tabindex="0" aria-labelledby="tab-debug">
               <div class="ide-comment">// debug.js — Can you fix the bug?</div>
               <div class="ide-comment">// This function should return "Hello, World!"</div>
               <div class="ide-comment">// but something is wrong. Fix it below.</div>
@@ -666,7 +704,7 @@ world.<span class="code-fn">render</span>();</pre>
               <span class="git-blame">kent-vintazk</span>
               <span class="git-branch">HEAD → main</span>
               <span class="git-msg">feat: Senior Developer @ VINTAZK Outsourcing</span>
-              <span class="git-date">Dec 2025 – Present</span>
+              <span class="git-date">Jan 2026 – Present</span>
               <div class="git-detail">Lead development of enterprise-grade outsourcing solutions. Oversee junior developers and OJT interns. Co-contributor to 2025 Productivity Olympics national win.</div>
             </div>
             <div class="git-commit">
