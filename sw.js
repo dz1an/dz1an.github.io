@@ -1,7 +1,7 @@
 // ============================================
 // Service Worker — //kent.dev PWA + Offline
 // ============================================
-var CACHE_NAME = "kent-dev-v9";
+var CACHE_NAME = "kent-dev-v10";
 var CORE_ASSETS = [
   "/",
   "/index.html",
@@ -38,29 +38,44 @@ self.addEventListener("activate", function (e) {
   self.clients.claim();
 });
 
-// Fetch — cache-first for assets, network-first for pages
+// Fetch — network-first for HTML/JS/CSS (so code updates reach users immediately,
+// no more "I pushed but visitors see old code"); cache-first for static assets
+// (images, fonts, vendor libs). Offline always falls back to cache.
 self.addEventListener("fetch", function (e) {
   // Skip non-GET and external requests
   if (e.request.method !== "GET") return;
-  if (!e.request.url.startsWith(self.location.origin) && !e.request.url.includes("cdn.jsdelivr.net")) return;
+  var url = e.request.url;
+  if (!url.startsWith(self.location.origin) && !url.includes("cdn.jsdelivr.net")) return;
 
+  var dest = e.request.destination;
+  var networkFirst = dest === "document" || dest === "script" || dest === "style";
+
+  function cachePut(response) {
+    if (response && response.ok) {
+      var clone = response.clone();
+      caches.open(CACHE_NAME).then(function (cache) { cache.put(e.request, clone); });
+    }
+    return response;
+  }
+
+  if (networkFirst) {
+    // Always try the network first; fall back to cache only when offline.
+    e.respondWith(
+      fetch(e.request).then(cachePut).catch(function () {
+        return caches.match(e.request).then(function (cached) {
+          return cached || (dest === "document" ? caches.match("/index.html") : undefined);
+        });
+      })
+    );
+    return;
+  }
+
+  // Cache-first for everything else (immutable static assets).
   e.respondWith(
     caches.match(e.request).then(function (cached) {
       if (cached) return cached;
-      return fetch(e.request).then(function (response) {
-        // Cache successful responses
-        if (response.ok) {
-          var clone = response.clone();
-          caches.open(CACHE_NAME).then(function (cache) {
-            cache.put(e.request, clone);
-          });
-        }
-        return response;
-      }).catch(function () {
-        // Offline fallback
-        if (e.request.destination === "document") {
-          return caches.match("/index.html");
-        }
+      return fetch(e.request).then(cachePut).catch(function () {
+        if (dest === "document") return caches.match("/index.html");
       });
     })
   );
