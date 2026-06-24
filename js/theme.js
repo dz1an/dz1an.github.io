@@ -1543,17 +1543,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
   if (downloadButton) {
     downloadButton.addEventListener("click", function () {
-      var cvPath = "cv/John_kent_Evangelista_CV.pdf";
+      var cvPath = "cv/John_Kent_Evangelista_CV.pdf";
 
       var link = document.createElement("a");
       link.href = cvPath;
-      link.download = "John_kent_Evangelista_CV.pdf";
+      link.download = "John_Kent_Evangelista_CV.pdf";
 
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
 
-      showToast("Download Started", "John_kent_Evangelista_CV.pdf", "fas fa-download");
+      showToast("Download Started", "John_Kent_Evangelista_CV.pdf", "fas fa-download");
       if (window.playSound) playSound("success");
     });
   }
