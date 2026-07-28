@@ -694,7 +694,9 @@
   var particles = [];
   var mouseX = -1000;
   var mouseY = -1000;
-  var PARTICLE_COUNT = 80;
+  // Connection pass is O(n²) — 40 particles = 4x less work than 80.
+  // Weaker machines (≤4 cores) get an even lighter field.
+  var PARTICLE_COUNT = (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) ? 24 : 40;
   var CONNECTION_DIST = 120;
   var MOUSE_RADIUS = 150;
   var animationId;

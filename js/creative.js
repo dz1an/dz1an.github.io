@@ -9,6 +9,7 @@
   var isActive = false;
   var animationId = null;
   var resizeTimeout = null;
+  var listenersBound = false;
 
   var scrollProgress = 0;
   var scrollVelocity = 0;
@@ -49,6 +50,7 @@
   }
 
   function restoreEmbers() {
+    if (!scene) return; // user may exit before the delayed restore fires
     try {
       var data = JSON.parse(localStorage.getItem("forestEmbers") || "[]");
       data.forEach(function(d) { spawnEmber(d.x, d.z); });
@@ -64,9 +66,9 @@
     } catch(e) {}
   }
 
-  var TREE_COUNT = isMobile ? 35 : 120;
-  var AMBIENT_FF_COUNT = isMobile ? 12 : 25;
-  var PATH_LAMP_COUNT = isMobile ? 5 : 10;
+  var TREE_COUNT = isMobile ? 35 : 70;
+  var AMBIENT_FF_COUNT = isMobile ? 12 : 14;
+  var PATH_LAMP_COUNT = isMobile ? 5 : 8;
   var lastTouchSpawn = 0;
 
   // === Palette ===
@@ -188,12 +190,14 @@
     clock = new THREE.Clock();
     camera = new THREE.PerspectiveCamera(isMobile ? 65 : 55, window.innerWidth / window.innerHeight, 0.1, 200);
     camera.position.set(0, 8, 44);
-    renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: !isMobile, powerPreference: "high-performance" });
+    if (!renderer) {
+      renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: !isMobile, powerPreference: "high-performance" });
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.8;
+      renderer.shadowMap.enabled = false;
+    }
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.8;
-    renderer.shadowMap.enabled = false;
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.25));
     raycaster = new THREE.Raycaster(); mouseVec = new THREE.Vector2();
 
     // Lighting — moonlit forest with visible depth
@@ -217,14 +221,18 @@
     createBillboardTrees(); createSky(); createSmoke(); createGroundDetails();
     createPathLamps(); createAmbientFireflies();
 
-    canvas.addEventListener("mousemove", onMouseMove);
-    canvas.addEventListener("mousedown", function () { isMouseDown = true; });
-    canvas.addEventListener("mouseup", function () { isMouseDown = false; });
-    canvas.addEventListener("click", onClick);
-    canvas.addEventListener("touchstart", onTouch, { passive: false });
-    canvas.addEventListener("touchmove", onTouchDrag, { passive: false });
-    canvas.addEventListener("touchend", function () { isMouseDown = false; });
-    window.addEventListener("resize", onResize);
+    // Bind input listeners once — init() can run again after a full teardown
+    if (!listenersBound) {
+      listenersBound = true;
+      canvas.addEventListener("mousemove", onMouseMove);
+      canvas.addEventListener("mousedown", function () { isMouseDown = true; });
+      canvas.addEventListener("mouseup", function () { isMouseDown = false; });
+      canvas.addEventListener("click", onClick);
+      canvas.addEventListener("touchstart", onTouch, { passive: false });
+      canvas.addEventListener("touchmove", onTouchDrag, { passive: false });
+      canvas.addEventListener("touchend", function () { isMouseDown = false; });
+      window.addEventListener("resize", onResize);
+    }
     return true;
   }
 
@@ -683,7 +691,7 @@
 
     // Fire particles (embers rising)
     var fireEmbers = [];
-    var emberCount = isMobile ? 12 : 25;
+    var emberCount = isMobile ? 12 : 16;
     for (var ei = 0; ei < emberCount; ei++) {
       var eColor = [0xFF6B33, 0xFFAA33, 0xFF8833, 0xFFCC55, 0xFF5522][Math.floor(Math.random() * 5)];
       var ember = new THREE.Mesh(
@@ -901,7 +909,7 @@
 
   // ======================== Mist ========================
   function createMist() {
-    var n = 400, pos = new Float32Array(n * 3);
+    var n = isMobile ? 180 : 260, pos = new Float32Array(n * 3);
     for (var i = 0; i < n; i++) {
       pos[i * 3] = (Math.random() - 0.5) * 100;
       pos[i * 3 + 1] = Math.random() * 3 + 0.5;
@@ -1729,6 +1737,27 @@
       if (canvas) { canvas.style.display = "none"; canvas.style.pointerEvents = "none"; }
       saveEmbers();
       cleanup();
+      // Full teardown — free GPU memory + geometry so code mode stays smooth
+      // after visiting the forest. Re-entering rebuilds via init().
+      if (scene) {
+        scene.traverse(function (obj) {
+          if (obj.geometry) obj.geometry.dispose();
+          if (obj.material) {
+            var mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+            for (var mi = 0; mi < mats.length; mi++) {
+              if (mats[mi].map) mats[mi].map.dispose();
+              mats[mi].dispose();
+            }
+          }
+        });
+        if (scene.clear) scene.clear();
+        scene = null;
+      }
+      // Keep the renderer (a canvas can't mint a second GL context) but drop
+      // its cached render lists so the freed scene isn't retained.
+      if (renderer && renderer.renderLists) renderer.renderLists.dispose();
+      camera = null; clock = null;
+      trees = []; lanterns = []; fireflies = [];
     },
     isRunning: function () { return isActive; }
   };
