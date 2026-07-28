@@ -3,26 +3,31 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1.0, shrink-to-fit=no, viewport-fit=cover">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <title>John Kent Evangelista — Custom Business Systems | Zamboanga City</title>
+  <title>John Kent Evangelista — Software Developer</title>
   <meta name="author" content="John Kent Evangelista">
-  <meta name="description" content="I build custom systems for businesses and LGUs — directories, learning platforms, records systems, automation. Based in Zamboanga City, working with clients anywhere in the Philippines.">
+  <meta name="description" content="Software Developer specializing in civic tech, SaaS, and digital transformation. Based in Zamboanga City, Philippines.">
   <meta name="referrer" content="strict-origin-when-cross-origin">
-  <meta name="theme-color" content="#FAFAF7" id="themeColor">
+
+  <!-- Safari / iOS — status bar + URL bar color -->
+  <meta name="theme-color" content="#1c1c1e" id="themeColor">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self' https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:;">
 
-  <!-- Fonts — 300 italic / 900 solid carry the display type -->
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,900;1,300;1,900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 
-  <link rel="stylesheet" href="vendor/font-awesome/css/all.min.css">
-  <link rel="stylesheet" href="css/home.css">
-
-  <!-- OpenGraph / Twitter -->
-  <meta property="og:title" content="John Kent Evangelista — Custom Business Systems">
-  <meta property="og:description" content="Custom systems for businesses and LGUs — directories, learning platforms, records systems, automation. Zamboanga City · remote nationwide.">
+  <!-- Stylesheets -->
+  <link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css" />
+  <link rel="stylesheet" type="text/css" href="vendor/font-awesome/css/all.min.css" />
+  <link rel="stylesheet" type="text/css" href="css/style.css">
+  <!-- OpenGraph -->
+  <meta property="og:title" content="John Kent Evangelista — Software Developer">
+  <meta property="og:description" content="Building connected systems — civic tech, SaaS, and digital transformation. Based in Zamboanga City, Philippines.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://dz1an.github.io/">
   <link rel="canonical" href="https://dz1an.github.io/">
@@ -31,20 +36,22 @@
   <meta property="og:image:height" content="685">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://dz1an.github.io/images/profile.png">
-  <meta name="twitter:title" content="John Kent Evangelista — Custom Business Systems">
-  <meta name="twitter:description" content="Custom systems for businesses and LGUs. Zamboanga City · remote nationwide.">
-
-  <!-- Structured data -->
+  <meta name="twitter:title" content="John Kent Evangelista — //kent.dev">
+  <meta name="twitter:description" content="Software Developer specializing in civic tech, SaaS, and digital transformation.">
+  <!-- Structured data (schema.org Person) -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "Person",
     "name": "John Kent Evangelista",
     "jobTitle": "Software Developer",
-    "description": "Builds custom systems for businesses and local government units: directories, learning platforms, records systems, automation.",
     "url": "https://dz1an.github.io/",
     "image": "https://dz1an.github.io/images/profile.png",
-    "address": { "@type": "PostalAddress", "addressLocality": "Zamboanga City", "addressCountry": "PH" },
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Zamboanga City",
+      "addressCountry": "PH"
+    },
     "sameAs": [
       "https://www.linkedin.com/in/john-kent-evangelista-lsswb-482435307/",
       "https://github.com/kent-vintazk",
@@ -57,240 +64,1105 @@
 
 <body>
 
-  <a class="skip-link" href="#main">Skip to content</a>
+  <!-- Skip to content (keyboard accessibility) -->
+  <a class="skip-link" href="#home">Skip to content</a>
 
-  <!-- Announcement bar -->
-  <div class="annbar" id="annBar">
-    <p><strong>Got a slow, manual process?</strong>&nbsp; <a href="#contact">Message me</a></p>
-    <button class="annbar-x" id="annClose" aria-label="Dismiss announcement"><i class="fas fa-xmark"></i></button>
+  <!-- No-JS fallback: reveal the static page if the loader's JS never runs -->
+  <noscript>
+    <style>
+      body:not(.loaded) { overflow: auto !important; }
+      #preloader { display: none !important; }
+    </style>
+  </noscript>
+
+  <!-- macOS Notification Toast -->
+  <div class="mac-toast" id="macToast">
+    <div class="mac-toast-icon"><i class="fas fa-check"></i></div>
+    <div class="mac-toast-text">
+      <span class="mac-toast-title" id="toastTitle">Success</span>
+      <span class="mac-toast-sub" id="toastSub">Action completed</span>
+    </div>
   </div>
 
-  <!-- Nav -->
-  <header class="top">
-    <div class="wrap top-row">
-      <a class="brand" href="#top" id="top">//kent.dev</a>
-      <nav class="topnav" aria-label="Main navigation">
-        <a href="#work">Work</a>
-        <a href="#background">About</a>
-        <a href="#faq">FAQ</a>
-        <a href="#contact">Contact</a>
-      </nav>
+  <!-- Scroll progress bar -->
+  <div class="scroll-progress" id="scrollProgress"></div>
+
+  <!-- Code scroll spy (desktop) -->
+  <div class="scroll-spy-widget d-none d-xl-flex" id="scrollSpy">
+    <span class="spy-comment">// viewing →</span>
+    <span class="spy-section" id="spySection">#home</span>
+    <span class="spy-line" id="spyLine">ln 1</span>
+  </div>
+
+  <!-- Custom cursor (desktop) — Xcode crosshair -->
+  <div class="custom-cursor d-none d-lg-block" id="customCursor">
+    <div class="xc-cursor" id="xcCursor">
+      <!-- Crosshair lines -->
+      <span class="xc-h"></span>
+      <span class="xc-v"></span>
+      <!-- Center dot -->
+      <span class="xc-center"></span>
     </div>
-  </header>
+    <!-- Coordinate label -->
+    <div class="xc-label" id="xcLabel">0, 0</div>
+  </div>
 
-  <main id="main">
+  <!-- Cursor glow (desktop) -->
+  <div class="cursor-glow d-none d-lg-block"></div>
 
-    <!-- HERO — giant type, floating tree behind -->
-    <section class="hero">
-      <div class="hero-tree" aria-hidden="true">
-        <svg viewBox="0 0 200 260" xmlns="http://www.w3.org/2000/svg">
-          <polygon points="100,10 160,90 40,90"  fill="#5C7650"/>
-          <polygon points="100,55 175,150 25,150" fill="#3A5A40"/>
-          <polygon points="100,105 190,215 10,215" fill="#344E41"/>
-          <rect x="88" y="215" width="24" height="40" rx="4" fill="#3B2A1A"/>
-        </svg>
-      </div>
-      <div class="wrap hero-inner">
-        <h1>
-          <span class="h-solid">Build</span>
-          <span class="h-italic">your</span><br>
-          <span class="h-outline">system.</span>
-        </h1>
-        <p class="lede reveal">Records, sales, training, resident services — I turn the slow, manual parts of your operations into software that runs them. You don't need to know tech. Just tell me what's slowing you down.</p>
-        <div class="hero-cta reveal">
-          <a class="btn btn-ink" href="#contact">Start a conversation</a>
-          <a class="btn btn-plain" href="#work">See my work <i class="fas fa-arrow-down"></i></a>
+  <!-- Creative Mode 3D Canvas -->
+  <canvas id="creativeCanvas"></canvas>
+
+  <!-- Creative Mode — Scroll-driven Journey -->
+  <div class="creative-hud" id="creativeHud">
+    <!-- Fixed top bar -->
+    <div class="creative-hud-top">
+      <span class="creative-hud-brand"><span class="brand-slash">//</span>kent<span class="brand-dot">.dev</span></span>
+      <div class="creative-hud-divider"></div>
+      <button class="creative-hud-back" id="creativeBackBtn">
+        <i class="fas fa-code"></i> Code Mode
+      </button>
+    </div>
+
+    <!-- Scroll progress indicator -->
+    <div class="creative-scroll-progress" id="creativeProgress"></div>
+
+    <!-- Chapter progress dots -->
+    <div class="creative-dots" id="creativeDots">
+      <div class="creative-dot active" data-chapter="0"><span>Enter</span></div>
+      <div class="creative-dot" data-chapter="1"><span>Path</span></div>
+      <div class="creative-dot" data-chapter="2"><span>Clearing</span></div>
+      <div class="creative-dot" data-chapter="3"><span>Method</span></div>
+      <div class="creative-dot" data-chapter="4"><span>Vintech</span></div>
+      <div class="creative-dot" data-chapter="5"><span>Grove</span></div>
+      <div class="creative-dot" data-chapter="6"><span>Stack</span></div>
+      <div class="creative-dot" data-chapter="7"><span>Award</span></div>
+      <div class="creative-dot" data-chapter="8"><span>Rising</span></div>
+      <div class="creative-dot" data-chapter="9"><span>Connect</span></div>
+    </div>
+
+    <!-- Fixed social + mute -->
+    <div class="creative-hud-social">
+      <button class="creative-mute-btn" id="forestMuteBtn" aria-label="Toggle sound">
+        <i class="fas fa-volume-up"></i>
+      </button>
+      <a href="https://www.linkedin.com/in/john-kent-evangelista-lsswb-482435307/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+      <a href="https://github.com/kent-vintazk" target="_blank" rel="noopener noreferrer" aria-label="GitHub"><i class="fab fa-github"></i></a>
+    </div>
+    <div class="creative-hud-stats" id="creativeStats">
+      <span id="creativeShapeCount">lights: 0</span>
+      <span>scroll to walk</span>
+    </div>
+    <div class="creative-music-credit">
+      <span class="credit-icon"><i class="fas fa-music"></i></span> Music by <a href="https://www.youtube.com/watch?v=pM_yiZyC4dU" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline; text-decoration-color: rgba(163,177,138,0.2); pointer-events: auto;">Alex-Productions</a>
+    </div>
+
+    <!-- Scroll container — drives the 3D camera -->
+    <div class="creative-scroll" id="creativeScroll">
+
+      <!-- Ch 0: The Road -->
+      <div class="creative-chapter" data-chapter="0">
+        <div class="chapter-content chapter-left">
+          <span class="chapter-label">001 / The Road</span>
+          <h2>The Road<br>Ahead</h2>
+          <p>The longest journeys begin without fanfare — just a quiet step forward and the decision not to stop. Walk with me.</p>
+          <span class="chapter-scroll-cue"><i class="fas fa-chevron-down"></i> Scroll to walk the path</span>
         </div>
       </div>
-      <p class="hero-foot">Zamboanga City &nbsp;//&nbsp; works anywhere in the Philippines</p>
-    </section>
 
-    <!-- COLOR BLOCK — who I am + what I build -->
-    <section class="blockgreen">
-      <div class="wrap">
-        <h2 class="bg-head reveal"><span class="bg-solid">Systems people</span><br><span class="bg-italic">actually use.</span></h2>
-        <p class="bg-body reveal">I'm John Kent Evangelista — a software developer from Zamboanga City. I build the systems behind real operations: a city-wide business directory, an outsourcing company's daily platform, a learning system, barangay services. Built to be used, not just launched.</p>
-        <p class="bg-tags reveal">
-          <span>Business systems</span> //
-          <span>Barangay &amp; LGU</span> //
-          <span>Learning platforms</span> //
-          <span>Websites &amp; portals</span> //
-          <span>Automation &amp; AI</span>
-        </p>
-        <p class="bg-proof reveal">636+ businesses on ZamGo &nbsp;·&nbsp; 5 systems live &nbsp;·&nbsp; 2025 Productivity Olympics national winner, with the VINTAZK team</p>
-      </div>
-    </section>
-
-    <!-- WORK -->
-    <section class="blocklight" id="work">
-      <div class="wrap">
-        <span class="sec-label reveal">// work</span>
-        <h2 class="light-head reveal">Real systems,<br><em>in use today.</em></h2>
-
-        <a class="wrow reveal" href="https://zamgo.vintazk.com" target="_blank" rel="noopener noreferrer">
-          <div>
-            <h3>ZamGo</h3>
-            <p>City-wide business directory — 636+ Zamboanga businesses indexed.</p>
-          </div>
-          <span class="wrow-go">Visit <i class="fas fa-arrow-up-right-from-square"></i></span>
-        </a>
-
-        <a class="wrow reveal" href="https://app.vintech.vintazk.com" target="_blank" rel="noopener noreferrer">
-          <div>
-            <h3>Vintech</h3>
-            <p>The operations platform behind VINTAZK Outsourcing — a nationally awarded team.</p>
-          </div>
-          <span class="wrow-go">Visit <i class="fas fa-arrow-up-right-from-square"></i></span>
-        </a>
-
-        <a class="wrow reveal" href="https://vintazkacademy.vintazk.com" target="_blank" rel="noopener noreferrer">
-          <div>
-            <h3>Acaddemy</h3>
-            <p>Learning platform — courses, learner tracking, role-based access.</p>
-          </div>
-          <span class="wrow-go">Visit <i class="fas fa-arrow-up-right-from-square"></i></span>
-        </a>
-
-        <div class="wrow wrow-static reveal">
-          <div>
-            <h3>Barangay Connect</h3>
-            <p>Barangay records and resident services, off paper and into a system.</p>
-          </div>
+      <!-- Ch 1: Origin -->
+      <div class="creative-chapter" data-chapter="1">
+        <div class="chapter-content chapter-right">
+          <span class="chapter-label">002 / Origin</span>
+          <h2>Where the<br>Path Began</h2>
+          <p>Born in Zamboanga City. Forged in computer science. Some travelers chase the horizon — I chose to walk toward the people nobody else was going to help.</p>
         </div>
+      </div>
 
-        <div class="wrow wrow-static reveal">
-          <div>
-            <h3>SmartScore</h3>
-            <p>Exam checking automated with computer vision — built at WMSU.</p>
+      <!-- Ch 2: The Rest -->
+      <div class="creative-chapter" data-chapter="2">
+        <div class="chapter-content chapter-left">
+          <span class="chapter-label">003 / The Rest</span>
+          <h2>The Resting<br>Place</h2>
+          <p>Full-stack architecture. Lean Six Sigma discipline. The road teaches patience — rushing past a resting place means missing what it had to offer.</p>
+        </div>
+      </div>
+
+      <!-- Ch 3: The Journal -->
+      <div class="creative-chapter" data-chapter="3">
+        <div class="chapter-content chapter-right">
+          <span class="chapter-label">004 / The Journal</span>
+          <h2>The<br>Journal</h2>
+          <p>LSSWB certified. Sprint planning, feature scoping. Every traveler keeps a journal — not for power, but to remember what they've learned and why it mattered.</p>
+        </div>
+      </div>
+
+      <!-- Ch 4: First Waypoints -->
+      <div class="creative-chapter" data-chapter="4">
+        <div class="chapter-content chapter-left">
+          <span class="chapter-label">005 / Waypoints</span>
+          <h2>First<br>Waypoints</h2>
+          <p>Vintech — an outsourcing platform that won a national award. ZamGo — a directory of 636+ businesses. Every waypoint marks a place where someone's life became a little easier.</p>
+          <div class="chapter-links">
+            <a href="https://app.vintech.vintazk.com" target="_blank" rel="noopener noreferrer"><i class="fas fa-external-link-alt"></i> Vintech</a>
+            <a href="https://zamgo.vintazk.com" target="_blank" rel="noopener noreferrer"><i class="fas fa-external-link-alt"></i> ZamGo</a>
           </div>
         </div>
       </div>
-    </section>
 
-    <!-- EXPERIENCE & EDUCATION — plain language, no git cosplay -->
-    <section class="blocklight blockfaq" id="background">
-      <div class="wrap">
-        <span class="sec-label reveal">// background</span>
-        <h2 class="light-head reveal">Experience &amp;<br><em>education.</em></h2>
-
-        <div class="xrow reveal">
-          <div>
-            <h3>Senior Developer <span class="org">· VINTAZK Outsourcing</span></h3>
-            <p>Leading builds and mentoring the dev team. Part of the team behind the 2025 Productivity Olympics national win.</p>
-          </div>
-          <span class="x-date">Jan 2026 – Present</span>
+      <!-- Ch 5: More Light -->
+      <div class="creative-chapter" data-chapter="5">
+        <div class="chapter-content chapter-right">
+          <span class="chapter-label">006 / Light</span>
+          <h2>More Light<br>in the Dark</h2>
+          <p>Vintazk University. Barangay Connect. SmartScore. Three more lights left behind — because the things we build for others are the only parts of the journey that truly outlast us.</p>
         </div>
-
-        <div class="xrow reveal">
-          <div>
-            <h3>System Developer <span class="org">· VINTAZK Outsourcing</span></h3>
-            <p>Built the company's core systems end to end — from the database to the screen.</p>
-          </div>
-          <span class="x-date">Feb 2025 – Jan 2026</span>
-        </div>
-
-        <div class="xrow reveal">
-          <div>
-            <h3>Jr. Frontend Developer <span class="org">· AKA Software Inc.</span></h3>
-            <p>Built interfaces for client websites.</p>
-          </div>
-          <span class="x-date">Feb 2025</span>
-        </div>
-
-        <div class="xrow reveal">
-          <div>
-            <h3>Project Lead <span class="org">· SmartScore</span></h3>
-            <p>Led the automated exam-checking system from idea to working product.</p>
-          </div>
-          <span class="x-date">2023 – 2024</span>
-        </div>
-
-        <div class="xrow reveal">
-          <div>
-            <h3>QA Specialist <span class="org">· WMSU</span></h3>
-            <p>Tested university systems and automated the repetitive checks.</p>
-          </div>
-          <span class="x-date">2022 – 2023</span>
-        </div>
-
-        <p class="creds reveal">
-          <span>BS Computer Science — WMSU, 2020–2024</span>
-          <span>Executive Education, Digital Transformation — AIM, 2025</span>
-          <span>Lean Six Sigma White Belt</span>
-        </p>
       </div>
-    </section>
 
-    <!-- FAQ -->
-    <section class="blocklight blockfaq" id="faq">
-      <div class="wrap wrap-narrow">
-        <span class="sec-label reveal">// questions</span>
-        <h2 class="light-head reveal">Common<br><em>questions.</em></h2>
-        <details class="faq-item reveal">
-          <summary>Do you only work with clients in Zamboanga City?</summary>
-          <p>No — I'm based in Zamboanga City and happy to meet locally, but I work remotely with clients anywhere in the Philippines. Most projects run fully online.</p>
-        </details>
-        <details class="faq-item reveal">
-          <summary>How much does a system cost?</summary>
-          <p>It depends on scope, so I quote per project after we talk — a simple website and a full operations platform are very different builds. The quote is fixed before work starts.</p>
-        </details>
-        <details class="faq-item reveal">
-          <summary>Who owns the system when it's done?</summary>
-          <p>You do. Code, data, and accounts are handed over to you at launch.</p>
-        </details>
-        <details class="faq-item reveal">
-          <summary>We already have a system that's half-working. Can you fix it?</summary>
-          <p>That's common. I can audit what exists, fix what's broken, and extend it — you don't have to start from zero.</p>
-        </details>
-        <details class="faq-item reveal">
-          <summary>Are you a developer or an agency?</summary>
-          <p>One developer — the person you message is the person who builds. Computer Science at WMSU, Lean Six Sigma White Belt, executive education in Digital Transformation at AIM, building daily at VINTAZK Outsourcing.</p>
-        </details>
+      <!-- Ch 6: Tools -->
+      <div class="creative-chapter" data-chapter="6">
+        <div class="chapter-content chapter-left">
+          <span class="chapter-label">007 / Tools</span>
+          <h2>What I Carry<br>With Me</h2>
+          <p>React, Supabase, Python, Flutter — every tool picked up along the road was earned, not given. Each one light enough to carry. Together, heavy enough to change things.</p>
+        </div>
       </div>
-    </section>
 
-    <!-- CONTACT — closing color block -->
-    <section class="blockgreen blockcontact" id="contact">
-      <div class="wrap wrap-narrow">
-        <span class="sec-label sec-label-gold reveal">// say hello</span>
-        <h2 class="bg-head reveal"><span class="bg-solid">Tell me what's</span><br><span class="bg-italic">slowing you down.</span></h2>
-        <p class="bg-body reveal">Describe the problem in your own words — I'll reply with how I'd approach it and what it would take.</p>
-        <form class="contact-form reveal" id="contactForm" novalidate>
-          <label for="contactName">Your name</label>
-          <input type="text" id="contactName" name="name" autocomplete="name" required>
-          <label for="contactEmail">Your email</label>
-          <input type="email" id="contactEmail" name="email" autocomplete="email" required>
-          <label for="contactMessage">What do you need?</label>
-          <textarea id="contactMessage" name="message" rows="5" placeholder="e.g. We still track orders in a notebook and lose receipts…" required></textarea>
-          <input type="text" id="contactHoney" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true" class="honey">
-          <div class="form-row">
-            <button type="submit" class="btn btn-gold" id="contactSend">Send message</button>
-            <button type="button" class="btn btn-ghostlight" id="contactCopyEmail"><i class="fas fa-copy"></i> Copy my email</button>
+      <!-- Ch 7: The Mark -->
+      <div class="creative-chapter" data-chapter="7">
+        <div class="chapter-content chapter-center">
+          <span class="chapter-label">008 / The Mark</span>
+          <h2>A Mark Left<br>Behind</h2>
+          <p>2025 Productivity Olympics — National Winner. The world rarely notices the traveler who works in silence. But the marks left along the road speak for themselves.</p>
+          <div class="chapter-links">
+            <a href="https://www.linkedin.com/pulse/zampen-pride-vintazk-outsourcing-triumphs-2025-productivity-4fjdc/" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin-in"></i> Read the Story</a>
           </div>
-          <p class="form-result" id="contactResult" role="status" aria-live="polite"></p>
-        </form>
-        <p class="contact-alt reveal">
-          <a href="https://www.linkedin.com/in/john-kent-evangelista-lsswb-482435307/" target="_blank" rel="noopener noreferrer">LinkedIn</a> ·
-          <a href="https://www.facebook.com/tabibito12/" target="_blank" rel="noopener noreferrer">Facebook</a> ·
-          <a href="https://www.instagram.com/dziannn/" target="_blank" rel="noopener noreferrer">Instagram</a> ·
-          <a href="https://github.com/kent-vintazk" target="_blank" rel="noopener noreferrer">GitHub</a>
-        </p>
+        </div>
       </div>
-    </section>
 
-  </main>
+      <!-- Ch 8: Rising -->
+      <div class="creative-chapter" data-chapter="8">
+        <div class="chapter-content chapter-right">
+          <span class="chapter-label">009 / Rising</span>
+          <h2>Rising<br>Above</h2>
+          <p>Executive Education at <strong>Asian Institute of Management</strong>. Digital Transformation. You only understand how far you've come when you stop to look back — and realize the flowers have been blooming behind you all along.</p>
+        </div>
+      </div>
 
+      <!-- Ch 9: Continue -->
+      <div class="creative-chapter" data-chapter="9">
+        <div class="chapter-content chapter-center">
+          <span class="chapter-label">010 / Continue</span>
+          <h2>The Journey<br>Continues</h2>
+          <p>The road stretches on. There are always more people to meet, more places that need light. Your project could be the next waypoint on this journey.</p>
+          <div class="chapter-cta">
+            <a href="main.html" class="creative-cta-btn"><i class="fas fa-arrow-right"></i> Continue to My Main Site</a>
+            <a href="#projects" class="creative-cta-outline" id="creativeProjectsBtn"><i class="fas fa-briefcase"></i> View Portfolio</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Terminal Preloader -->
+  <div id="preloader">
+    <div class="terminal-preloader">
+      <div class="terminal-header">
+        <span class="terminal-dot terminal-dot-red"></span>
+        <span class="terminal-dot terminal-dot-yellow"></span>
+        <span class="terminal-dot terminal-dot-green"></span>
+        <span class="terminal-title">kent.dev — boot</span>
+      </div>
+      <div class="terminal-body" id="terminalBody">
+        <div class="terminal-line terminal-prompt">$ initializing kent.dev</div>
+      </div>
+      <div class="terminal-cursor-line">
+        <span class="terminal-prompt-symbol">$</span>
+        <span class="terminal-blink">_</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg" id="mainNav">
+    <div class="container">
+      <a class="navbar-brand" href="#home"><span class="brand-slash">//</span>kent<span class="brand-dot">.dev</span></a>
+      <div class="d-flex align-items-center gap-2 order-lg-3">
+        <button class="sound-toggle" id="soundToggle" aria-label="Toggle sound">
+          <i class="fas fa-volume-up"></i>
+        </button>
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle creative mode">
+          <span class="toggle-track">
+            <span class="toggle-thumb">
+              <i class="fas fa-tree icon-sun"></i>
+              <i class="fas fa-code icon-moon"></i>
+            </span>
+          </span>
+          <span class="toggle-aftershock" id="toggleAftershock"></span>
+        </button>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+          aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="hamburger-lines">
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
+        </button>
+      </div>
+      <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+        <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link active" href="#home">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
+          <li class="nav-item"><a class="nav-link" href="#expertise">Expertise</a></li>
+          <li class="nav-item"><a class="nav-link" href="#skills">Skills</a></li>
+          <li class="nav-item"><a class="nav-link" href="#resume">Resume</a></li>
+          <li class="nav-item"><a class="nav-link" href="#projects">Projects</a></li>
+          <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+          <li class="nav-item"><a class="nav-link" href="main.html">Hire Me</a></li>
+        </ul>
+        <a href="#contact" class="nav-cta magnetic-btn d-none d-lg-inline-block">Let's Talk</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section — Bento Grid Dashboard -->
+  <section id="home" class="hero">
+    <!-- Particle canvas -->
+    <canvas id="particleCanvas"></canvas>
+    <!-- Animated mesh background -->
+    <div class="hero-bg-mesh">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+      <div class="blob blob-3"></div>
+    </div>
+
+    <div class="container">
+      <div class="bento-mega-card mac-window ide-hero">
+      <div class="ide-hero-layout">
+        <!-- IDE Titlebar -->
+        <div class="ide-titlebar">
+          <div class="xcode-dots">
+            <span class="xcode-dot xcode-dot-red"></span>
+            <span class="xcode-dot xcode-dot-yellow"></span>
+            <span class="xcode-dot xcode-dot-green"></span>
+          </div>
+          <span class="ide-filename">kent.dev.xcworkspace</span>
+          <button class="xcode-badge ide-run-btn" id="ideRunBtn" title="Run the forest"><i class="fas fa-play"></i> Build & Run</button>
+        </div>
+
+        <!-- IDE Body -->
+        <div class="ide-body">
+          <!-- LEFT: Sidebar -->
+          <div class="ide-sidebar">
+            <div class="ide-sidebar-section">
+              <div class="xcode-sidebar-label">PROJECT</div>
+              <div class="xcode-file active"><i class="fas fa-folder"></i> kent.dev/</div>
+            </div>
+            <div class="ide-profile-thumb">
+              <img src="images/profile.png" alt="John Kent Evangelista" loading="lazy">
+            </div>
+            <div class="ide-sidebar-section">
+              <div class="xcode-sidebar-label">NAVIGATOR</div>
+              <div class="xcode-file"><i class="fas fa-user"></i> about.md</div>
+              <div class="xcode-file active"><i class="fas fa-file-code"></i> README.md</div>
+              <div class="xcode-file"><i class="fas fa-briefcase"></i> projects/</div>
+              <div class="xcode-file"><i class="fas fa-envelope"></i> contact.swift</div>
+              <div class="xcode-file ide-forest-file"><i class="fas fa-tree" style="color:#5C7650"></i> forest.js</div>
+            </div>
+            <div class="ide-sidebar-section">
+              <div class="xcode-sidebar-label">LINKS</div>
+              <a href="https://www.linkedin.com/in/john-kent-evangelista-lsswb-482435307/" target="_blank" rel="noopener noreferrer" class="xcode-file ide-link"><i class="fab fa-linkedin-in"></i> LinkedIn</a>
+              <a href="https://github.com/kent-vintazk" target="_blank" rel="noopener noreferrer" class="xcode-file ide-link"><i class="fab fa-github"></i> GitHub</a>
+              <a href="https://www.facebook.com/tabibito12/" target="_blank" rel="noopener noreferrer" class="xcode-file ide-link"><i class="fab fa-facebook-f"></i> Facebook</a>
+              <a href="https://www.instagram.com/dziannn/" target="_blank" rel="noopener noreferrer" class="xcode-file ide-link"><i class="fab fa-instagram"></i> Instagram</a>
+            </div>
+            <div class="ide-sidebar-section">
+              <button id="downloadCVButton" class="cv-button magnetic-btn ide-cv-btn"><i class="fas fa-download"></i> Resume.pdf</button>
+            </div>
+          </div>
+
+          <!-- CENTER: Editor -->
+          <div class="ide-main">
+            <div class="xcode-tabs" role="tablist" aria-label="Editor files">
+              <span class="xcode-tab active" data-tab="readme" id="tab-readme" role="tab" tabindex="0" aria-selected="true" aria-controls="tabReadme">README.md</span>
+              <span class="xcode-tab" data-tab="skills" id="tab-skills" role="tab" tabindex="-1" aria-selected="false" aria-controls="tabSkills">skills.json</span>
+              <span class="xcode-tab" data-tab="forest" id="tab-forest" role="tab" tabindex="-1" aria-selected="false" aria-controls="tabForest"><i class="fas fa-tree" style="color:#5C7650;font-size:0.6rem;margin-right:3px"></i> forest.js</span>
+              <span class="xcode-tab" data-tab="debug" id="tab-debug" role="tab" tabindex="-1" aria-selected="false" aria-controls="tabDebug"><i class="fas fa-bug" style="color:#FF6B6B;font-size:0.6rem;margin-right:3px"></i> debug.js</span>
+            </div>
+            <!-- Breadcrumb -->
+            <div class="ide-breadcrumb" id="ideBreadcrumb">
+              <span>kent.dev</span> <span class="ide-bc-sep">&rsaquo;</span>
+              <span>src</span> <span class="ide-bc-sep">&rsaquo;</span>
+              <span class="ide-bc-active" id="ideBcFile">README.md</span>
+            </div>
+
+            <!-- Tab: README.md -->
+            <div class="ide-editor ide-tab-panel active" id="tabReadme" role="tabpanel" tabindex="0" aria-labelledby="tab-readme">
+              <div class="ide-comment">// kent.dev — README.md</div>
+              <div class="hero-badge"><span class="pulse-dot"></span> Open to Opportunities</div>
+              <h1><span class="name-gradient text-scramble glitch-text" data-text="John Kent">John Kent</span><br><span class="text-scramble glitch-text" data-text="Evangelista">Evangelista</span></h1>
+              <p class="credential">LSSWB &mdash; Lean Six Sigma White Belt</p>
+              <p class="hero-summary">Results-driven Software Developer building civic tech platforms, SaaS systems, and business directory solutions for VINTAZK Outsourcing.</p>
+              <div class="hero-buttons">
+                <a href="#projects" class="btn-primary-custom magnetic-btn">View My Work <i class="fas fa-arrow-right"></i></a>
+                <a href="#contact" class="btn-outline-custom magnetic-btn">Get in Touch</a>
+              </div>
+            </div>
+
+            <!-- Tab: skills.json (mini version) -->
+            <div class="ide-editor ide-tab-panel" id="tabSkills" style="display:none" role="tabpanel" tabindex="0" aria-labelledby="tab-skills">
+              <div class="ide-comment">// kent.dev — skills.json</div>
+              <pre class="ide-code-block">{
+  "languages": ["Python", "JavaScript", "Dart"],
+  "frameworks": ["React", "Django", "Flutter"],
+  "databases": ["Supabase", "PostgreSQL", "SQLite"],
+  "tools": ["Git", "Xcode", "n8n", "Selenium"]
+}</pre>
+            </div>
+
+            <!-- Tab: forest.js (THE CODE FOR THE FOREST) -->
+            <div class="ide-editor ide-tab-panel" id="tabForest" style="display:none" role="tabpanel" tabindex="0" aria-labelledby="tab-forest">
+              <div class="ide-comment">// forest.js — the code that builds my world</div>
+              <pre class="ide-code-block"><span class="code-keyword">import</span> { Scene, Forest, Camp } <span class="code-keyword">from</span> <span class="code-string">"three"</span>;
+
+<span class="code-keyword">const</span> <span class="code-fn">world</span> = <span class="code-keyword">new</span> Scene({
+  terrain:   <span class="code-string">"moonlit forest"</span>,
+  path:      <span class="code-string">"winding trail"</span>,
+  mood:      <span class="code-string">"fireflies"</span>
+});
+
+world.<span class="code-fn">add</span>(Camp, {
+  tent:      <span class="code-keyword">true</span>,
+  campfire:  <span class="code-string">"glowing"</span>,
+  bedroll:   <span class="code-keyword">true</span>
+});
+
+world.<span class="code-fn">add</span>(Lanterns, [
+  <span class="code-string">"Vintech"</span>, <span class="code-string">"ZamGo"</span>, <span class="code-string">"Vintazk Uni"</span>,
+  <span class="code-string">"Barangay Connect"</span>, <span class="code-string">"SmartScore"</span>
+]);
+
+world.<span class="code-fn">add</span>(Fireflies, [
+  <span class="code-string">"React"</span>, <span class="code-string">"Supabase"</span>, <span class="code-string">"Python"</span>,
+  <span class="code-string">"Flutter"</span>, <span class="code-string">"Node.js"</span>, <span class="code-string">"Django"</span>
+]);
+
+<span class="code-comment">// Press Build & Run to enter the forest →</span>
+world.<span class="code-fn">render</span>();</pre>
+              <div class="forest-run-prompt">
+                <span class="forest-run-hint"><i class="fas fa-play" style="color:#34C759"></i> Press <kbd>&#9654; Build & Run</kbd> in the toolbar or <kbd>Cmd+/</kbd> to execute</span>
+              </div>
+            </div>
+
+            <!-- Tab: debug.js (THE PUZZLE) -->
+            <div class="ide-editor ide-tab-panel" id="tabDebug" style="display:none" role="tabpanel" tabindex="0" aria-labelledby="tab-debug">
+              <div class="ide-comment">// debug.js — Can you fix the bug?</div>
+              <div class="ide-comment">// This function should return "Hello, World!"</div>
+              <div class="ide-comment">// but something is wrong. Fix it below.</div>
+              <pre class="ide-code-block debug-code"><span class="code-keyword">function</span> <span class="code-fn">greet</span>() {
+  <span class="code-keyword">const</span> message = <span class="code-string">"Hello, "</span> + <span class="code-string">"World"</span>
+  <span class="code-keyword">return</span> message<span class="code-error">;</span>
+}
+
+<span class="code-comment">// Expected output: "Hello, World!"</span>
+<span class="code-comment">// Actual output:   "Hello, World"</span>
+<span class="code-comment">// What's the missing character?</span></pre>
+              <div class="debug-prompt">
+                <label class="debug-label"><i class="fas fa-terminal"></i> Fix: type the missing character</label>
+                <div class="debug-input-row">
+                  <input type="text" class="debug-input" id="debugInput" placeholder='Type your answer...' maxlength="5" autocomplete="off" spellcheck="false">
+                  <button class="debug-submit" id="debugSubmit"><i class="fas fa-play"></i> Run</button>
+                </div>
+                <div class="debug-result" id="debugResult"></div>
+              </div>
+            </div>
+
+            <!-- Status bar -->
+            <div class="ide-statusbar" id="ideStatusbar">
+              <span><i class="fas fa-code-branch"></i> main</span>
+              <span id="ideErrors"><i class="fas fa-check-circle"></i> 0 errors</span>
+              <span>UTF-8</span>
+              <span>Ln 1, Col 1</span>
+            </div>
+          </div>
+
+          <!-- RIGHT: Inspector -->
+          <div class="ide-inspector">
+            <div class="xcode-sidebar-label">INSPECTOR</div>
+            <div class="ide-metric">
+              <div class="ide-metric-value count-up" data-target="10" data-suffix="+">0</div>
+              <div class="ide-metric-label">Projects</div>
+            </div>
+            <div class="ide-metric">
+              <div class="ide-metric-value count-up" data-target="636" data-suffix="+">0</div>
+              <div class="ide-metric-label">Businesses Indexed</div>
+            </div>
+            <div class="ide-metric">
+              <div class="ide-metric-value">1st</div>
+              <div class="ide-metric-label">National</div>
+            </div>
+            <div class="ide-inspector-divider"></div>
+            <div class="ide-award">
+              <span class="badge-icon icon-trophy"><i class="fas fa-trophy"></i></span>
+              <div>
+                <div class="bento-award-title">National Winner</div>
+                <div class="bento-award-sub">2025 Productivity Olympics</div>
+              </div>
+            </div>
+            <div class="ide-inspector-divider"></div>
+            <div class="xcode-sidebar-label">FRAMEWORKS</div>
+            <div class="ide-frameworks">
+              <span class="skill-tag">Python</span>
+              <span class="skill-tag">Flutter</span>
+              <span class="skill-tag">React</span>
+              <span class="skill-tag">Django</span>
+              <span class="skill-tag">Supabase</span>
+              <span class="skill-tag">Node.js</span>
+              <span class="skill-tag">Xcode</span>
+            </div>
+            <div class="ide-inspector-divider"></div>
+            <div class="ide-location"><i class="fas fa-map-marker-alt"></i> Zamboanga City, PH</div>
+          </div>
+        </div>
+
+        <!-- Mobile-only header (hidden on desktop) -->
+        <div class="ide-mobile-header d-lg-none">
+          <img src="images/profile.png" alt="John Kent" class="ide-mobile-avatar" loading="lazy">
+          <div class="ide-mobile-info">
+            <h4>John Kent Evangelista</h4>
+            <div class="about-location"><i class="fas fa-map-marker-alt"></i> Zamboanga City, PH</div>
+          </div>
+          <div class="ide-mobile-social">
+            <a href="https://www.linkedin.com/in/john-kent-evangelista-lsswb-482435307/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+            <a href="https://github.com/kent-vintazk" target="_blank" rel="noopener noreferrer" aria-label="GitHub"><i class="fab fa-github"></i></a>
+            <button class="ide-mobile-cv" onclick="document.getElementById('downloadCVButton').click()" aria-label="Download CV"><i class="fas fa-download"></i></button>
+          </div>
+        </div>
+
+        <!-- Console -->
+        <div class="ide-console">
+          <div class="ide-console-tab"><i class="fas fa-terminal"></i> Console</div>
+          <div class="xc-console-line">
+            <span class="xc-prompt">$</span>
+            <span class="xc-cmd-text">./kent --role</span>
+            <span class="xc-output"><span class="typing"></span></span>
+          </div>
+        </div>
+      </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About anchor (content merged into hero bento) -->
+  <div id="about"></div>
+
+  <!-- Expertise Section -->
+  <section id="expertise" class="section section-divider section-divider-first" data-annotation="// line 42 — expertise.swift">
+    <div class="container">
+      <div class="text-center mb-5 reveal">
+        <span class="section-badge">What I Do</span>
+        <h2 class="section-title">My Expertise</h2>
+        <p class="section-subtitle">Building impactful software solutions across multiple domains</p>
+      </div>
+      <div class="row g-4">
+        <div class="col-md-6 col-lg-3 reveal reveal-delay-1">
+            <div class="expertise-card tilt-card xcode-target">
+              <div class="xt-header">
+                <span class="xt-icon"><i class="fas fa-layer-group"></i></span>
+                <div class="xt-meta">
+                  <h5>Full-Stack Development</h5>
+                  <span class="xt-scheme">Target: Web + Mobile</span>
+                </div>
+                <span class="xt-status xt-status-active"><i class="fas fa-play"></i></span>
+              </div>
+              <p>Building end-to-end web and mobile applications using React, Flutter, Django, and Supabase with modern architecture patterns.</p>
+              <div class="xt-footer"><span class="xt-badge">6 Frameworks</span><span class="xt-build">Build Succeeded</span></div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 reveal reveal-delay-2">
+            <div class="expertise-card tilt-card xcode-target">
+              <div class="xt-header">
+                <span class="xt-icon"><i class="fas fa-city"></i></span>
+                <div class="xt-meta">
+                  <h5>Civic Tech & SaaS</h5>
+                  <span class="xt-scheme">Target: Community</span>
+                </div>
+                <span class="xt-status xt-status-active"><i class="fas fa-play"></i></span>
+              </div>
+              <p>Designing platforms that serve communities, from barangay management systems to city-wide business directories.</p>
+              <div class="xt-footer"><span class="xt-badge">5 Platforms</span><span class="xt-build">636+ Users</span></div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 reveal reveal-delay-3">
+            <div class="expertise-card tilt-card xcode-target">
+              <div class="xt-header">
+                <span class="xt-icon"><i class="fas fa-project-diagram"></i></span>
+                <div class="xt-meta">
+                  <h5>Project Leadership</h5>
+                  <span class="xt-scheme">Target: Team</span>
+                </div>
+                <span class="xt-status xt-status-active"><i class="fas fa-play"></i></span>
+              </div>
+              <p>Leading development teams, managing OJT interns, scoping features, and running sprint-based delivery across concurrent projects.</p>
+              <div class="xt-footer"><span class="xt-badge">Sprint-Based</span><span class="xt-build">Multi-Project</span></div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 reveal reveal-delay-4">
+            <div class="expertise-card tilt-card xcode-target">
+              <div class="xt-header">
+                <span class="xt-icon"><i class="fas fa-chart-line"></i></span>
+                <div class="xt-meta">
+                  <h5>Digital Transformation</h5>
+                  <span class="xt-scheme">Target: Workflow</span>
+                </div>
+                <span class="xt-status xt-status-active"><i class="fas fa-play"></i></span>
+              </div>
+              <p>Applying Lean Six Sigma principles and digital transformation strategies to streamline workflows and optimize delivery.</p>
+              <div class="xt-footer"><span class="xt-badge">LSSWB</span><span class="xt-build">Optimized</span></div>
+            </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-connector"><span></span></div>
+
+  <!-- Skills Section -->
+  <section id="skills" class="section section-bg-alt section-divider section-divider-alt" data-annotation="// line 98 — dependencies.json">
+    <div class="container">
+      <div class="text-center mb-5 reveal">
+        <span class="section-badge">Skills</span>
+        <h2 class="section-title">Technical Toolkit</h2>
+        <p class="section-subtitle">Technologies and tools I work with daily</p>
+      </div>
+      <div class="row justify-content-center">
+        <div class="col-lg-10">
+          <div class="skills-container mac-window reveal">
+            <div class="pkg-json">
+              <div class="pkg-line pkg-comment">// tech-stack.json — dependencies that power my work</div>
+              <div class="pkg-line">{</div>
+              <div class="pkg-line pkg-indent">"name": <span class="pkg-string">"@kent/dev-toolkit"</span>,</div>
+              <div class="pkg-line pkg-indent">"version": <span class="pkg-string">"2026.4"</span>,</div>
+              <div class="pkg-line pkg-indent">"dependencies": {</div>
+              <div class="pkg-line pkg-indent2">"python": <span class="pkg-version">"^3.12"</span>,</div>
+              <div class="pkg-line pkg-indent2">"dart-flutter": <span class="pkg-version">"^3.22"</span>,</div>
+              <div class="pkg-line pkg-indent2">"javascript": <span class="pkg-version">"ES2024"</span>,</div>
+              <div class="pkg-line pkg-indent2">"react": <span class="pkg-version">"^18.3"</span>,</div>
+              <div class="pkg-line pkg-indent2">"django": <span class="pkg-version">"^5.0"</span>,</div>
+              <div class="pkg-line pkg-indent2">"html-css": <span class="pkg-version">"latest"</span></div>
+              <div class="pkg-line pkg-indent">},</div>
+              <div class="pkg-line pkg-indent">"databases": {</div>
+              <div class="pkg-line pkg-indent2">"supabase": <span class="pkg-version">"^2.0"</span>, <span class="pkg-comment-inline">// PostgreSQL</span></div>
+              <div class="pkg-line pkg-indent2">"sqlite": <span class="pkg-version">"^3.45"</span>,</div>
+              <div class="pkg-line pkg-indent2">"rls-policies": <span class="pkg-version">"enabled"</span>,</div>
+              <div class="pkg-line pkg-indent2">"node-js": <span class="pkg-version">"^20.0"</span></div>
+              <div class="pkg-line pkg-indent">},</div>
+              <div class="pkg-line pkg-indent">"tools": {</div>
+              <div class="pkg-line pkg-indent2">"selenium": <span class="pkg-version">"^4.18"</span>,</div>
+              <div class="pkg-line pkg-indent2">"n8n": <span class="pkg-version">"^1.30"</span>,</div>
+              <div class="pkg-line pkg-indent2">"git": <span class="pkg-version">"^2.44"</span>,</div>
+              <div class="pkg-line pkg-indent2">"xcode": <span class="pkg-version">"^16.0"</span></div>
+              <div class="pkg-line pkg-indent">},</div>
+              <div class="pkg-line pkg-indent">"methodology": [</div>
+              <div class="pkg-line pkg-indent2"><span class="pkg-string">"Intern Supervision"</span>,</div>
+              <div class="pkg-line pkg-indent2"><span class="pkg-string">"Feature Scoping"</span>,</div>
+              <div class="pkg-line pkg-indent2"><span class="pkg-string">"Sprint Planning"</span>,</div>
+              <div class="pkg-line pkg-indent2"><span class="pkg-string">"Multi-project Delivery"</span></div>
+              <div class="pkg-line pkg-indent">]</div>
+              <div class="pkg-line">}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-connector"><span></span></div>
+
+  <!-- Resume Section -->
+  <section id="resume" class="section section-divider" data-annotation="// line 156 — git log">
+    <div class="container">
+      <div class="text-center mb-5 reveal">
+        <span class="section-badge">Resume</span>
+        <h2 class="section-title">Experience & Education</h2>
+      </div>
+      <!-- Git log terminal -->
+      <div class="git-log-terminal mac-window reveal">
+        <div class="git-log-tabs">
+          <span class="git-tab active"><i class="fas fa-briefcase"></i> work</span>
+          <span class="git-tab" data-tab="edu"><i class="fas fa-graduation-cap"></i> education</span>
+        </div>
+        <div class="git-log-header">
+          <span class="git-cmd">$ git log --oneline --graph --all</span>
+        </div>
+        <div class="git-log-body">
+          <!-- Work Experience -->
+          <div class="git-log-group" id="gitWork">
+            <div class="git-commit">
+              <span class="git-graph">●</span>
+              <span class="git-hash">a1b2c3d</span>
+              <span class="git-blame">kent-vintazk</span>
+              <span class="git-branch">HEAD → main</span>
+              <span class="git-msg">feat: Senior Developer @ VINTAZK Outsourcing</span>
+              <span class="git-date">Jan 2026 – Present</span>
+              <div class="git-detail">Lead development of enterprise-grade outsourcing solutions. Oversee junior developers and OJT interns. Co-contributor to 2025 Productivity Olympics national win.</div>
+            </div>
+            <div class="git-commit">
+              <span class="git-graph">●</span>
+              <span class="git-hash">e4f5g6h</span>
+              <span class="git-blame">kent-vintazk</span>
+              <span class="git-branch">origin/main</span>
+              <span class="git-msg">feat: System Developer @ VINTAZK Outsourcing</span>
+              <span class="git-date">Feb 2025 – Jan 2026</span>
+              <div class="git-detail">Architected full-stack web systems using Supabase, React, and Python. Designed database schemas, RLS policies, and backend APIs.</div>
+            </div>
+            <div class="git-commit">
+              <span class="git-graph">●</span>
+              <span class="git-hash">i7j8k9l</span>
+              <span class="git-blame">kent-vintazk</span>
+              <span class="git-msg">feat: Jr. Frontend Dev @ AKA Software Inc.</span>
+              <span class="git-date">Feb 2025</span>
+              <div class="git-detail">Developed React.js UI components for client-facing web applications.</div>
+            </div>
+            <div class="git-commit">
+              <span class="git-graph">●</span>
+              <span class="git-hash">m1n2o3p</span>
+              <span class="git-blame">kent-vintazk</span>
+              <span class="git-branch">feature/smartscore</span>
+              <span class="git-msg">feat: Project Lead Developer @ SmartScore</span>
+              <span class="git-date">2023 – 2024</span>
+              <div class="git-detail">Led end-to-end development of SmartScore: Automated Exam System with Computer Vision-based checking.</div>
+            </div>
+            <div class="git-commit">
+              <span class="git-graph">●</span>
+              <span class="git-hash">q4r5s6t</span>
+              <span class="git-blame">kent-vintazk</span>
+              <span class="git-msg">feat: QA Specialist @ WMSU</span>
+              <span class="git-date">2022 – 2023</span>
+              <div class="git-detail">Led system testing and automated critical workflows using Selenium WebDriver.</div>
+            </div>
+          </div>
+
+          <!-- Education -->
+          <div class="git-log-group" id="gitEdu" style="display:none;">
+            <div class="git-commit">
+              <span class="git-graph">●</span>
+              <span class="git-hash">u7v8w9x</span>
+              <span class="git-blame">kent-vintazk</span>
+              <span class="git-branch">HEAD → edu</span>
+              <span class="git-msg">feat: Executive Education — Digital Transformation</span>
+              <span class="git-date">Sep – Oct 2025</span>
+              <div class="git-detail">Asian Institute of Management (AIM) — #1 business school in the Philippines. Executive course in Digital Transformation and Business Strategy.</div>
+            </div>
+            <div class="git-commit">
+              <span class="git-graph">●</span>
+              <span class="git-hash">y1z2a3b</span>
+              <span class="git-blame">kent-vintazk</span>
+              <span class="git-msg">feat: Bachelor of Computer Science</span>
+              <span class="git-date">2020 – 2024</span>
+              <div class="git-detail">Western Mindanao State University. Thesis: SmartScore — Automated Exam System with Computer Vision.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row mt-4">
+        <!-- Certs + Awards -->
+        <div class="col-lg-6 reveal reveal-delay-2">
+          <div class="resume-subsection">
+            <h4 class="resume-heading"><i class="fas fa-certificate"></i> Certification</h4>
+            <div class="cert-card xctest-result">
+              <span class="xctest-pass"><i class="fas fa-check-circle"></i></span>
+              <div>
+                <h6>testLeanSixSigma() <span class="xctest-status">PASSED</span></h6>
+                <p>Six Sigma PH &middot; Issued Oct 2025 &middot; ID: MEM-8T-BE8w7-u5Oz</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="resume-subsection mt-3">
+            <h4 class="resume-heading"><i class="fas fa-trophy"></i> Award</h4>
+            <div class="award-card xctest-result">
+              <span class="xctest-pass xctest-gold"><i class="fas fa-trophy"></i></span>
+              <div>
+                <h6>testProductivityOlympics() <span class="xctest-status xctest-gold-text">1st PLACE</span></h6>
+                <p>2025 Productivity Olympics (10th Edition) &middot; DOLE & RTWPB &middot; Sep 2025</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-connector"><span></span></div>
+
+  <!-- Projects Section -->
+  <section id="projects" class="section section-bg-alt section-divider section-divider-alt" data-annotation="// line 210 — build targets">
+    <div class="container">
+      <div class="text-center mb-5 reveal">
+        <span class="section-badge">Portfolio</span>
+        <h2 class="section-title">Key Projects</h2>
+        <p class="section-subtitle">Solutions built for real-world impact</p>
+      </div>
+      <!-- Xcode Toolbar -->
+      <div class="xcode-toolbar reveal" data-parallax="0.08">
+        <div class="xcode-toolbar-left">
+          <button class="xcode-tb-btn xcode-tb-play"><i class="fas fa-play"></i></button>
+          <button class="xcode-tb-btn xcode-tb-stop"><i class="fas fa-stop"></i></button>
+          <div class="xcode-tb-scheme">
+            <i class="fas fa-hammer"></i>
+            <span>kent.dev</span>
+            <span class="xcode-tb-chevron">›</span>
+            <span class="xcode-tb-device">My Mac</span>
+          </div>
+        </div>
+        <div class="xcode-toolbar-center">
+          <span class="xcode-tb-status"><i class="fas fa-check-circle"></i> Build Succeeded</span>
+        </div>
+        <div class="xcode-toolbar-right">
+          <button class="xcode-tb-icon"><i class="fas fa-th-large"></i></button>
+          <button class="xcode-tb-icon"><i class="fas fa-terminal"></i></button>
+          <button class="xcode-tb-icon active"><i class="fas fa-columns"></i></button>
+        </div>
+      </div>
+
+      <div class="projects-grid">
+
+        <!-- Vintech — LIVE -->
+        <div class="xcode-card tilt-card reveal reveal-delay-1">
+          <div class="xcode-titlebar">
+            <div class="xcode-dots">
+              <span class="xcode-dot xcode-dot-red"></span>
+              <span class="xcode-dot xcode-dot-yellow"></span>
+              <span class="xcode-dot xcode-dot-green"></span>
+            </div>
+            <span class="xcode-filename">Vintech.xcodeproj</span>
+            <span class="xcode-badge">▶ Running</span>
+          </div>
+          <div class="xcode-body">
+            <div class="xcode-sidebar">
+              <div class="xcode-sidebar-label">TARGETS</div>
+              <div class="xcode-file active"><i class="fas fa-folder"></i> src/</div>
+              <div class="xcode-file"><i class="fas fa-file-code"></i> App.tsx</div>
+              <div class="xcode-file"><i class="fas fa-database"></i> supabase</div>
+              <div class="xcode-file"><i class="fas fa-cog"></i> api/</div>
+              <div class="xcode-sidebar-label">STACK</div>
+              <div class="xcode-tag">Supabase</div>
+              <div class="xcode-tag">React</div>
+              <div class="xcode-tag">Python</div>
+              <div class="xcode-tag">Node.js</div>
+            </div>
+            <div class="xcode-main">
+              <div class="xcode-tabs">
+                <span class="xcode-tab active">App.tsx</span>
+                <span class="xcode-tab">README.md</span>
+                <span class="xcode-tab">schema.sql</span>
+              </div>
+              <div class="xcode-preview">
+                <img src="images/vintech.png" alt="Vintech Platform" loading="lazy">
+              </div>
+              <div class="xcode-info">
+                <div class="xcode-role">Senior Developer & Team Lead</div>
+                <h4>Vintech / VINTAZK Platform</h4>
+                <p>Core contributor to the outsourcing solutions platform that earned the National Winner title at the 2025 Productivity Olympics.</p>
+                <a href="https://app.vintech.vintazk.com" target="_blank" rel="noopener noreferrer" class="project-link"><i class="fas fa-external-link-alt"></i> Live Site</a>
+              </div>
+              <div class="xcode-console">
+                <span class="xc-ok">Build Succeeded</span> — 0 errors, 0 warnings | <span class="xc-time">0.8s</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ZamGo — LIVE -->
+        <div class="xcode-card tilt-card reveal reveal-delay-2">
+          <div class="xcode-titlebar">
+            <div class="xcode-dots">
+              <span class="xcode-dot xcode-dot-red"></span>
+              <span class="xcode-dot xcode-dot-yellow"></span>
+              <span class="xcode-dot xcode-dot-green"></span>
+            </div>
+            <span class="xcode-filename">ZamGo.xcodeproj</span>
+            <span class="xcode-badge">▶ Running</span>
+          </div>
+          <div class="xcode-body">
+            <div class="xcode-sidebar">
+              <div class="xcode-sidebar-label">TARGETS</div>
+              <div class="xcode-file active"><i class="fas fa-folder"></i> src/</div>
+              <div class="xcode-file"><i class="fas fa-file-code"></i> Directory.tsx</div>
+              <div class="xcode-file"><i class="fas fa-database"></i> supabase</div>
+              <div class="xcode-file"><i class="fas fa-chart-bar"></i> analytics/</div>
+              <div class="xcode-sidebar-label">STACK</div>
+              <div class="xcode-tag">Supabase</div>
+              <div class="xcode-tag">React</div>
+              <div class="xcode-tag">Python</div>
+              <div class="xcode-tag">OpenPyXL</div>
+            </div>
+            <div class="xcode-main">
+              <div class="xcode-tabs">
+                <span class="xcode-tab active">Directory.tsx</span>
+                <span class="xcode-tab">Search.tsx</span>
+                <span class="xcode-tab">export.py</span>
+              </div>
+              <div class="xcode-preview">
+                <img src="images/zamgo.png" alt="ZamGo" loading="lazy">
+              </div>
+              <div class="xcode-info">
+                <div class="xcode-role">Lead Developer</div>
+                <h4>ZamGo — Business Directory</h4>
+                <p>Built and maintained a directory of 636+ Zamboanga City businesses with analytics dashboard and Excel reporting.</p>
+                <a href="https://zamgo.vintazk.com" target="_blank" rel="noopener noreferrer" class="project-link"><i class="fas fa-external-link-alt"></i> Live Site</a>
+              </div>
+              <div class="xcode-console">
+                <span class="xc-ok">Build Succeeded</span> — 0 errors, 2 warnings | <span class="xc-time">1.2s</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Acaddemy — LIVE -->
+        <div class="xcode-card tilt-card reveal reveal-delay-3">
+          <div class="xcode-titlebar">
+            <div class="xcode-dots">
+              <span class="xcode-dot xcode-dot-red"></span>
+              <span class="xcode-dot xcode-dot-yellow"></span>
+              <span class="xcode-dot xcode-dot-green"></span>
+            </div>
+            <span class="xcode-filename">Acaddemy.xcodeproj</span>
+            <span class="xcode-badge">▶ Running</span>
+          </div>
+          <div class="xcode-body">
+            <div class="xcode-sidebar">
+              <div class="xcode-sidebar-label">TARGETS</div>
+              <div class="xcode-file active"><i class="fas fa-folder"></i> lms/</div>
+              <div class="xcode-file"><i class="fas fa-file-code"></i> Courses.tsx</div>
+              <div class="xcode-file"><i class="fas fa-database"></i> supabase</div>
+              <div class="xcode-file"><i class="fas fa-user-shield"></i> rbac/</div>
+              <div class="xcode-sidebar-label">STACK</div>
+              <div class="xcode-tag">Supabase</div>
+              <div class="xcode-tag">React</div>
+              <div class="xcode-tag">Python</div>
+            </div>
+            <div class="xcode-main">
+              <div class="xcode-tabs">
+                <span class="xcode-tab active">Courses.tsx</span>
+                <span class="xcode-tab">Learners.tsx</span>
+                <span class="xcode-tab">rbac.sql</span>
+              </div>
+              <div class="xcode-preview">
+                <img src="images/vintazkUniversity.png" alt="Acaddemy LMS" loading="lazy">
+              </div>
+              <div class="xcode-info">
+                <div class="xcode-role">Full-Stack Developer</div>
+                <h4>Acaddemy — LMS</h4>
+                <p>Full-featured learning management system supporting course management, learner tracking, content delivery, and role-based access control.</p>
+                <a href="https://vintazkacademy.vintazk.com" target="_blank" rel="noopener noreferrer" class="project-link"><i class="fas fa-external-link-alt"></i> Live Site</a>
+              </div>
+              <div class="xcode-console">
+                <span class="xc-ok">Build Succeeded</span> — 0 errors, 1 warning | <span class="xc-time">0.9s</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LUMI — In Development -->
+        <div class="xcode-card tilt-card reveal reveal-delay-1">
+          <div class="xcode-titlebar">
+            <div class="xcode-dots">
+              <span class="xcode-dot xcode-dot-red"></span>
+              <span class="xcode-dot xcode-dot-yellow"></span>
+              <span class="xcode-dot xcode-dot-green"></span>
+            </div>
+            <span class="xcode-filename">LUMI.xcodeproj</span>
+            <span class="xcode-badge xcode-badge-build">⏳ Build</span>
+          </div>
+          <div class="xcode-body">
+            <div class="xcode-sidebar">
+              <div class="xcode-sidebar-label">TARGETS</div>
+              <div class="xcode-file active"><i class="fas fa-robot"></i> agents/</div>
+              <div class="xcode-file"><i class="fas fa-file-code"></i> Dashboard.tsx</div>
+              <div class="xcode-file"><i class="fas fa-database"></i> supabase</div>
+              <div class="xcode-file"><i class="fas fa-cog"></i> pipeline/</div>
+              <div class="xcode-sidebar-label">STACK</div>
+              <div class="xcode-tag">Python</div>
+              <div class="xcode-tag">React</div>
+              <div class="xcode-tag">Supabase</div>
+              <div class="xcode-tag">n8n</div>
+            </div>
+            <div class="xcode-main">
+              <div class="xcode-tabs">
+                <span class="xcode-tab active">agent.py</span>
+                <span class="xcode-tab">Dashboard.tsx</span>
+                <span class="xcode-tab">pipeline.py</span>
+              </div>
+              <div class="xcode-preview xcode-preview-empty">
+                <i class="fas fa-microchip"></i>
+                <span>LUMI</span>
+              </div>
+              <div class="xcode-info">
+                <div class="xcode-role">Founder & Lead Developer</div>
+                <h4>LUMI — BPO AI Platform</h4>
+                <p>AI platform built to handle real BPO day-to-day operations — automating repetitive tasks, routing workflows, and surfacing insights for agents and managers.</p>
+              </div>
+              <div class="xcode-console">
+                <span class="xc-warn">Compiling</span> — 3 targets | <span class="xc-time">...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Barangay Connect — In Development -->
+        <div class="xcode-card tilt-card reveal reveal-delay-2">
+          <div class="xcode-titlebar">
+            <div class="xcode-dots">
+              <span class="xcode-dot xcode-dot-red"></span>
+              <span class="xcode-dot xcode-dot-yellow"></span>
+              <span class="xcode-dot xcode-dot-green"></span>
+            </div>
+            <span class="xcode-filename">BarangayConnect.xcodeproj</span>
+            <span class="xcode-badge xcode-badge-build">⏳ Build</span>
+          </div>
+          <div class="xcode-body">
+            <div class="xcode-sidebar">
+              <div class="xcode-sidebar-label">TARGETS</div>
+              <div class="xcode-file active"><i class="fas fa-mobile-alt"></i> mobile/</div>
+              <div class="xcode-file"><i class="fas fa-desktop"></i> admin/</div>
+              <div class="xcode-file"><i class="fas fa-tv"></i> kiosk/</div>
+              <div class="xcode-file"><i class="fas fa-camera"></i> faceID/</div>
+              <div class="xcode-sidebar-label">STACK</div>
+              <div class="xcode-tag">Supabase</div>
+              <div class="xcode-tag">Flutter</div>
+              <div class="xcode-tag">React</div>
+              <div class="xcode-tag">OpenCV</div>
+            </div>
+            <div class="xcode-main">
+              <div class="xcode-tabs">
+                <span class="xcode-tab active">main.dart</span>
+                <span class="xcode-tab">AdminPanel.tsx</span>
+                <span class="xcode-tab">kiosk.py</span>
+              </div>
+              <div class="xcode-preview xcode-preview-empty">
+                <i class="fas fa-city"></i>
+                <span>CalarianConnect</span>
+              </div>
+              <div class="xcode-info">
+                <div class="xcode-role">System Developer & Intern Manager</div>
+                <h4>Barangay Connect</h4>
+                <p>Four-component civic digital system: mobile app, web admin, kiosk terminal, and Supabase backend with face detection.</p>
+              </div>
+              <div class="xcode-console">
+                <span class="xc-warn">Compiling</span> — 4 targets | <span class="xc-time">...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <div class="section-connector"><span></span></div>
+
+  <!-- Contact Section — Spotlight Style -->
+  <section id="contact" class="section section-divider section-divider-footer" data-annotation="// line 280 — main()">
+    <div class="container">
+      <div class="text-center mb-5 reveal">
+        <span class="section-badge">Contact</span>
+        <h2 class="section-title">Let's Work Together</h2>
+        <p class="section-subtitle">Open to freelance, full-time, and collaboration opportunities</p>
+      </div>
+      <div class="row justify-content-center">
+        <div class="col-lg-7">
+          <div class="contact-editor mac-window reveal">
+            <div class="ce-titlebar">
+              <span class="xcode-dot xcode-dot-red"></span>
+              <span class="xcode-dot xcode-dot-yellow"></span>
+              <span class="xcode-dot xcode-dot-green"></span>
+              <span class="ce-filename">contact.swift</span>
+            </div>
+            <div class="ce-body">
+              <div class="ce-comment">// contact.swift — send me a message</div>
+              <div class="ce-line">
+                <span class="ce-keyword">let</span> name: <span class="ce-type">String</span> = "<input type="text" class="ce-input" id="contactName" placeholder="Your name" autocomplete="name">"
+              </div>
+              <div class="ce-line">
+                <span class="ce-keyword">let</span> email: <span class="ce-type">String</span> = "<input type="email" class="ce-input" id="contactEmail" placeholder="your@email.com" autocomplete="email">"
+              </div>
+              <div class="ce-line">
+                <span class="ce-keyword">let</span> message: <span class="ce-type">String</span> = """
+              </div>
+              <div class="ce-line ce-indent">
+                <textarea class="ce-textarea" id="contactMessage" placeholder="What can I build for you?" rows="4"></textarea>
+              </div>
+              <div class="ce-line">"""</div>
+              <div class="ce-line">&nbsp;</div>
+              <div class="ce-comment">// location: Zamboanga City, Philippines</div>
+              <div class="ce-comment">// availability: On-site · Hybrid · Remote</div>
+              <div class="ce-line">&nbsp;</div>
+              <!-- Honeypot — hidden from humans, catches spam bots -->
+              <input type="text" id="contactHoney" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none">
+              <div class="ce-actions">
+                <button class="ce-send" id="contactSend"><i class="fas fa-play"></i> Execute send()</button>
+                <button class="ce-copy" id="contactCopyEmail"><i class="fas fa-copy"></i> Copy Email</button>
+              </div>
+              <div class="ce-result" id="contactResult"></div>
+            </div>
+            <div class="ce-imports">
+              <span class="ce-keyword">import</span> {
+              <a href="https://www.linkedin.com/in/john-kent-evangelista-lsswb-482435307/" target="_blank" rel="noopener noreferrer">linkedin</a>,
+              <a href="https://github.com/kent-vintazk" target="_blank" rel="noopener noreferrer">github</a>,
+              <a href="https://www.facebook.com/tabibito12/" target="_blank" rel="noopener noreferrer">facebook</a>,
+              <a href="https://www.instagram.com/dziannn/" target="_blank" rel="noopener noreferrer">instagram</a>
+              } <span class="ce-keyword">from</span> <span class="ce-string">"@kent/social"</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
   <footer class="footer">
-    <div class="wrap footer-row">
-      <span>© <span id="year">2026</span> John Kent Evangelista &nbsp;//&nbsp; Zamboanga City</span>
-      <span class="footer-links">
-        <button class="linklike" id="downloadCVButton">Résumé</button>
-        <a href="dev.html">Dev playground</a>
-      </span>
+    <div class="container">
+      <div class="terminal-footer">
+        <div class="tf-line"><span class="tf-prompt">kent@dev:~$</span> echo "© 2026 John Kent Evangelista"</div>
+        <div class="tf-output">© 2026 John Kent Evangelista. All Rights Reserved.</div>
+        <div class="tf-line"><span class="tf-prompt">kent@dev:~$</span> cat links.txt</div>
+        <div class="tf-links">
+          <a href="https://www.linkedin.com/in/john-kent-evangelista-lsswb-482435307/" target="_blank" rel="noopener noreferrer"><span class="tf-prompt">→</span> linkedin</a>
+          <a href="https://github.com/kent-vintazk" target="_blank" rel="noopener noreferrer"><span class="tf-prompt">→</span> github</a>
+          <a href="https://www.facebook.com/tabibito12/" target="_blank" rel="noopener noreferrer"><span class="tf-prompt">→</span> facebook</a>
+          <a href="https://www.instagram.com/dziannn/" target="_blank" rel="noopener noreferrer"><span class="tf-prompt">→</span> instagram</a>
+          <a href="main.html"><span class="tf-prompt">→</span> hire-me</a>
+        </div>
+        <div class="tf-line"><span class="tf-prompt">kent@dev:~$</span> <span class="tf-cursor">_</span></div>
+      </div>
     </div>
   </footer>
 
-  <script src="js/home.js"></script>
+  <!-- JavaScript -->
+  <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="vendor/typed/typed.min.js"></script>
+  <script src="js/theme.js"></script>
+  <script>
+    // Lazy-load Three.js + creative.js only when needed
+    window.loadCreativeMode = function(callback) {
+      if (typeof THREE !== "undefined") { callback(); return; }
+      var s1 = document.createElement("script");
+      s1.src = "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js";
+      s1.onload = function() {
+        // Load creative.js
+        var s2 = document.createElement("script");
+        s2.src = "js/creative.js";
+        s2.onload = callback;
+        document.body.appendChild(s2);
+      };
+      document.body.appendChild(s1);
+    };
+  </script>
+
 </body>
 
 </html>
