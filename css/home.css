@@ -87,21 +87,38 @@ a { color: var(--sage); }
 }
 .annbar-x:hover { color: #fff; }
 
-/* Top bar */
-.top { background: var(--bg); }
-.top-row { display: flex; align-items: center; justify-content: space-between; padding-top: 22px; padding-bottom: 10px; }
-.brand {
-  font-family: var(--mono); font-weight: 700; font-size: 1.1rem;
-  color: var(--green); text-decoration: none;
+/* Top bar — sticky, anchored by a hairline, wordmark with weight */
+.top {
+  position: sticky; top: 0; z-index: 90;
+  background: rgba(250, 250, 247, 0.94);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
 }
-.topnav { display: flex; gap: 26px; }
+.top-row { display: flex; align-items: center; gap: 20px; padding-top: 14px; padding-bottom: 14px; }
+.brand {
+  font-family: var(--mono); font-weight: 800; font-size: 1.35rem;
+  letter-spacing: -0.02em; color: var(--ink); text-decoration: none;
+}
+.brand-sl { color: var(--sage); }
+.top-status {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--mono); font-size: 0.66rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.14em; color: var(--ink-muted);
+  border: 1px solid var(--line); border-radius: 999px;
+  background: var(--card); padding: 6px 13px;
+}
+.topnav { display: flex; gap: 24px; margin-left: auto; }
 .topnav a {
   color: var(--ink-soft); text-decoration: none;
   font-size: 0.78rem; font-weight: 700;
   text-transform: uppercase; letter-spacing: 0.12em;
   padding: 8px 0;
 }
-.topnav a:hover { color: var(--sage); }
+.topnav a i {
+  font-style: normal; font-family: var(--mono); font-size: 0.66rem;
+  font-weight: 700; color: var(--sage); margin-right: 3px;
+}
+.topnav a:hover { color: var(--ink); }
 
 /* Buttons */
 .btn {
@@ -459,6 +476,8 @@ a.bf-value:hover { color: var(--sage); }
   .bf-grid { grid-template-columns: 1fr; gap: 20px; padding-bottom: 30px; }
   .bf-row { grid-template-columns: 1fr; gap: 4px; }
   .bf-bar { justify-content: flex-start; }
-  .topnav { gap: 16px; }
+  .topnav { gap: 14px; }
+  .topnav a i { display: none; }
+  .top-status { display: none; }
   .annbar { font-size: 0.7rem; padding: 8px 40px; }
 }
