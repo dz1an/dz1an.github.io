@@ -753,6 +753,12 @@
   }
 
   function animate() {
+    // Perf-lite kicked in: clear and stop the loop entirely
+    if (window._perfLite) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      animationId = null;
+      return;
+    }
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     for (var i = 0; i < particles.length; i++) {
@@ -862,6 +868,7 @@
   var labelX = 0, labelY = 0;
 
   document.addEventListener("mousemove", function (e) {
+    if (window._perfLite) return;
     curX = e.clientX;
     curY = e.clientY;
 
@@ -895,6 +902,12 @@
   var styleTag = document.createElement("style");
   styleTag.textContent = "a, button, .tilt-card, .skill-tag, .nav-link, .xcode-tab, .spotlight-item { cursor: pointer !important; }";
   document.head.appendChild(styleTag);
+
+  // Perf-lite: hand control back to the native cursor
+  window.addEventListener("perflite", function () {
+    document.body.style.cursor = "auto";
+    cursor.style.display = "none";
+  });
 })();
 
 // ============================================
@@ -907,6 +920,7 @@
 
   tiltCards.forEach(function (card) {
     card.addEventListener("mousemove", function (e) {
+      if (window._perfLite) return;
       var rect = card.getBoundingClientRect();
       var x = e.clientX - rect.left;
       var y = e.clientY - rect.top;
@@ -947,6 +961,7 @@
 
   magneticBtns.forEach(function (btn) {
     btn.addEventListener("mousemove", function (e) {
+      if (window._perfLite) return;
       var rect = btn.getBoundingClientRect();
       var x = e.clientX - rect.left - rect.width / 2;
       var y = e.clientY - rect.top - rect.height / 2;
@@ -2035,6 +2050,42 @@ if ("serviceWorker" in navigator) {
 }
 
 // ============================================
+// Perf-Lite — auto-degrade when the machine can't hold a smooth frame rate.
+// Turns off decorative load (blobs, backdrop blur, particles, custom cursor,
+// tilt/magnetic/parallax) so content scrolling stays responsive.
+// ============================================
+(function () {
+  function enable() {
+    if (window._perfLite) return;
+    window._perfLite = true;
+    document.documentElement.classList.add("perf-lite");
+    window.dispatchEvent(new Event("perflite"));
+  }
+  // Static hints: few cores / little memory → don't even try the heavy path
+  if ((navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) ||
+      (navigator.deviceMemory && navigator.deviceMemory <= 4)) {
+    enable();
+    return;
+  }
+  // FPS probe: sample rAF cadence after load settles; below ~40fps → lite
+  window.addEventListener("load", function () {
+    setTimeout(function () {
+      var frames = 0, start = null;
+      function probe(ts) {
+        if (start === null) start = ts;
+        frames++;
+        if (ts - start < 1500) {
+          requestAnimationFrame(probe);
+        } else if (frames / ((ts - start) / 1000) < 40) {
+          enable();
+        }
+      }
+      requestAnimationFrame(probe);
+    }, 1000);
+  });
+})();
+
+// ============================================
 // Image Download Progress — Xcode-style loading
 // ============================================
 (function () {
@@ -2110,6 +2161,7 @@ if ("serviceWorker" in navigator) {
 
   var ticking = false;
   function update() {
+    if (window._perfLite) { ticking = false; return; }
     var vh = window.innerHeight;
     for (var i = 0; i < els.length; i++) {
       var el = els[i];

@@ -5394,3 +5394,24 @@ html.konami-active .xc-build-terminal {
   outline: 2px solid var(--color-primary, #5C7650);
   outline-offset: 2px;
 }
+
+/* ========================================================================
+   PERF-LITE — auto-enabled by JS when the machine can't hold ~40fps.
+   Drops the decorative GPU load; content and layout are untouched.
+   ======================================================================== */
+html.perf-lite .hero-bg-mesh,
+html.perf-lite #particleCanvas,
+html.perf-lite .cursor-glow,
+html.perf-lite #customCursor {
+  display: none !important;
+}
+html.perf-lite body {
+  cursor: auto !important;
+}
+/* backdrop blur is the single most expensive paint effect on weak GPUs */
+html.perf-lite *,
+html.perf-lite *::before,
+html.perf-lite *::after {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}

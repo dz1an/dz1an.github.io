@@ -219,6 +219,26 @@ a.wrow:hover .wrow-go { opacity: 1; transform: translateX(3px); }
 a.wrow:hover h3 { color: var(--green); }
 .wrow-static { cursor: default; }
 
+/* Experience rows — plain-language background */
+.xrow {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 18px;
+  padding: 20px 0; border-top: 1px solid var(--line);
+}
+.xrow:last-of-type { border-bottom: 1px solid var(--line); }
+.xrow h3 { font-size: 1.08rem; font-weight: 800; color: var(--ink); }
+.xrow .org { color: var(--sage); font-weight: 600; }
+.xrow p { font-size: 0.93rem; color: var(--ink-soft); margin-top: 3px; max-width: 640px; }
+.x-date {
+  flex-shrink: 0; font-family: var(--mono); font-size: 0.76rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-muted);
+  padding-top: 5px;
+}
+.creds { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 1.8rem; }
+.creds span {
+  background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+  padding: 9px 18px; font-size: 0.88rem; font-weight: 600; color: var(--ink-soft);
+}
+
 /* FAQ */
 .faq-item { border-top: 1px solid var(--line); }
 .faq-item:last-of-type { border-bottom: 1px solid var(--line); }
@@ -289,6 +309,8 @@ a.wrow:hover h3 { color: var(--green); }
   .blocklight { padding: 60px 0; }
   .wrow { flex-direction: column; align-items: flex-start; gap: 6px; }
   .wrow-go { align-self: flex-start; }
+  .xrow { flex-direction: column; gap: 4px; }
+  .x-date { padding-top: 0; order: -1; }
   .topnav { gap: 16px; }
   .annbar { font-size: 0.7rem; padding: 8px 40px; }
 }
