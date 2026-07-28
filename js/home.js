@@ -163,6 +163,29 @@
     });
   }
 
+  // ---- 3D pine: scroll-driven — scrolling spins it and drifts it sideways ----
+  var mv = document.querySelector(".hero-tree model-viewer");
+  var heroEl = document.querySelector(".hero");
+  if (mv && !reduceMotion) {
+    mv.removeAttribute("auto-rotate"); // scroll owns the rotation now
+    var treeTicking = false;
+    function updateTree() {
+      treeTicking = false;
+      var y = window.scrollY || 0;
+      var h = heroEl ? Math.max(heroEl.offsetHeight, 1) : 600;
+      var p = Math.min(y / h, 1.4);
+      // spin: ~0.4deg per px scrolled; scrubs back up when you scroll up
+      mv.cameraOrbit = (15 + y * 0.4) + "deg 76deg 108%";
+      // side drift + gentle fade as the hero scrolls away
+      mv.style.transform = "translateX(" + (-p * 170).toFixed(1) + "px)";
+      mv.style.opacity = String(Math.max(0, 1 - p * 0.75).toFixed(2));
+    }
+    window.addEventListener("scroll", function () {
+      if (!treeTicking) { treeTicking = true; requestAnimationFrame(updateTree); }
+    }, { passive: true });
+    updateTree();
+  }
+
   // ---- Triangle cursor (desktop only) ----
   var tri = document.getElementById("cursorTri");
   if (tri && window.matchMedia && window.matchMedia("(pointer: fine)").matches) {
