@@ -10,6 +10,7 @@
   var animationId = null;
   var resizeTimeout = null;
   var listenersBound = false;
+  var perfFrames = 0, perfStart = 0, perfTier = 0; // adaptive quality state
 
   var scrollProgress = 0;
   var scrollVelocity = 0;
@@ -66,7 +67,7 @@
     } catch(e) {}
   }
 
-  var TREE_COUNT = isMobile ? 35 : 70;
+  var TREE_COUNT = isMobile ? 30 : 52;
   var AMBIENT_FF_COUNT = isMobile ? 12 : 14;
   var PATH_LAMP_COUNT = isMobile ? 5 : 8;
   var lastTouchSpawn = 0;
@@ -191,13 +192,13 @@
     camera = new THREE.PerspectiveCamera(isMobile ? 65 : 55, window.innerWidth / window.innerHeight, 0.1, 200);
     camera.position.set(0, 8, 44);
     if (!renderer) {
-      renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: !isMobile, powerPreference: "high-performance" });
+      renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: false, powerPreference: "high-performance" });
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 1.8;
       renderer.shadowMap.enabled = false;
     }
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.25));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.15));
     raycaster = new THREE.Raycaster(); mouseVec = new THREE.Vector2();
 
     // Lighting — moonlit forest with visible depth
@@ -683,11 +684,8 @@
     scene.add(fireBounce);
     scene._fireBounce = fireBounce;
 
-    // Soft upward glow — lights the canopy above
-    var fireUp = new THREE.PointLight(0xFF9944, 0.6, 18);
-    fireUp.position.set(0, gY + 3.5, 0.5);
-    scene.add(fireUp);
-    scene._fireUp = fireUp;
+    // (fireUp canopy-glow light removed — every PointLight multiplies the
+    // per-pixel shading cost; the bounce light covers this look well enough)
 
     // Fire particles (embers rising)
     var fireEmbers = [];
@@ -896,7 +894,8 @@
       var mesh = new THREE.Mesh(new THREE.SphereGeometry(0.08, 6, 6), new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.9 }));
       mesh.position.set(x, y, z); scene.add(mesh);
       var light = null;
-      if (!isMobile && i % 5 === 0) { light = new THREE.PointLight(color, 0.5, 6); light.position.set(x, y, z); scene.add(light); }
+      // No per-firefly PointLights — the emissive-looking MeshBasic spheres
+      // read as glowing on their own, and lights here were pure GPU cost.
       var label = makeLabel(name, { fontSize: 22, fontWeight: "600", color: "#DAD7CD", scale: 1.8, opacity: 0.01 });
       label.position.set(x, y + 0.8, z); scene.add(label);
       fireflies.push({
@@ -936,7 +935,7 @@
       { x: -1, z: -39, y: 2 }      // Meadow far
     ];
 
-    lampPositions.slice(0, PATH_LAMP_COUNT).forEach(function (lp) {
+    lampPositions.slice(0, PATH_LAMP_COUNT).forEach(function (lp, li) {
       var gY = getGroundY(lp.x, lp.z);
 
       // Lamp post (thin cylinder)
@@ -955,10 +954,13 @@
       glow.position.set(lp.x, gY + 2.2, lp.z);
       scene.add(glow);
 
-      // Warm point light
-      var light = new THREE.PointLight(0xE8C87A, 0.8, 12);
-      light.position.set(lp.x, gY + 2.5, lp.z);
-      scene.add(light);
+      // Real light on every OTHER lamp only (glow spheres carry the visual);
+      // halves the lamp light count — a big per-pixel shading saving
+      if (li % 2 === 0) {
+        var light = new THREE.PointLight(0xE8C87A, 1.0, 14);
+        light.position.set(lp.x, gY + 2.5, lp.z);
+        scene.add(light);
+      }
     });
   }
 
@@ -978,13 +980,8 @@
       mesh.position.set(x, y, z);
       scene.add(mesh);
 
-      // Light on every 3rd firefly (desktop only) — saves GPU
+      // No lights on ambient fireflies — spheres alone read as glow
       var light = null;
-      if (!isMobile && i % 6 === 0) {
-        light = new THREE.PointLight(color, 0.35, 5);
-        light.position.set(x, y, z);
-        scene.add(light);
-      }
 
       ambientFFs.push({
         mesh: mesh, light: light,
@@ -1309,6 +1306,30 @@
     animationId = requestAnimationFrame(animate);
     var t = clock.getElapsedTime();
     var frame = Math.floor(t * 60) | 0;
+
+    // Adaptive quality — sample real fps; shed load in steps if it can't keep up
+    if (perfTier < 2) {
+      perfFrames++;
+      if (!perfStart) perfStart = t;
+      if (t - perfStart > 3) {
+        var fps = perfFrames / (t - perfStart);
+        perfFrames = 0; perfStart = t;
+        if (fps < 34) {
+          perfTier++;
+          if (perfTier === 1) {
+            renderer.setPixelRatio(1.0);
+            if (scene._mist) scene._mist.visible = false;
+          } else {
+            renderer.setPixelRatio(0.85);
+            if (scene._billboards) {
+              for (var pbi = 0; pbi < scene._billboards.length; pbi++) scene._billboards[pbi].visible = false;
+            }
+          }
+        } else if (fps > 50) {
+          perfTier = 2; // comfortably fast — stop sampling
+        }
+      }
+    }
     // Pre-compute common trig values used across multiple loops
     var sinT2 = Math.sin(t * 2), sinT3 = Math.sin(t * 3), sinT4 = Math.sin(t * 4);
     var sinT5 = Math.sin(t * 5), sinT6 = Math.sin(t * 6), sinT8 = Math.sin(t * 8);
@@ -1758,6 +1779,7 @@
       if (renderer && renderer.renderLists) renderer.renderLists.dispose();
       camera = null; clock = null;
       trees = []; lanterns = []; fireflies = [];
+      perfFrames = 0; perfStart = 0; perfTier = 0;
     },
     isRunning: function () { return isActive; }
   };
