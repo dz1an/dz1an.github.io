@@ -280,6 +280,10 @@ a.wrow:hover h3 { color: var(--green); }
 .xrow h3 { font-size: 1.08rem; font-weight: 800; color: var(--ink); }
 .xrow .org { color: var(--sage); font-weight: 600; }
 .xrow p { font-size: 0.93rem; color: var(--ink-soft); margin-top: 3px; max-width: 640px; }
+.pnum {
+  font-family: var(--mono); font-size: 0.78rem; font-weight: 700;
+  color: var(--sage); margin-right: 8px; letter-spacing: 0.04em;
+}
 .x-date {
   flex-shrink: 0; font-family: var(--mono); font-size: 0.76rem; font-weight: 600;
   text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-muted);
