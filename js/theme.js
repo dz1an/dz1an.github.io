@@ -1532,7 +1532,7 @@ function showToast(title, sub, icon) {
 // ============================================
 (function () {
   // Split into parts so bots can't scrape a plain email string
-  var u = "dzian2k17";
+  var u = "johnkentevangelista";
   var d = "gmail";
   var t = "com";
   var addr = u + "@" + d + "." + t;
@@ -1956,7 +1956,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Single source of truth — assembled at runtime by _e() to dodge scrapers
   function getEmail() {
-    return (window._e && window._e()) || "dzian2k17" + "@" + "gmail.com";
+    return (window._e && window._e()) || "johnkentevangelista" + "@" + "gmail.com";
   }
 
   function setResult(state, text) {

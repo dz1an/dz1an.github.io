@@ -8,7 +8,7 @@
 
   // Email assembled at runtime (keeps scrapers off the plain string)
   function getEmail() {
-    return "dzian2k17" + "@" + "gmail.com";
+    return "johnkentevangelista" + "@" + "gmail.com";
   }
 
   var reduceMotion = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
@@ -129,7 +129,10 @@
         setResult("ok", "Message sent — I'll reply within a day or two. Thanks!");
         nameEl.value = ""; emailEl.value = ""; msgEl.value = "";
       }).catch(function () {
-        setResult("ok", "Opening your email app so you can send directly…");
+        // Always surface the address in plain text — on machines with no mail
+        // client the mailto below does nothing visible, and the visitor would
+        // otherwise think the message was sent.
+        setResult("ok", "Couldn't send from the page. Opening your email app — or write me directly at " + getEmail());
         openMailFallback(name, email, message);
       }).then(function () {
         if (sendBtn) sendBtn.disabled = false;
