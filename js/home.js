@@ -186,6 +186,27 @@
     updateTree();
   }
 
+  // ---- Swipe band: vertical scroll drives horizontal strip movement ----
+  var swipeSec = document.getElementById("swipe");
+  var swipeStrip = document.getElementById("swipeStrip");
+  if (swipeSec && swipeStrip && !reduceMotion) {
+    var swTicking = false;
+    function updateSwipe() {
+      swTicking = false;
+      var r = swipeSec.getBoundingClientRect();
+      var total = r.height - window.innerHeight;
+      if (total <= 0) return;
+      var p = Math.min(1, Math.max(0, -r.top / total));
+      var max = swipeStrip.scrollWidth + (window.innerWidth * 0.08) - window.innerWidth;
+      swipeStrip.style.transform = "translate3d(" + (-p * Math.max(0, max)).toFixed(1) + "px,0,0)";
+    }
+    window.addEventListener("scroll", function () {
+      if (!swTicking) { swTicking = true; requestAnimationFrame(updateSwipe); }
+    }, { passive: true });
+    window.addEventListener("resize", updateSwipe);
+    updateSwipe();
+  }
+
   // ---- Triangle cursor (desktop only) ----
   var tri = document.getElementById("cursorTri");
   if (tri && window.matchMedia && window.matchMedia("(pointer: fine)").matches) {
