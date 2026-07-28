@@ -311,18 +311,18 @@ a.wrow:hover h3 { color: var(--green); }
 .wrow-static { cursor: default; }
 
 /* Swipe band — sticky viewport, strip translates horizontally with scroll */
-.swipe { height: 240vh; background: var(--ink); position: relative; }
+.swipe { height: 200vh; background: var(--ink); position: relative; }
 .swipe-pin {
   position: sticky; top: 0; height: 100vh;
   display: flex; align-items: center; overflow: hidden;
 }
 .swipe-strip {
-  display: flex; gap: 6vw; align-items: baseline;
+  display: flex; gap: 5vw; align-items: baseline;
   white-space: nowrap; will-change: transform;
   padding-left: 8vw;
-  font-size: clamp(4rem, 15vw, 12rem);
+  font-size: clamp(2.6rem, 7.5vw, 6.5rem);
   font-weight: 900; text-transform: uppercase;
-  letter-spacing: -0.03em; line-height: 1;
+  letter-spacing: -0.02em; line-height: 1;
 }
 .sw-solid { color: #FAFAF7; }
 .sw-gold { color: var(--gold); }
