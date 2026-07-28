@@ -13,6 +13,17 @@
 
   var reduceMotion = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
 
+  // ---- Announcement bar ----
+  var ann = document.getElementById("annBar");
+  var annClose = document.getElementById("annClose");
+  if (ann && annClose) {
+    try { if (localStorage.getItem("annDismissed") === "1") ann.remove(); } catch (e) {}
+    annClose.addEventListener("click", function () {
+      ann.remove();
+      try { localStorage.setItem("annDismissed", "1"); } catch (e) {}
+    });
+  }
+
   // ---- Mobile nav ----
   var burger = document.getElementById("navBurger");
   var links = document.getElementById("navLinks");
