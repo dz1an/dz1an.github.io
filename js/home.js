@@ -57,6 +57,13 @@
   var yearEl = document.getElementById("year");
   if (yearEl) yearEl.textContent = String(new Date().getFullYear());
 
+  // ---- Footer email (assembled at runtime, not scrapable from markup) ----
+  var footEmail = document.getElementById("footEmail");
+  if (footEmail) {
+    footEmail.textContent = getEmail();
+    footEmail.href = "mailto:" + getEmail();
+  }
+
   // ---- CV download ----
   var cvBtn = document.getElementById("downloadCVButton");
   if (cvBtn) {
@@ -154,6 +161,36 @@
         setResult("ok", "My email: " + getEmail());
       });
     });
+  }
+
+  // ---- Triangle cursor (desktop only) ----
+  var tri = document.getElementById("cursorTri");
+  if (tri && window.matchMedia && window.matchMedia("(pointer: fine)").matches) {
+    var tx = 0, ty = 0, cx = 0, cy = 0, ang = 0, tAng = 0, sc = 1, tSc = 1, shown = false;
+    document.addEventListener("mousemove", function (e) {
+      var dx = e.clientX - tx, dy = e.clientY - ty;
+      if (Math.abs(dx) + Math.abs(dy) > 2) tAng = Math.atan2(dy, dx) * 180 / Math.PI;
+      tx = e.clientX; ty = e.clientY;
+      if (!shown) { shown = true; cx = tx; cy = ty; tri.style.opacity = "1"; }
+    });
+    document.addEventListener("mouseover", function (e) {
+      var t = e.target;
+      if (t.closest && t.closest("input, textarea")) { tri.style.opacity = "0"; return; }
+      if (shown) tri.style.opacity = "1";
+      var interactive = !!(t.closest && t.closest("a, button, summary, .linklike"));
+      tSc = interactive ? 1.5 : 1;
+      tri.classList.toggle("is-link", interactive);
+    });
+    document.addEventListener("mouseleave", function () { tri.style.opacity = "0"; });
+    (function loop() {
+      cx += (tx - cx) * 0.22;
+      cy += (ty - cy) * 0.22;
+      var d = ((tAng - ang + 540) % 360) - 180;
+      ang += d * 0.18;
+      sc += (tSc - sc) * 0.2;
+      tri.style.transform = "translate3d(" + (cx - 11) + "px," + (cy - 11) + "px,0) rotate(" + ang + "deg) scale(" + sc + ")";
+      requestAnimationFrame(loop);
+    })();
   }
 
   // ---- Service worker ----

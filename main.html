@@ -20,6 +20,9 @@
   <link rel="stylesheet" href="vendor/font-awesome/css/all.min.css">
   <link rel="stylesheet" href="css/home.css">
 
+  <!-- 3D hero tree (lazy; SVG poster shows until loaded) -->
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js"></script>
+
   <!-- OpenGraph / Twitter -->
   <meta property="og:title" content="John Kent Evangelista — Custom Business Systems">
   <meta property="og:description" content="Custom systems for businesses and LGUs — directories, learning platforms, records systems, automation. Zamboanga City · remote nationwide.">
@@ -59,6 +62,11 @@
 
   <a class="skip-link" href="#main">Skip to content</a>
 
+  <!-- Triangle cursor (desktop only; JS-driven) -->
+  <div class="cursor-tri" id="cursorTri" aria-hidden="true">
+    <svg viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg"><polygon points="2,2 20,11 2,20" /></svg>
+  </div>
+
   <!-- Announcement bar -->
   <div class="annbar" id="annBar">
     <p><strong>Got a slow, manual process?</strong>&nbsp; <a href="#contact">Message me</a></p>
@@ -83,9 +91,13 @@
     <!-- HERO — giant type, floating tree behind -->
     <section class="hero">
       <div class="hero-tree" aria-hidden="true">
-        <!-- Chevron pine — code-chevrons stacked into a pine, faceted (lit from
-             the left), fireflies drifting. Ownable mark, not clip-art. -->
-        <svg viewBox="0 0 220 300" xmlns="http://www.w3.org/2000/svg">
+        <model-viewer src="models/tree.gltf" alt="" loading="lazy" reveal="auto"
+          auto-rotate rotation-per-second="9deg" camera-orbit="15deg 76deg 108%"
+          disable-zoom disable-pan disable-tap interaction-prompt="none"
+          shadow-intensity="0.5" exposure="1.15">
+          <!-- Poster/fallback: chevron pine — code-chevrons stacked into a pine,
+               faceted (lit from the left), fireflies drifting. -->
+          <svg slot="poster" viewBox="0 0 220 300" xmlns="http://www.w3.org/2000/svg">
           <polygon points="110,22 58,96 84,96 110,54" fill="#6E8A5E"/>
           <polygon points="110,22 162,96 136,96 110,54" fill="#55704B"/>
           <polygon points="106,84 38,180 71,180 106,126" fill="#4A6B51"/>
@@ -99,7 +111,8 @@
           <circle cx="46" cy="148" r="3" fill="#E8C87A"/>
           <circle cx="188" cy="228" r="6" fill="#FFE066" opacity="0.2"/>
           <circle cx="188" cy="228" r="2.5" fill="#FFE066"/>
-        </svg>
+          </svg>
+        </model-viewer>
       </div>
       <div class="wrap hero-inner">
         <h1>
@@ -300,13 +313,58 @@
 
   </main>
 
-  <footer class="footer">
-    <div class="wrap footer-row">
-      <span>© <span id="year">2026</span> John Kent Evangelista &nbsp;//&nbsp; Zamboanga City</span>
-      <span class="footer-links">
-        <button class="linklike" id="downloadCVButton">Résumé</button>
-        <a href="./">Dev playground</a>
-      </span>
+  <footer class="bigfoot">
+    <div class="wrap">
+
+      <!-- Label / value contact rows -->
+      <div class="bf-grid">
+        <div>
+          <span class="bf-label">Email</span>
+          <a class="bf-value" id="footEmail" href="#contact">say hello ↗</a>
+        </div>
+        <div>
+          <span class="bf-label">Location</span>
+          <span class="bf-value">Zamboanga City, Philippines</span>
+        </div>
+        <div>
+          <span class="bf-label">Status</span>
+          <span class="bf-value"><span class="bf-dot"></span> Open for projects</span>
+        </div>
+      </div>
+
+      <!-- Tagline divider -->
+      <p class="bf-tag"><span class="bf-dash"></span><em>Build once, run every day.</em><span class="bf-dash"></span></p>
+
+      <!-- © bar -->
+      <div class="bf-bar">
+        <span>© <span id="year">2026</span> John Kent Evangelista</span>
+        <span class="bf-cycle">Scoped &nbsp;·&nbsp; Built &nbsp;·&nbsp; Shipped &nbsp;·&nbsp; Supported</span>
+        <a class="bf-top" href="#top">Back to top ↑</a>
+      </div>
+
+      <!-- Credit rows -->
+      <div class="bf-row">
+        <span class="bf-label">Built by</span>
+        <span class="bf-cred">Hand-coded by me — HTML, CSS, JS, Three.js. No templates, no site builders.</span>
+      </div>
+      <div class="bf-row">
+        <span class="bf-label">Playground</span>
+        <span class="bf-cred"><a href="./">Explore the interactive dev playground ↗</a> — an IDE-themed portfolio with a 3D forest.</span>
+      </div>
+      <div class="bf-row">
+        <span class="bf-label">Résumé</span>
+        <span class="bf-cred"><button class="linklike" id="downloadCVButton">Download the PDF ↓</button></span>
+      </div>
+      <div class="bf-row">
+        <span class="bf-label">3D tree</span>
+        <span class="bf-cred">Model by <a href="https://kenney.nl" target="_blank" rel="noopener noreferrer">Kenney</a> (CC0), via the <a href="https://github.com/pmndrs/market-assets" target="_blank" rel="noopener noreferrer">pmndrs market</a>.</span>
+      </div>
+
+    </div>
+
+    <!-- Giant cropped wordmark -->
+    <div class="bf-markwrap" aria-hidden="true">
+      <span class="bf-mark">kent<span class="bf-mark-dot">.dev</span></span>
     </div>
   </footer>
 
