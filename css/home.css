@@ -151,6 +151,7 @@ a { color: var(--sage); }
 .hero-tree model-viewer {
   width: 100%; height: clamp(300px, 42vw, 560px);
   background: transparent; --poster-color: transparent;
+  --progress-bar-color: transparent; --progress-bar-height: 0px;
   will-change: transform, opacity;
 }
 /* Fireflies — small gold glows drifting near the hero type */
