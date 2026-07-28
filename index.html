@@ -7,23 +7,22 @@
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <title>John Kent Evangelista — Custom Business Systems | Zamboanga City</title>
   <meta name="author" content="John Kent Evangelista">
-  <meta name="description" content="I build custom web systems for businesses and LGUs — directories, learning platforms, booking and records systems, automation. Based in Zamboanga City, working with clients anywhere in the Philippines.">
+  <meta name="description" content="I build custom systems for businesses and LGUs — directories, learning platforms, records systems, automation. Based in Zamboanga City, working with clients anywhere in the Philippines.">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta name="theme-color" content="#FAFAF7" id="themeColor">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self' https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:;">
 
-  <!-- Fonts -->
+  <!-- Fonts — light/extrabold contrast carries the design -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 
-  <!-- Stylesheets -->
   <link rel="stylesheet" href="vendor/font-awesome/css/all.min.css">
   <link rel="stylesheet" href="css/home.css">
 
   <!-- OpenGraph / Twitter -->
   <meta property="og:title" content="John Kent Evangelista — Custom Business Systems">
-  <meta property="og:description" content="Custom web systems for businesses and LGUs — directories, learning platforms, records systems, automation. Zamboanga City · remote nationwide.">
+  <meta property="og:description" content="Custom systems for businesses and LGUs — directories, learning platforms, records systems, automation. Zamboanga City · remote nationwide.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://dz1an.github.io/">
   <link rel="canonical" href="https://dz1an.github.io/">
@@ -33,7 +32,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://dz1an.github.io/images/profile.png">
   <meta name="twitter:title" content="John Kent Evangelista — Custom Business Systems">
-  <meta name="twitter:description" content="Custom web systems for businesses and LGUs. Zamboanga City · remote nationwide.">
+  <meta name="twitter:description" content="Custom systems for businesses and LGUs. Zamboanga City · remote nationwide.">
 
   <!-- Structured data -->
   <script type="application/ld+json">
@@ -42,7 +41,7 @@
     "@type": "Person",
     "name": "John Kent Evangelista",
     "jobTitle": "Software Developer",
-    "description": "Builds custom web systems for businesses and local government units: directories, learning platforms, records and booking systems, automation.",
+    "description": "Builds custom systems for businesses and local government units: directories, learning platforms, records systems, automation.",
     "url": "https://dz1an.github.io/",
     "image": "https://dz1an.github.io/images/profile.png",
     "address": { "@type": "PostalAddress", "addressLocality": "Zamboanga City", "addressCountry": "PH" },
@@ -60,264 +59,144 @@
 
   <a class="skip-link" href="#main">Skip to content</a>
 
-  <!-- Nav -->
-  <header class="nav" id="top">
-    <div class="wrap nav-row">
-      <a class="brand" href="#top">//kent.dev</a>
-      <nav class="nav-links" id="navLinks" aria-label="Main navigation">
-        <a href="#services">Services</a>
-        <a href="#work">Work</a>
-        <a href="#process">Process</a>
-        <a href="#faq">FAQ</a>
-        <a href="#contact">Contact</a>
-      </nav>
-      <a class="btn btn-solid nav-cta" href="#contact">Start a project</a>
-      <button class="nav-burger" id="navBurger" aria-label="Open menu" aria-expanded="false" aria-controls="navLinks">
-        <i class="fas fa-bars"></i>
-      </button>
-    </div>
+  <!-- Top bar — wordmark + one action -->
+  <header class="top">
+    <a class="brand" href="#top" id="top">//kent.dev</a>
+    <a class="btn btn-solid btn-sm" href="#contact">Message me</a>
   </header>
 
   <main id="main">
 
-    <!-- Hero -->
+    <!-- Hero — one statement -->
     <section class="hero">
-      <div class="wrap">
-        <p class="eyebrow reveal">Zamboanga City · working with clients anywhere in the Philippines</p>
-        <h1 class="reveal">Systems that run<br>your business.</h1>
-        <p class="lede reveal">I'm Kent. I build the software behind your operations — tracking sales and records, training staff, serving residents — so your day runs on a system instead of paperwork. You don't need to know tech; you just need to know what's slowing you down.</p>
-        <div class="hero-cta reveal">
-          <a class="btn btn-solid" href="#contact"><i class="fas fa-paper-plane"></i> Start a project</a>
-          <a class="btn btn-ghost" href="#work">See what I've built</a>
+      <p class="eyebrow reveal">John Kent Evangelista · Zamboanga City · works anywhere in the PH</p>
+      <h1 class="reveal"><span class="thin">Software that</span><br>runs your business.</h1>
+      <p class="lede reveal">Records, sales, training, resident services — I turn the slow, manual parts of your operations into a system. You don't need to know tech; just tell me what's slowing you down.</p>
+      <div class="hero-cta reveal">
+        <a class="btn btn-solid" href="#contact">Start a conversation</a>
+        <a class="btn btn-plain" href="#work">See my work <i class="fas fa-arrow-down"></i></a>
+      </div>
+      <p class="proofline reveal">636+ businesses on ZamGo &nbsp;·&nbsp; 5 systems live &nbsp;·&nbsp; 2025 Productivity Olympics national winner, with the VINTAZK team</p>
+    </section>
+
+    <!-- What I build — one compact block -->
+    <section class="block reveal">
+      <span class="sec-label">// what I build</span>
+      <p class="build-list">
+        <span>Business systems</span>
+        <span>Barangay &amp; LGU systems</span>
+        <span>Learning platforms</span>
+        <span>Websites &amp; portals</span>
+        <span>Automation &amp; AI</span>
+        <span>Rescue &amp; support</span>
+      </p>
+    </section>
+
+    <!-- Work — minimal rows -->
+    <section class="block" id="work">
+      <span class="sec-label reveal">// work</span>
+      <h2 class="reveal">Real systems, in use today</h2>
+
+      <a class="wrow reveal" href="https://zamgo.vintazk.com" target="_blank" rel="noopener noreferrer">
+        <div>
+          <h3>ZamGo</h3>
+          <p>City-wide business directory — 636+ Zamboanga businesses indexed.</p>
         </div>
-        <ul class="proof reveal" aria-label="Track record">
-          <li><strong>636+</strong> businesses indexed on ZamGo</li>
-          <li><strong>5</strong> systems shipped &amp; live</li>
-          <li><strong>National winner</strong> — 2025 Productivity Olympics, with the VINTAZK team</li>
-        </ul>
-      </div>
-    </section>
+        <span class="wrow-go">Visit <i class="fas fa-arrow-up-right-from-square"></i></span>
+      </a>
 
-    <!-- Services -->
-    <section class="section" id="services">
-      <div class="wrap">
-        <span class="sec-label reveal">// what I can build</span>
-        <h2 class="reveal">What I can build for you</h2>
-        <p class="section-sub reveal">Everything starts from a problem in your day-to-day — not from technology. These are the problems I solve.</p>
-        <div class="grid grid-3">
-          <div class="card reveal">
-            <i class="fas fa-store card-ico"></i>
-            <h3>Business systems</h3>
-            <p>Directories, inventory, booking, client records — a system shaped around how your business actually operates, replacing spreadsheets and paper.</p>
-          </div>
-          <div class="card reveal">
-            <i class="fas fa-landmark card-ico"></i>
-            <h3>Barangay &amp; government offices</h3>
-            <p>Resident records and services, digitized — staff spend less time on paperwork, residents get answers the same day instead of next week.</p>
-          </div>
-          <div class="card reveal">
-            <i class="fas fa-graduation-cap card-ico"></i>
-            <h3>Learning platforms</h3>
-            <p>Course management, learner tracking, and role-based access for schools and training teams — delivered as a system your staff can run themselves.</p>
-          </div>
-          <div class="card reveal">
-            <i class="fas fa-globe card-ico"></i>
-            <h3>Websites &amp; customer portals</h3>
-            <p>A fast, professional website — or a full portal your customers log into to order, book, or check their account.</p>
-          </div>
-          <div class="card reveal">
-            <i class="fas fa-robot card-ico"></i>
-            <h3>Automation &amp; AI</h3>
-            <p>Let the computer do the repetitive work — encoding, checking, sorting, reports. Your team keeps the work that needs a human.</p>
-          </div>
-          <div class="card reveal">
-            <i class="fas fa-wrench card-ico"></i>
-            <h3>Support &amp; improvement</h3>
-            <p>Already have a system? I maintain, fix, and extend existing software — and can take over projects that stalled.</p>
-          </div>
+      <a class="wrow reveal" href="https://app.vintech.vintazk.com" target="_blank" rel="noopener noreferrer">
+        <div>
+          <h3>Vintech</h3>
+          <p>The operations platform behind VINTAZK Outsourcing — a nationally awarded team.</p>
+        </div>
+        <span class="wrow-go">Visit <i class="fas fa-arrow-up-right-from-square"></i></span>
+      </a>
+
+      <a class="wrow reveal" href="https://vintazkacademy.vintazk.com" target="_blank" rel="noopener noreferrer">
+        <div>
+          <h3>Acaddemy</h3>
+          <p>Learning platform — courses, learner tracking, role-based access.</p>
+        </div>
+        <span class="wrow-go">Visit <i class="fas fa-arrow-up-right-from-square"></i></span>
+      </a>
+
+      <div class="wrow wrow-static reveal">
+        <div>
+          <h3>Barangay Connect</h3>
+          <p>Barangay records and resident services, off paper and into a system.</p>
         </div>
       </div>
-    </section>
 
-    <!-- Work / case studies -->
-    <section class="section section-alt" id="work">
-      <div class="wrap">
-        <span class="sec-label reveal">// proof</span>
-        <h2 class="reveal">Real systems, in use today</h2>
-        <p class="section-sub reveal">Not mockups — live software people use. Click through and see for yourself.</p>
-
-        <article class="case reveal">
-          <div class="case-body">
-            <h3>ZamGo <span class="case-tag">Business directory</span></h3>
-            <p class="case-problem"><strong>The problem:</strong> Zamboanga's local businesses were hard to discover online — no central place to find who offers what.</p>
-            <p><strong>What I built:</strong> a city-wide business directory with search and categories, built to grow with the city.</p>
-            <p class="case-result"><i class="fas fa-arrow-trend-up"></i> 636+ businesses indexed and counting.</p>
-          </div>
-          <div class="case-side">
-            <img src="images/zamgo.png" alt="ZamGo business directory screenshot" loading="lazy" width="741" height="416">
-            <a class="btn btn-ghost btn-sm" href="https://zamgo.vintazk.com" target="_blank" rel="noopener noreferrer">Visit ZamGo <i class="fas fa-external-link-alt"></i></a>
-          </div>
-        </article>
-
-        <article class="case reveal">
-          <div class="case-body">
-            <h3>Vintech <span class="case-tag">Operations platform</span></h3>
-            <p class="case-problem"><strong>The problem:</strong> a growing outsourcing company needed one platform to run its client work instead of scattered tools.</p>
-            <p><strong>What I built:</strong> the operations platform behind VINTAZK Outsourcing — the team whose work won a national award at the 2025 Productivity Olympics.</p>
-            <p class="case-result"><i class="fas fa-trophy"></i> Powers daily operations; part of a nationally recognized team effort.</p>
-          </div>
-          <div class="case-side">
-            <img src="images/vintech.png" alt="Vintech platform screenshot" loading="lazy" width="741" height="416">
-            <a class="btn btn-ghost btn-sm" href="https://app.vintech.vintazk.com" target="_blank" rel="noopener noreferrer">Visit Vintech <i class="fas fa-external-link-alt"></i></a>
-          </div>
-        </article>
-
-        <article class="case reveal">
-          <div class="case-body">
-            <h3>Acaddemy <span class="case-tag">Learning platform</span></h3>
-            <p class="case-problem"><strong>The problem:</strong> training teams needed to run courses, track learners, and control access — without wrestling generic tools.</p>
-            <p><strong>What I built:</strong> a full learning management system: course management, learner tracking, content delivery, role-based access.</p>
-            <p class="case-result"><i class="fas fa-circle-check"></i> Live and running for Vintazk University.</p>
-          </div>
-          <div class="case-side">
-            <img src="images/vintazkUniversity.png" alt="Acaddemy learning platform screenshot" loading="lazy" width="741" height="416">
-            <a class="btn btn-ghost btn-sm" href="https://vintazkacademy.vintazk.com" target="_blank" rel="noopener noreferrer">Visit Acaddemy <i class="fas fa-external-link-alt"></i></a>
-          </div>
-        </article>
-
-        <article class="case case-noimg reveal">
-          <div class="case-body">
-            <h3>Barangay Connect <span class="case-tag">Civic tech</span></h3>
-            <p class="case-problem"><strong>The problem:</strong> barangay records and resident services running on paper — slow for staff, slower for residents.</p>
-            <p><strong>What I built:</strong> a barangay management system that digitizes records and day-to-day services.</p>
-          </div>
-        </article>
-
-        <article class="case case-noimg reveal">
-          <div class="case-body">
-            <h3>SmartScore <span class="case-tag">Automation</span></h3>
-            <p class="case-problem"><strong>The problem:</strong> teachers spending hours checking exams by hand.</p>
-            <p><strong>What I built:</strong> an automated exam-checking system using computer vision — point a camera at the answer sheet, get the score. Built at Western Mindanao State University.</p>
-          </div>
-        </article>
-
-      </div>
-    </section>
-
-    <!-- Process -->
-    <section class="section" id="process">
-      <div class="wrap">
-        <span class="sec-label reveal">// how it works</span>
-        <h2 class="reveal">How working with me goes</h2>
-        <div class="grid grid-4 steps">
-          <div class="step reveal">
-            <span class="step-num">1</span>
-            <h3>Tell me the problem</h3>
-            <p>Message me what's slow, manual, or messy in your operations. Plain language — no tech required.</p>
-          </div>
-          <div class="step reveal">
-            <span class="step-num">2</span>
-            <h3>Scope &amp; quote</h3>
-            <p>We agree on exactly what gets built, what it costs, and when it lands. No surprises later.</p>
-          </div>
-          <div class="step reveal">
-            <span class="step-num">3</span>
-            <h3>Build in sprints</h3>
-            <p>You see working software every sprint, not a big reveal at the end. Feedback shapes the build as we go.</p>
-          </div>
-          <div class="step reveal">
-            <span class="step-num">4</span>
-            <h3>Launch &amp; support</h3>
-            <p>I deploy it, train your team, and stay available so the system keeps working after handover.</p>
-          </div>
+      <div class="wrow wrow-static reveal">
+        <div>
+          <h3>SmartScore</h3>
+          <p>Exam checking automated with computer vision — built at WMSU.</p>
         </div>
       </div>
     </section>
 
     <!-- FAQ -->
-    <section class="section section-alt" id="faq">
-      <div class="wrap wrap-narrow">
-        <span class="sec-label reveal">// questions</span>
-        <h2 class="reveal">Common questions</h2>
-        <details class="faq-item reveal">
-          <summary>Do you only work with clients in Zamboanga City?</summary>
-          <p>No — I'm based in Zamboanga City and happy to meet locally, but I work remotely with clients anywhere in the Philippines. Most projects run fully online.</p>
-        </details>
-        <details class="faq-item reveal">
-          <summary>How much does a system cost?</summary>
-          <p>It depends on scope, so I quote per project after we talk — a simple website and a full operations platform are very different builds. The quote is fixed before work starts.</p>
-        </details>
-        <details class="faq-item reveal">
-          <summary>Who owns the system when it's done?</summary>
-          <p>You do. Code, data, and accounts are handed over to you at launch.</p>
-        </details>
-        <details class="faq-item reveal">
-          <summary>What if we already have a system that's half-working?</summary>
-          <p>That's common. I can audit what exists, fix what's broken, and extend it — you don't have to start from zero.</p>
-        </details>
-        <details class="faq-item reveal">
-          <summary>Are you a developer or an agency?</summary>
-          <p>One developer — the person you message is the person who builds. I studied Computer Science at WMSU, hold a Lean Six Sigma White Belt, took executive education in Digital Transformation at the Asian Institute of Management, and build daily at VINTAZK Outsourcing.</p>
-        </details>
-      </div>
-    </section>
-
-    <!-- About strip -->
-    <section class="section about">
-      <div class="wrap about-row">
-        <img class="about-photo" src="images/profile.png" alt="John Kent Evangelista" loading="lazy" width="741" height="685">
-        <div>
-          <h2 class="reveal">The person behind the systems</h2>
-          <p class="reveal">I'm John Kent Evangelista — a software developer from Zamboanga City. I care about one thing: software that actually gets used. That means understanding your operations first and writing code second.</p>
-          <p class="reveal">Curious how I work under the hood? I keep an interactive developer playground — an IDE-themed portfolio with a 3D forest — for the technically curious.</p>
-          <div class="hero-cta reveal">
-            <a class="btn btn-ghost" href="dev.html"><i class="fas fa-code"></i> Explore the dev playground</a>
-            <a class="btn btn-ghost" href="https://github.com/kent-vintazk" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i> GitHub</a>
-            <button class="btn btn-ghost" id="downloadCVButton"><i class="fas fa-download"></i> Résumé (PDF)</button>
-          </div>
-        </div>
-      </div>
+    <section class="block" id="faq">
+      <span class="sec-label reveal">// questions</span>
+      <h2 class="reveal">Common questions</h2>
+      <details class="faq-item reveal">
+        <summary>Do you only work with clients in Zamboanga City?</summary>
+        <p>No — I'm based in Zamboanga City and happy to meet locally, but I work remotely with clients anywhere in the Philippines. Most projects run fully online.</p>
+      </details>
+      <details class="faq-item reveal">
+        <summary>How much does a system cost?</summary>
+        <p>It depends on scope, so I quote per project after we talk — a simple website and a full operations platform are very different builds. The quote is fixed before work starts.</p>
+      </details>
+      <details class="faq-item reveal">
+        <summary>Who owns the system when it's done?</summary>
+        <p>You do. Code, data, and accounts are handed over to you at launch.</p>
+      </details>
+      <details class="faq-item reveal">
+        <summary>We already have a system that's half-working. Can you fix it?</summary>
+        <p>That's common. I can audit what exists, fix what's broken, and extend it — you don't have to start from zero.</p>
+      </details>
+      <details class="faq-item reveal">
+        <summary>Are you a developer or an agency?</summary>
+        <p>One developer — the person you message is the person who builds. Computer Science at WMSU, Lean Six Sigma White Belt, executive education in Digital Transformation at AIM, building daily at VINTAZK Outsourcing.</p>
+      </details>
     </section>
 
     <!-- Contact -->
-    <section class="section section-alt" id="contact">
-      <div class="wrap wrap-narrow">
-        <span class="sec-label reveal">// say hello</span>
-        <h2 class="reveal">Tell me what's slowing your business down</h2>
-        <p class="section-sub reveal">Describe the problem in your own words — I'll reply with how I'd approach it and what it would take.</p>
-        <form class="contact-form reveal" id="contactForm" novalidate>
-          <label for="contactName">Your name</label>
-          <input type="text" id="contactName" name="name" autocomplete="name" required>
-          <label for="contactEmail">Your email</label>
-          <input type="email" id="contactEmail" name="email" autocomplete="email" required>
-          <label for="contactMessage">What do you need?</label>
-          <textarea id="contactMessage" name="message" rows="5" placeholder="e.g. We still track orders in a notebook and lose receipts…" required></textarea>
-          <input type="text" id="contactHoney" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true" class="honey">
-          <div class="form-row">
-            <button type="submit" class="btn btn-solid" id="contactSend"><i class="fas fa-paper-plane"></i> Send message</button>
-            <button type="button" class="btn btn-ghost" id="contactCopyEmail"><i class="fas fa-copy"></i> Copy my email</button>
-          </div>
-          <p class="form-result" id="contactResult" role="status" aria-live="polite"></p>
-        </form>
-        <p class="contact-alt reveal">Prefer socials?
-          <a href="https://www.linkedin.com/in/john-kent-evangelista-lsswb-482435307/" target="_blank" rel="noopener noreferrer">LinkedIn</a> ·
-          <a href="https://www.facebook.com/tabibito12/" target="_blank" rel="noopener noreferrer">Facebook</a> ·
-          <a href="https://www.instagram.com/dziannn/" target="_blank" rel="noopener noreferrer">Instagram</a>
-        </p>
-      </div>
+    <section class="block" id="contact">
+      <span class="sec-label reveal">// say hello</span>
+      <h2 class="reveal">Tell me what's slowing you down</h2>
+      <p class="sub reveal">Describe the problem in your own words — I'll reply with how I'd approach it and what it would take.</p>
+      <form class="contact-form reveal" id="contactForm" novalidate>
+        <label for="contactName">Your name</label>
+        <input type="text" id="contactName" name="name" autocomplete="name" required>
+        <label for="contactEmail">Your email</label>
+        <input type="email" id="contactEmail" name="email" autocomplete="email" required>
+        <label for="contactMessage">What do you need?</label>
+        <textarea id="contactMessage" name="message" rows="5" placeholder="e.g. We still track orders in a notebook and lose receipts…" required></textarea>
+        <input type="text" id="contactHoney" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true" class="honey">
+        <div class="form-row">
+          <button type="submit" class="btn btn-solid" id="contactSend">Send message</button>
+          <button type="button" class="btn btn-plain" id="contactCopyEmail"><i class="fas fa-copy"></i> Copy my email</button>
+        </div>
+        <p class="form-result" id="contactResult" role="status" aria-live="polite"></p>
+      </form>
+      <p class="contact-alt reveal">
+        <a href="https://www.linkedin.com/in/john-kent-evangelista-lsswb-482435307/" target="_blank" rel="noopener noreferrer">LinkedIn</a> ·
+        <a href="https://www.facebook.com/tabibito12/" target="_blank" rel="noopener noreferrer">Facebook</a> ·
+        <a href="https://www.instagram.com/dziannn/" target="_blank" rel="noopener noreferrer">Instagram</a> ·
+        <a href="https://github.com/kent-vintazk" target="_blank" rel="noopener noreferrer">GitHub</a>
+      </p>
     </section>
 
   </main>
 
   <footer class="footer">
-    <div class="wrap footer-row">
-      <span>© <span id="year">2026</span> John Kent Evangelista · Zamboanga City, Philippines</span>
-      <span class="footer-links">
-        <a href="dev.html">Dev playground</a>
-        <a href="https://github.com/kent-vintazk" target="_blank" rel="noopener noreferrer">GitHub</a>
-        <a href="#top">Back to top</a>
-      </span>
-    </div>
+    <span>© <span id="year">2026</span> John Kent Evangelista</span>
+    <span class="footer-links">
+      <button class="linklike" id="downloadCVButton">Résumé</button>
+      <a href="dev.html">Dev playground</a>
+    </span>
   </footer>
 
   <script src="js/home.js"></script>
