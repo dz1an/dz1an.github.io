@@ -12,3 +12,10 @@ desktop.ini
 # Tooling artifacts (this is a no-build static site, but just in case)
 node_modules/
 *.log
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
