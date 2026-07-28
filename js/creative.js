@@ -217,6 +217,7 @@
     createCoreLantern();
     createCampCharacters();
     createProjectLanterns();
+    createMilestones();
     createFireflies(); createMist();
     createRuins();
     createBillboardTrees(); createSky(); createSmoke(); createGroundDetails();
@@ -755,6 +756,69 @@
   }
 
   // ======================== Project Lanterns — branch-hung, zigzag ========================
+  // ======================== Milestone waypoints — the journey's real markers ========================
+  // Career milestones as physical trail markers (education, award, what's next).
+  // NO new PointLights here — labels/glows are unlit materials by design.
+  function createMilestones() {
+    var woodMat = new THREE.MeshStandardMaterial({ color: 0x3B2A1A, roughness: 0.9 });
+    var stoneMat = new THREE.MeshStandardMaterial({ color: 0x555566, roughness: 0.95, flatShading: true });
+
+    function signpost(x, z, plaqueText, labelText, subText) {
+      var gY = getGroundY(x, z);
+      var post = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.07, 1.5, 6), woodMat);
+      post.position.set(x, gY + 0.75, z);
+      scene.add(post);
+      var plaque = makeCarving(plaqueText);
+      plaque.position.set(x, gY + 1.35, z + 0.06);
+      plaque.rotation.y = x > 0 ? -0.25 : 0.25; // angle toward the path
+      scene.add(plaque);
+      var label = makeLabel(labelText, { fontSize: 16, sub: subText, scale: 1.0, opacity: 0.55 });
+      label.position.set(x, gY + 2.1, z);
+      scene.add(label);
+    }
+
+    // Where the path began — university, at the trail entrance
+    signpost(2.3, 38, "WMSU · 2020", "Where the path began", "BS Computer Science");
+
+    // Rising above — executive education, late in the lantern grove
+    signpost(-2.6, -24.5, "AIM · 2025", "Rising above", "Executive Education — Digital Transformation");
+
+    // A mark left behind — stone cairn for the national award
+    var cx = 2.6, cz = -30, cgY = getGroundY(cx, cz);
+    for (var ci = 0; ci < 5; ci++) {
+      var cs = 0.28 - ci * 0.045;
+      var stone = new THREE.Mesh(new THREE.DodecahedronGeometry(cs, 0), stoneMat);
+      stone.position.set(cx + (ci % 2 ? 0.04 : -0.04), cgY + 0.1 + ci * 0.16, cz);
+      stone.scale.y = 0.6;
+      stone.rotation.set(Math.random(), Math.random(), 0);
+      scene.add(stone);
+    }
+    var awardLabel = makeLabel("2025 Productivity Olympics", {
+      fontSize: 18, fontWeight: "700", color: "#FFD24A",
+      sub: "National Winner — with the VINTAZK team", scale: 1.15, opacity: 0.75
+    });
+    awardLabel.position.set(cx, cgY + 1.7, cz);
+    scene.add(awardLabel);
+
+    // The next lantern — LUMI, not lit yet (in development)
+    var lx = -2.2, lz = -31.5, lgY = getGroundY(lx, lz);
+    var post2 = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.045, 1.5, 5), woodMat);
+    post2.position.set(lx, lgY + 0.75, lz);
+    scene.add(post2);
+    var dim = new THREE.Mesh(
+      new THREE.SphereGeometry(0.16, 10, 10),
+      new THREE.MeshBasicMaterial({ color: 0xE8C87A, transparent: true, opacity: 0.22 })
+    );
+    dim.position.set(lx, lgY + 1.55, lz);
+    scene.add(dim);
+    var lumiLabel = makeLabel("LUMI", {
+      fontSize: 16, color: "#E8C87A",
+      sub: "the next lantern — in development", scale: 0.95, opacity: 0.5
+    });
+    lumiLabel.position.set(lx, lgY + 2.05, lz);
+    scene.add(lumiLabel);
+  }
+
   function createProjectLanterns() {
     // Zigzag: lanterns alternate sides of the path
     // Odd index = left side (host tree at negative X), even = right side
