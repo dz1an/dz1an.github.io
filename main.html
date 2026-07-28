@@ -83,11 +83,22 @@
     <!-- HERO — giant type, floating tree behind -->
     <section class="hero">
       <div class="hero-tree" aria-hidden="true">
-        <svg viewBox="0 0 200 260" xmlns="http://www.w3.org/2000/svg">
-          <polygon points="100,10 160,90 40,90"  fill="#5C7650"/>
-          <polygon points="100,55 175,150 25,150" fill="#3A5A40"/>
-          <polygon points="100,105 190,215 10,215" fill="#344E41"/>
-          <rect x="88" y="215" width="24" height="40" rx="4" fill="#3B2A1A"/>
+        <!-- Chevron pine — code-chevrons stacked into a pine, faceted (lit from
+             the left), fireflies drifting. Ownable mark, not clip-art. -->
+        <svg viewBox="0 0 220 300" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="110,22 58,96 84,96 110,54" fill="#6E8A5E"/>
+          <polygon points="110,22 162,96 136,96 110,54" fill="#55704B"/>
+          <polygon points="106,84 38,180 71,180 106,126" fill="#4A6B51"/>
+          <polygon points="106,84 174,180 141,180 106,126" fill="#3A5A40"/>
+          <polygon points="112,156 18,272 57,272 112,206" fill="#3E5C4B"/>
+          <polygon points="112,156 206,272 167,272 112,206" fill="#344E41"/>
+          <polygon points="100,268 124,266 121,298 104,300" fill="#3B2A1A"/>
+          <circle cx="172" cy="66" r="8" fill="#FFD24A" opacity="0.22"/>
+          <circle cx="172" cy="66" r="3.5" fill="#FFD24A"/>
+          <circle cx="46" cy="148" r="7" fill="#E8C87A" opacity="0.2"/>
+          <circle cx="46" cy="148" r="3" fill="#E8C87A"/>
+          <circle cx="188" cy="228" r="6" fill="#FFE066" opacity="0.2"/>
+          <circle cx="188" cy="228" r="2.5" fill="#FFE066"/>
         </svg>
       </div>
       <div class="wrap hero-inner">
@@ -107,17 +118,23 @@
 
     <!-- COLOR BLOCK — who I am + what I build -->
     <section class="blockgreen">
-      <div class="wrap">
-        <h2 class="bg-head reveal"><span class="bg-solid">Systems people</span><br><span class="bg-italic">actually use.</span></h2>
-        <p class="bg-body reveal">I'm John Kent Evangelista — a software developer from Zamboanga City. I build the systems behind real operations: a city-wide business directory, an outsourcing company's daily platform, a learning system, barangay services. Built to be used, not just launched.</p>
-        <p class="bg-tags reveal">
-          <span>Business systems</span> //
-          <span>Barangay &amp; LGU</span> //
-          <span>Learning platforms</span> //
-          <span>Websites &amp; portals</span> //
-          <span>Automation &amp; AI</span>
-        </p>
-        <p class="bg-proof reveal">636+ businesses on ZamGo &nbsp;·&nbsp; 5 systems live &nbsp;·&nbsp; 2025 Productivity Olympics national winner, with the VINTAZK team</p>
+      <div class="wrap bg-grid">
+        <div>
+          <h2 class="bg-head reveal"><span class="bg-solid">Systems people</span><br><span class="bg-italic">actually use.</span></h2>
+          <p class="bg-body reveal">I'm John Kent Evangelista — a software developer from Zamboanga City. I build the systems behind real operations: a city-wide business directory, an outsourcing company's daily platform, a learning system, barangay services. Built to be used, not just launched.</p>
+          <p class="bg-tags reveal">
+            <span>Business systems</span> //
+            <span>Barangay &amp; LGU</span> //
+            <span>Learning platforms</span> //
+            <span>Websites &amp; portals</span> //
+            <span>Automation &amp; AI</span>
+          </p>
+          <p class="bg-proof reveal">636+ businesses on ZamGo &nbsp;·&nbsp; 5 systems live &nbsp;·&nbsp; 2025 Productivity Olympics national winner, with the VINTAZK team</p>
+        </div>
+        <figure class="bg-photo-wrap reveal">
+          <img class="bg-photo" src="images/profile.png" alt="John Kent Evangelista" width="741" height="685" loading="lazy">
+          <figcaption class="bg-photo-cap">// kent — the person you'll actually talk to</figcaption>
+        </figure>
       </div>
     </section>
 
@@ -128,7 +145,8 @@
         <h2 class="light-head reveal">Real systems,<br><em>in use today.</em></h2>
 
         <a class="wrow reveal" href="https://zamgo.vintazk.com" target="_blank" rel="noopener noreferrer">
-          <div>
+          <img class="wthumb" src="images/zamgo.png" alt="" width="394" height="850" loading="lazy">
+          <div class="wrow-txt">
             <h3>ZamGo</h3>
             <p>City-wide business directory — 636+ Zamboanga businesses indexed.</p>
           </div>
@@ -136,7 +154,8 @@
         </a>
 
         <a class="wrow reveal" href="https://app.vintech.vintazk.com" target="_blank" rel="noopener noreferrer">
-          <div>
+          <img class="wthumb" src="images/vintech.png" alt="" width="1901" height="947" loading="lazy">
+          <div class="wrow-txt">
             <h3>Vintech</h3>
             <p>The operations platform behind VINTAZK Outsourcing — a nationally awarded team.</p>
           </div>
@@ -144,7 +163,8 @@
         </a>
 
         <a class="wrow reveal" href="https://vintazkacademy.vintazk.com" target="_blank" rel="noopener noreferrer">
-          <div>
+          <img class="wthumb" src="images/vintazkUniversity.png" alt="" width="1914" height="946" loading="lazy">
+          <div class="wrow-txt">
             <h3>Acaddemy</h3>
             <p>Learning platform — courses, learner tracking, role-based access.</p>
           </div>

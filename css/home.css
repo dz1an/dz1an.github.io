@@ -133,8 +133,8 @@ a { color: var(--sage); }
 @media (prefers-reduced-motion: no-preference) {
   .hero-tree { animation: treeFloat 9s ease-in-out infinite alternate; }
   @keyframes treeFloat {
-    from { transform: translateY(-54%) rotate(6deg); }
-    to   { transform: translateY(-46%) rotate(11deg); }
+    from { transform: translateY(-54%) rotate(1deg); }
+    to   { transform: translateY(-46%) rotate(5deg); }
   }
 }
 
@@ -178,6 +178,18 @@ a { color: var(--sage); }
 .bg-proof {
   margin-top: 2.6rem; font-size: 0.88rem; color: rgba(255,255,255,0.65);
 }
+.bg-grid { display: grid; grid-template-columns: 1fr auto; gap: 48px; align-items: center; }
+.bg-photo-wrap { margin: 0; }
+.bg-photo {
+  width: clamp(180px, 22vw, 260px); height: auto;
+  border-radius: 22px; transform: rotate(-2.5deg);
+  border: 5px solid rgba(250, 250, 247, 0.14);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+}
+.bg-photo-cap {
+  margin-top: 14px; font-family: var(--mono); font-size: 0.74rem;
+  color: rgba(255,255,255,0.55); text-align: center; max-width: 260px;
+}
 
 /* ============ LIGHT BLOCKS ============ */
 .blocklight { background: var(--bg); padding: 88px 0; }
@@ -209,6 +221,13 @@ a { color: var(--sage); }
   font-size: 1.5rem; font-weight: 900; letter-spacing: -0.01em;
   text-transform: uppercase; color: var(--ink);
 }
+.wrow-txt { flex: 1; }
+.wthumb {
+  width: 92px; height: 92px; object-fit: cover; object-position: top;
+  border-radius: 12px; border: 1px solid var(--line); flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+a.wrow:hover .wthumb { transform: scale(1.04) rotate(-1deg); }
 .wrow p { font-size: 0.96rem; color: var(--ink-soft); margin-top: 3px; }
 .wrow-go {
   flex-shrink: 0; font-family: var(--mono); font-size: 0.82rem; font-weight: 700;
@@ -307,10 +326,14 @@ a.wrow:hover h3 { color: var(--green); }
   .hero-foot { margin-top: 44px; letter-spacing: 0.1em; }
   .blockgreen { padding: 64px 0; }
   .blocklight { padding: 60px 0; }
-  .wrow { flex-direction: column; align-items: flex-start; gap: 6px; }
-  .wrow-go { align-self: flex-start; }
+  .wrow { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 14px; }
+  .wrow-txt { flex: 1 1 55%; }
+  .wthumb { width: 68px; height: 68px; }
+  .wrow-go { flex-basis: 100%; }
   .xrow { flex-direction: column; gap: 4px; }
   .x-date { padding-top: 0; order: -1; }
+  .bg-grid { grid-template-columns: 1fr; gap: 28px; }
+  .bg-photo-wrap { justify-self: center; }
   .topnav { gap: 16px; }
   .annbar { font-size: 0.7rem; padding: 8px 40px; }
 }
