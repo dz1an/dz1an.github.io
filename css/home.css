@@ -401,7 +401,7 @@ a.wrow:hover h3 { color: var(--green); }
 
 .bf-grid {
   display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
-  padding-bottom: 44px;
+  padding-bottom: 32px;
 }
 .bf-label {
   display: block; font-family: var(--mono); font-size: 0.7rem; font-weight: 600;
@@ -447,7 +447,7 @@ a.bf-value:hover { color: var(--sage); }
 }
 .linklike:hover { color: var(--sage); }
 
-.bf-markwrap { overflow: hidden; margin-top: 30px; max-height: 0.62em; font-size: clamp(6rem, 21vw, 15rem); }
+.bf-markwrap { overflow: hidden; margin-top: 20px; max-height: 0.62em; font-size: clamp(6rem, 21vw, 15rem); }
 .bf-mark {
   display: block; font-weight: 900; letter-spacing: -0.05em; line-height: 0.9;
   color: var(--ink); text-align: center; white-space: nowrap;
