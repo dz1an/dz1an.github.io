@@ -1,5 +1,5 @@
 // ============================================
-// //kent.dev — client-first home page JS
+// //dzian — client-first home page JS
 // ============================================
 (function () {
   "use strict";

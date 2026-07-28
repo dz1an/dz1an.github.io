@@ -1,5 +1,5 @@
 // ============================================
-// Creative Mode — //kent.dev Forest
+// Creative Mode — //dzian Forest
 // A scroll-driven walk through a procedural forest
 // Projects are lanterns. Tech are fireflies.
 // ============================================
@@ -714,7 +714,7 @@
 
     // === Brand label floats above the campsite ===
     // Brand label — small, off to the side so it doesn't block the campsite
-    var brand = makeLabel("//kent.dev", { fontSize: 22, fontWeight: "700", color: "#A3B18A", scale: 1.2, opacity: 0.5 });
+    var brand = makeLabel("//dzian", { fontSize: 22, fontWeight: "700", color: "#A3B18A", scale: 1.2, opacity: 0.5 });
     brand.position.set(-3, gY + 2.2, -2); scene.add(brand); scene._brandLabel = brand;
     var sub = makeLabel("Software Developer", { fontSize: 11, fontWeight: "400", color: "rgba(163,177,138,0.35)", scale: 1.0, opacity: 0.3 });
     sub.position.set(-3, gY + 1.7, -2); scene.add(sub); scene._brandSub = sub;

@@ -46,7 +46,7 @@
       });
       var titleText = document.createElement("span");
       titleText.className = "xc-build-title";
-      titleText.textContent = "kent.dev \u2014 Build Log";
+      titleText.textContent = "dzian \u2014 Build Log";
       titlebar.appendChild(titleText);
       terminal.appendChild(titlebar);
 
@@ -59,7 +59,7 @@
 
       if (goingCreative) {
         var creativeLines = [
-          { text: "$ xcodebuild -scheme kent.dev -config journey", cls: "xc-cmd" },
+          { text: "$ xcodebuild -scheme dzian -config journey", cls: "xc-cmd" },
           { text: "\u25b8 Loading Three.js runtime...", cls: "" },
           { text: "\u25b8 Growing the forest canopy...", cls: "" },
           { text: "\u25b8 Planting the forest \u2014 sage & amber palette", cls: "" },
@@ -79,11 +79,11 @@
       } else {
         // Code mode: static lines
         var codeLines = [
-          { text: "$ xcodebuild -scheme kent.dev -config code", cls: "xc-cmd" },
+          { text: "$ xcodebuild -scheme dzian -config code", cls: "xc-cmd" },
           { text: "\u25b8 Packing up camp...", cls: "" },
           { text: "\u25b8 Compiling ThemeProvider.swift", cls: "" },
           { text: "\u25b8 Restoring dark palette [#1c1c1e]", cls: "" },
-          { text: "\u25b8 Linking kent.dev", cls: "" },
+          { text: "\u25b8 Linking dzian", cls: "" },
           { text: "\u2713 Build Succeeded \u2014 Code Mode Active", cls: "xc-success" },
         ];
         var delay = 250;
@@ -402,7 +402,7 @@
     ? [
         { text: '<span class="term-muted">[cache]</span> assets loaded from local storage <span class="term-success">✓</span>', delay: 100 },
         { text: '<span class="term-muted">[sw]</span> service worker active <span class="term-success">✓</span>', delay: 80 },
-        { text: "restoring <span class='term-accent'>//kent.dev</span> session...", delay: 150 },
+        { text: "restoring <span class='term-accent'>//dzian</span> session...", delay: 150 },
         { text: '<span class="term-success">welcome back.</span> launching portfolio ↗', delay: 200 },
       ]
     : [
@@ -412,7 +412,7 @@
         { text: '<span class="term-muted">[plugin]</span> particles.js <span class="term-success">✓</span>', delay: 180 },
         { text: '<span class="term-muted">[plugin]</span> typed.js <span class="term-success">✓</span>', delay: 100 },
         { text: '<span class="term-muted">[plugin]</span> scroll-reveal <span class="term-success">✓</span>', delay: 130 },
-        { text: "compiling <span class='term-accent'>//kent.dev</span>...", delay: 300 },
+        { text: "compiling <span class='term-accent'>//dzian</span>...", delay: 300 },
         { text: '<span class="term-success">ready.</span> launching portfolio ↗', delay: 400 },
       ];
 
@@ -1328,7 +1328,7 @@ document.addEventListener("DOMContentLoaded", function () {
     "pwd": "/home/kent/dev",
     "date": new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }),
     "echo hello": "hello 👋",
-    "npm start": "Starting kent.dev on port 3000...",
+    "npm start": "Starting dzian on port 3000...",
     "solve": "Hint: Click the debug.js tab in the hero IDE. The function returns \"Hello, World\" but should return \"Hello, World!\" — what's missing?"
   };
 
@@ -1827,7 +1827,7 @@ document.addEventListener("DOMContentLoaded", function () {
 (function () {
   // Styled console banner
   console.log(
-    "%c //kent.dev %c v1.0 ",
+    "%c //dzian %c v1.0 ",
     "background: #3A5A40; color: #DAD7CD; font-size: 20px; font-weight: 900; padding: 10px 15px; border-radius: 6px 0 0 6px; font-family: monospace;",
     "background: #5C7650; color: #DAD7CD; font-size: 20px; font-weight: 400; padding: 10px 15px; border-radius: 0 6px 6px 0; font-family: monospace;"
   );
