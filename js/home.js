@@ -172,24 +172,32 @@
       if (total <= 0) return;
       var p = clamp01(-r.top / total);
 
-      // Act 1 — the brand ground floods in, the title dissolves into it
-      var a = ease(seg(p, 0.02, 0.40));
+      // Act 1 — the brand ground floods in; the title dissolves ALL THE WAY out
+      var a = ease(seg(p, 0.02, 0.30));
       sBg.style.opacity = a.toFixed(3);
-      sTitle.style.opacity = (1 - a * 0.88).toFixed(3);
+      var titleFade = 1 - ease(seg(p, 0.02, 0.26));
+      sTitle.style.opacity = titleFade.toFixed(3);
       sTitle.style.transform = "scale(" + (1 - a * 0.06).toFixed(3) + ")";
+      sTitle.style.visibility = titleFade < 0.01 ? "hidden" : "visible";
 
-      // Act 2 — the pine takes the stage, then slides aside for the copy
-      var b = ease(seg(p, 0.42, 0.78));
-      var scale = 1 + a * 0.42 - b * 0.06;
-      var shiftX = b * 24;   // vw, toward the right
-      sTree.style.transform =
-        "translate(calc(-50% + " + shiftX.toFixed(2) + "vw), -50%) scale(" + scale.toFixed(3) + ")";
-      if (sMv) sMv.cameraOrbit = (15 + p * 300).toFixed(1) + "deg 82deg 105%";
-
-      // Act 3 — the intro arrives
+      // Act 2 — the pine slides right and the intro arrives beside it
+      var b = ease(seg(p, 0.28, 0.52));
       sIntro.style.opacity = b.toFixed(3);
       sIntro.style.transform = "translateY(" + ((1 - b) * 26).toFixed(1) + "px)";
       sIntro.style.pointerEvents = b > 0.6 ? "auto" : "none";
+
+      // Act 3 — hold, then fly the camera into the pine until it fills the frame
+      var c = ease(seg(p, 0.66, 1.0));
+      var shiftX = b * 22 - c * 10;                 // settles right, drifts back in as it grows
+      var scale = 1 + a * 0.18 + c * 0.35;
+      sTree.style.transform =
+        "translate(calc(-50% + " + shiftX.toFixed(2) + "vw), -50%) scale(" + scale.toFixed(3) + ")";
+      // Real 3D dolly (stays sharp at any size) + continuous turn
+      var radius = 118 - c * 88;                    // 118% -> 30%
+      if (sMv) sMv.cameraOrbit = (15 + p * 300).toFixed(1) + "deg " + (82 - c * 12).toFixed(1) + "deg " + radius.toFixed(1) + "%";
+
+      // Copy steps aside for the final push so the pine owns the last beat
+      sIntro.style.opacity = (b * (1 - ease(seg(p, 0.86, 1.0)) * 0.85)).toFixed(3);
 
       // Chrome flips to light while the green ground is up
       var dark = a > 0.55;
