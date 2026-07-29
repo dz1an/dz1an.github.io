@@ -214,15 +214,23 @@ a { color: var(--sage); }
   .stage-pin { position: static; height: auto; flex-direction: column; padding: 60px 0; }
   .stage-bg { display: none; }
   .stage-intro { position: static; opacity: 1; pointer-events: auto; padding-top: 48px; }
-  .stage-intro .bg-head, .stage-intro .bg-body, .stage-intro .bg-tags { color: var(--ink); }
+  .stage-intro .bg-head, .stage-intro .bg-body { color: var(--ink); }
+  .stage-intro .bg-tags { color: var(--sage); }
   .stage-intro .bg-solid { color: var(--sage); }
   .stage-intro .bg-italic { color: var(--green); }
   .stage-foot { position: static; margin-top: 32px; }
 }
 html:not(.js) .stage { height: auto; }
 html:not(.js) .stage-pin { position: static; height: auto; flex-direction: column; padding: 60px 0; }
-html:not(.js) .stage-intro { position: static; opacity: 1; pointer-events: auto; }
+html:not(.js) .stage-bg { display: none; }
+html:not(.js) .stage-intro { position: static; opacity: 1; pointer-events: auto; padding-top: 40px; }
 html:not(.js) .stage-foot { position: static; margin-top: 28px; }
+/* Without the green ground these would be gold/white on cream — unreadable. */
+html:not(.js) .stage-intro .bg-head,
+html:not(.js) .stage-intro .bg-body { color: var(--ink); }
+html:not(.js) .stage-intro .bg-solid { color: var(--sage); }
+html:not(.js) .stage-intro .bg-italic { color: var(--green); }
+html:not(.js) .stage-intro .bg-tags { color: var(--sage); }
 
 /* Proof strip continues the green out of the stage */
 .blockproof { padding-top: 72px; }

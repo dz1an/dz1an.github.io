@@ -199,8 +199,10 @@
       // Copy steps aside for the final push so the pine owns the last beat
       sIntro.style.opacity = (b * (1 - ease(seg(p, 0.86, 1.0)) * 0.85)).toFixed(3);
 
-      // Chrome flips to light while the green ground is up
-      var dark = a > 0.55;
+      // Chrome flips to light ONLY while the green ground is actually behind
+      // the bar. p clamps at 1 past the stage, so without the r.bottom test the
+      // nav would stay white over the cream sections below and vanish.
+      var dark = a > 0.55 && r.bottom > 100;
       if (dark !== wasDark) {
         wasDark = dark;
         stage.classList.toggle("is-dark", dark);
