@@ -127,19 +127,30 @@ a { color: var(--sage); }
 .btn-ghostlight { background: none; color: #fff; border: 1px solid rgba(255,255,255,0.4); }
 .btn-ghostlight:hover { border-color: #fff; }
 
-/* ============ HERO — full-viewport type composition ============ */
-.hero {
-  position: relative; overflow: hidden;
-  min-height: calc(100vh - 110px);
-  display: flex; flex-direction: column;
-  text-align: center; padding: 20px 0 0;
+/* ============ STAGE — pinned scroll scene (hero -> intro in one shot) ======
+   Scroll drives: cream floods to green, the title dissolves into the ground,
+   the pine grows + slides aside, the intro arrives. JS writes the values;
+   CSS only defines the resting state so it degrades gracefully. */
+.stage { position: relative; height: 300vh; }
+.stage-pin {
+  position: sticky; top: 0; height: 100vh; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
 }
-.hero-inner { position: relative; z-index: 1; margin: auto 0; padding: 0 16px; }
 
-.hero h1 {
+/* The brand ground that floods in (same tile as .blockgreen so they fuse) */
+.stage-bg {
+  position: absolute; inset: 0; opacity: 0; pointer-events: none;
+  background-color: var(--green);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96'%3E%3Cg fill='none' stroke='%232C4237' stroke-width='2'%3E%3Cpath d='M14 34 L24 14 L34 34 Z'/%3E%3C/g%3E%3Ctext x='56' y='78' font-family='monospace' font-size='20' font-weight='700' fill='%232C4237'%3E//%3C/text%3E%3C/svg%3E");
+  will-change: opacity;
+}
+
+.stage-title {
+  position: relative; z-index: 2; text-align: center; padding: 0 16px;
   font-size: clamp(3.6rem, 15vw, 13.5rem);
   line-height: 0.95; letter-spacing: -0.03em;
   text-transform: uppercase; color: var(--ink);
+  will-change: opacity, transform;
 }
 .h-solid { font-weight: 900; }
 .h-italic { font-style: italic; font-weight: 300; color: var(--sage); text-transform: lowercase; }
@@ -151,27 +162,68 @@ a { color: var(--sage); }
   .h-outline { color: var(--sage-light); }
 }
 
-/* Floating 3D tree — centered, overlapping through the type */
-.hero-tree {
-  position: absolute; z-index: 0;
-  left: 50%; top: 46%; transform: translate(-50%, -50%) rotate(2deg);
-  width: clamp(300px, 44vw, 620px); opacity: 0.92;
-  pointer-events: none;
+/* The pine — centred behind the type, then the star of the intro */
+.stage-tree {
+  position: absolute; z-index: 1;
+  left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: clamp(300px, 44vw, 620px);
+  pointer-events: none; will-change: transform;
 }
-.hero-tree svg { width: 100%; height: auto; display: block; }
-.hero-tree model-viewer {
+.stage-tree model-viewer {
   width: 100%; height: clamp(300px, 42vw, 560px);
   background: transparent; --poster-color: transparent;
   --progress-bar-color: transparent; --progress-bar-height: 0px;
-  will-change: transform, opacity;
 }
-.hero-foot {
-  position: relative; z-index: 1;
-  margin: 0; padding: 0 24px 30px;
-  text-align: center;
+
+/* Intro copy — arrives as the ground turns green */
+.stage-intro {
+  position: absolute; inset: 0; z-index: 3;
+  display: flex; align-items: center;
+  opacity: 0; pointer-events: none;
+  will-change: opacity, transform;
+}
+.stage-intro .bg-head { margin-bottom: 1.2rem; }
+.stage-intro .bg-body { max-width: 520px; margin-bottom: 1.2rem; }
+.stage-intro .bg-tags { margin-bottom: 1.4rem; }
+
+.stage-foot {
+  position: absolute; left: 0; right: 0; bottom: 26px; z-index: 3;
+  text-align: center; padding: 0 24px;
   font-family: var(--mono); font-size: 0.78rem; font-weight: 500;
   letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-muted);
+  transition: color 0.4s ease;
 }
+.stage.is-dark .stage-foot { color: rgba(255, 255, 255, 0.5); }
+
+/* Nav flips to light while the green ground is up */
+.top.on-dark {
+  background: transparent; border-bottom-color: transparent;
+  backdrop-filter: none; -webkit-backdrop-filter: none;
+}
+.top.on-dark .brand { color: #fff; }
+.top.on-dark .brand-sl { color: var(--gold); }
+.top.on-dark .topnav a { color: rgba(255, 255, 255, 0.85); }
+.top.on-dark .topnav a:hover,
+.top.on-dark .topnav a.active { color: var(--gold); }
+
+/* No JS / reduced motion: unpin and show everything stacked */
+@media (prefers-reduced-motion: reduce) {
+  .stage { height: auto; }
+  .stage-pin { position: static; height: auto; flex-direction: column; padding: 60px 0; }
+  .stage-bg { display: none; }
+  .stage-intro { position: static; opacity: 1; pointer-events: auto; padding-top: 48px; }
+  .stage-intro .bg-head, .stage-intro .bg-body, .stage-intro .bg-tags { color: var(--ink); }
+  .stage-intro .bg-solid { color: var(--sage); }
+  .stage-intro .bg-italic { color: var(--green); }
+  .stage-foot { position: static; margin-top: 32px; }
+}
+html:not(.js) .stage { height: auto; }
+html:not(.js) .stage-pin { position: static; height: auto; flex-direction: column; padding: 60px 0; }
+html:not(.js) .stage-intro { position: static; opacity: 1; pointer-events: auto; }
+html:not(.js) .stage-foot { position: static; margin-top: 28px; }
+
+/* Proof strip continues the green out of the stage */
+.blockproof { padding-top: 72px; }
 
 /* ============ GREEN COLOR BLOCKS ============ */
 .blockgreen {
@@ -441,9 +493,13 @@ a.bf-value:hover { color: var(--sage); }
 
 /* Small screens */
 @media (max-width: 720px) {
-  .hero { min-height: calc(100vh - 90px); }
-  .hero-tree { width: 78vw; opacity: 0.55; }
-  .hero-foot { letter-spacing: 0.1em; }
+  /* Shorter pin so the scene doesn't overstay on a phone */
+  .stage { height: 240vh; }
+  .stage-tree { width: 74vw; }
+  .stage-foot { letter-spacing: 0.1em; bottom: 18px; }
+  .stage-intro { align-items: center; }
+  .stage-intro .bg-body { font-size: 0.98rem; }
+  .stage-intro .bg-tags { font-size: 0.72rem; line-height: 1.9; }
   .top .top-row { padding-left: 18px; padding-right: 18px; }
   .blockgreen { padding: 64px 0; }
   .blocklight { padding: 60px 0; }
@@ -459,7 +515,7 @@ a.bf-value:hover { color: var(--sage); }
   .bf-row { grid-template-columns: 1fr; gap: 4px; }
   .bf-bar { justify-content: flex-start; }
   .topnav { gap: 14px; }
-  .topnav a { font-size: 0.88rem; }
+  .topnav a { font-size: 0.72rem; letter-spacing: 0.06em; }
   .annbar { font-size: 0.7rem; padding: 8px 40px; }
 }
 
