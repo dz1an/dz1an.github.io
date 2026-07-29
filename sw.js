@@ -1,7 +1,7 @@
 // ============================================
 // Service Worker — //dzian PWA + Offline
 // ============================================
-var CACHE_NAME = "kent-dev-v21";
+var CACHE_NAME = "kent-dev-v22";
 var CORE_ASSETS = [
   "/",
   "/index.html",

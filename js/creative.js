@@ -91,36 +91,38 @@
 
   // Camera path — designed per chapter, 3D content opposite text cards
   var CAMERA_PATH = [
-    // Ch0: "Welcome to the Forest" (LEFT card) — trees on RIGHT
+    // Ch0: "The Road Ahead" (LEFT card) — trees on RIGHT
     { at: 0.00, pos: [0, 8, 44],      look: [2, 0, 20] },
     { at: 0.05, pos: [0, 6, 36],      look: [2, 0.5, 16] },
-    // Ch1: "From Zamboanga" (RIGHT card) — forest depth on LEFT
+    // Ch1: "Where the Path Began" (RIGHT card) — forest depth on LEFT
     { at: 0.10, pos: [1, 4.5, 26],    look: [-2, 0.5, 10] },
     { at: 0.16, pos: [1, 3.5, 18],    look: [-1, 0.5, 4] },
-    // Ch2: "Where Ideas Take Root" (LEFT card) — camp on RIGHT
+    // Ch2: "The Resting Place" (LEFT card) — camp on RIGHT
     { at: 0.22, pos: [3, 2.5, 10],    look: [1, 0.5, 0] },
     { at: 0.28, pos: [3, 2, 6],       look: [0, 0.6, 0] },
-    // Ch3: "Measure Twice" (RIGHT card) — Kent+laptop on LEFT, zoom into screen
-    { at: 0.33, pos: [-1, 2, 5],           look: [-1, 0.5, -1] },
-    { at: 0.345, pos: [-2, 1.3, 3],         look: [-1.9, 0.3, 1.5] },
-    { at: 0.36, pos: [-2.2, 1.2, 2.8],    look: [-1.9, 0.3, 1.5] },
-    { at: 0.38, pos: [-2.5, 2.5, 2],      look: [0, 0.5, -4] },
-    // Ch4: "Vintech & ZamGo" (LEFT card) — lanterns on RIGHT
+    // Ch3: "The Journal" (RIGHT card) — settle in at the campfire, camp on LEFT.
+    // (This used to push into a laptop model that no longer exists; it now
+    //  frames the fire + tent, which is what "the journal" chapter is about.)
+    { at: 0.33,  pos: [2.9, 1.9, 4.6], look: [0.2, 0.6, 0.1] },
+    { at: 0.345, pos: [2.4, 1.5, 3.4], look: [0.1, 0.5, 0.2] },
+    { at: 0.36,  pos: [2.1, 1.4, 2.8], look: [0.0, 0.5, 0.1] },
+    { at: 0.38,  pos: [1.4, 2.3, 1.4], look: [0, 0.6, -4] },
+    // Ch4: "First Waypoints" (LEFT card) — lanterns on RIGHT
     { at: 0.42, pos: [-2, 3, -4],     look: [0, 2.5, -12] },
     { at: 0.47, pos: [-1, 3.2, -8],   look: [0, 3, -12] },
     { at: 0.52, pos: [0, 3, -12],     look: [2, 2.8, -16] },
-    // Ch5: "Three More Lights" (RIGHT card) — lanterns on LEFT
+    // Ch5: "More Light in the Dark" (RIGHT card) — lanterns on LEFT
     { at: 0.57, pos: [2, 3.2, -17],   look: [-2, 3, -21] },
     { at: 0.62, pos: [2, 3, -22],     look: [-1, 2.8, -27] },
-    // Ch6: "The Fireflies" (LEFT card) — inside the meadow, fireflies around you
+    // Ch6: "What I Carry With Me" (LEFT card) — inside the firefly meadow
     { at: 0.67, pos: [3, 2.5, -34],   look: [-3, 2.5, -37] },
     { at: 0.72, pos: [2, 2.5, -37],   look: [-4, 2.5, -39] },
-    // Ch7: "National Winner" (CENTER) — dramatic rise
+    // Ch7: "A Mark Left Behind" (CENTER) — rise over the award cairn
     { at: 0.77, pos: [-1, 6, -30],    look: [0, 1, -10] },
-    // Ch8: "Above the Canopy" (RIGHT card) — canopy on LEFT
+    // Ch8: "Rising Above" (RIGHT card) — canopy on LEFT
     { at: 0.83, pos: [-3, 8, -15],    look: [-2, 2, 0] },
     { at: 0.88, pos: [-2, 9, -5],     look: [0, 1, 0] },
-    // Ch9: "Let's Build Together" (CENTER) — settling in tree
+    // Ch9: "The Journey Continues" (CENTER) — settle back over camp
     { at: 0.94, pos: [6, 8, 8],       look: [0, 0.5, 0] },
     { at: 1.00, pos: [12, 7, 5],      look: [0, 0.5, 0] }
   ];
@@ -1157,7 +1159,7 @@
     var glowGeo = new THREE.SphereGeometry(3, 12, 12);
     var glowMat = new THREE.MeshBasicMaterial({ color: 0xAABBCC, transparent: true, opacity: 0.04 });
     var moonGlow = new THREE.Mesh(glowGeo, glowMat);
-    moonGlow.position.set(-30, 50, -40);
+    moonGlow.position.copy(moonMesh.position); // halo belongs ON the moon
     scene.add(moonGlow);
   }
 
