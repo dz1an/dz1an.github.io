@@ -291,55 +291,43 @@
   // ======================== Dirt Path — entrance to campsite ========================
   function createDirtPath() {
     var pathMat = new THREE.MeshStandardMaterial({ color: 0x2A1F15, roughness: 0.95 });
+    var FLAT = [-Math.PI / 2, 0, 0];
+    var plan = [];
 
     // Entrance to camp (z:42 to z:0) — gentle winding
     for (var pz = 42; pz >= -2; pz -= 1.5) {
       var xWobble = Math.sin(pz * 0.15) * 1.2;
-      var gY = terrainHeight(xWobble, pz);
       var radius = 1.2 + Math.sin(pz * 0.3) * 0.3;
-      var disc = new THREE.Mesh(new THREE.CircleGeometry(radius, 6), pathMat);
-      disc.rotation.x = -Math.PI / 2;
-      disc.position.set(xWobble, gY + 0.015, pz);
-      scene.add(disc);
+      plan.push({ p: [xWobble, terrainHeight(xWobble, pz) + 0.015, pz], r: FLAT, s: [radius, radius, 1] });
     }
 
     // Widen into the clearing
     for (var ci = 0; ci < 5; ci++) {
       var ca = (ci / 5) * Math.PI - Math.PI / 2;
-      var disc = new THREE.Mesh(new THREE.CircleGeometry(2 + Math.random() * 1.5, 6), pathMat);
-      disc.rotation.x = -Math.PI / 2;
-      disc.position.set(Math.cos(ca) * 4, 0.015, Math.sin(ca) * 4 + 2);
-      scene.add(disc);
+      var cr = 2 + Math.random() * 1.5;
+      plan.push({ p: [Math.cos(ca) * 4, 0.015, Math.sin(ca) * 4 + 2], r: FLAT, s: [cr, cr, 1] });
     }
 
     // Camp through grove to meadow (z:-2 to z:-32) — zigzag matching lanterns
     for (var gz = -2; gz >= -32; gz -= 1.5) {
-      var gxWobble = Math.sin(gz * 0.2) * 2; // wider zigzag in grove
-      var gy = terrainHeight(gxWobble, gz);
+      var gxWobble = Math.sin(gz * 0.2) * 2;
       var gradius = 1.0 + Math.sin(gz * 0.25) * 0.2;
-      var gdisc = new THREE.Mesh(new THREE.CircleGeometry(gradius, 6), pathMat);
-      gdisc.rotation.x = -Math.PI / 2;
-      gdisc.position.set(gxWobble, gy + 0.015, gz);
-      scene.add(gdisc);
+      plan.push({ p: [gxWobble, terrainHeight(gxWobble, gz) + 0.015, gz], r: FLAT, s: [gradius, gradius, 1] });
     }
 
     // Widen into meadow entrance
     for (var mi = 0; mi < 4; mi++) {
-      var mdisc = new THREE.Mesh(new THREE.CircleGeometry(1.5 + Math.random(), 6), pathMat);
-      mdisc.rotation.x = -Math.PI / 2;
-      mdisc.position.set(-3 + (Math.random() - 0.5) * 4, terrainHeight(-3, -33) + 0.015, -32 - mi * 1);
-      scene.add(mdisc);
+      var mr = 1.5 + Math.random();
+      plan.push({ p: [-3 + (Math.random() - 0.5) * 4, terrainHeight(-3, -33) + 0.015, -32 - mi * 1], r: FLAT, s: [mr, mr, 1] });
     }
+
+    // ~60 discs, one draw call
+    buildInstanced(new THREE.CircleGeometry(1, 6), pathMat, plan);
   }
 
   function plantForest() {
-    // === SHARED MATERIALS — created once, reused everywhere ===
-    var trunkMats = TRUNK_COLORS.map(function (c) {
-      return new THREE.MeshStandardMaterial({ color: c, roughness: 0.85, flatShading: true });
-    });
-    var canopyMats = CANOPY_COLORS.map(function (c) {
-      return new THREE.MeshStandardMaterial({ color: c, roughness: 0.75, flatShading: true });
-    });
+    // Colour variety now rides on per-instance colour, so the forest needs only
+    // one bark material and one leaf material (built below), not a pool.
     var groundDiscMat = new THREE.MeshStandardMaterial({ color: 0x162218, roughness: 1.0 });
 
     var segs = isMobile ? 5 : 6;
@@ -435,19 +423,25 @@
       }
     }
 
-    // === PLACE ALL TREES — LOD: near trees get detail, far trees get minimal ===
-    var canopies = []; // for wind sway animation
+    // === PLAN ALL TREES, THEN DRAW EACH SHAPE CLASS IN ONE CALL =============
+    // Every trunk/cone/sphere used to be its own Mesh (hundreds of draw calls).
+    // We now record each piece as a transform and upload them as InstancedMesh
+    // batches: unit-sized base geometries, per-instance scale reproduces the
+    // original dimensions exactly, per-instance colour keeps the palette.
+    var planTrunk = [], planFlare = [], planDisc = [];
+    var planCone = [], planSphere = [];
+    var planSway = [];   // near canopies that breathe — kept in their own batch
+                         // so the per-frame matrix upload stays tiny
+
     for (var i = 0; i < treePositions.length; i++) {
       var tp = treePositions[i];
       var x = tp.x, z = tp.z;
       var gY = getGroundY(x, z);
-      var tMat = trunkMats[i % 4];
-      var cMat = canopyMats[i % canopyMats.length];
+      var trunkColor = TRUNK_COLORS[i % TRUNK_COLORS.length];
 
-      // Distance from origin — determines detail level
       var distFromCenter = Math.sqrt(x * x + z * z);
-      var isNear = distFromCenter < 22; // pathway + clearing + inner grove
-      var isFar = distFromCenter > 35;  // deep woods
+      var isNear = distFromCenter < 22;
+      var isFar = distFromCenter > 35;
 
       var isTall = tp.size === "tall";
       var height = isTall ? (6 + Math.random() * 4) : (3 + Math.random() * 4);
@@ -457,64 +451,104 @@
       var trunkR = isTall ? (0.12 + Math.random() * 0.15) : (0.08 + Math.random() * 0.1);
       var leanX = (Math.random() - 0.5) * 0.06;
       var leanZ = (Math.random() - 0.5) * 0.06;
-      var tSegs = isFar ? 4 : segs;
 
-      // Trunk (always)
-      var trunk = new THREE.Mesh(new THREE.CylinderGeometry(trunkR * 0.5, trunkR * 1.1, trunkH, tSegs), tMat);
-      trunk.position.set(x, gY + trunkH / 2, z);
-      trunk.rotation.set(leanX, 0, leanZ);
-      scene.add(trunk);
+      planTrunk.push({ p: [x, gY + trunkH / 2, z], r: [leanX, 0, leanZ], s: [trunkR, trunkH, trunkR], c: trunkColor });
 
-      // Root flare + ground disc (near only)
       if (isNear) {
-        var rootFlare = new THREE.Mesh(new THREE.CylinderGeometry(trunkR * 1.1, trunkR * 1.6, trunkH * 0.12, tSegs), tMat);
-        rootFlare.position.set(x, gY + trunkH * 0.06, z);
-        scene.add(rootFlare);
-
-        var groundDisc = new THREE.Mesh(new THREE.CircleGeometry(trunkR * 2.5 + 0.1, 5), groundDiscMat);
-        groundDisc.rotation.x = -Math.PI / 2;
-        groundDisc.position.set(x, gY + 0.01, z);
-        scene.add(groundDisc);
+        planFlare.push({ p: [x, gY + trunkH * 0.06, z], r: [0, 0, 0], s: [trunkR, trunkH * 0.12, trunkR], c: trunkColor });
+        var discR = trunkR * 2.5 + 0.1;
+        planDisc.push({ p: [x, gY + 0.01, z], r: [-Math.PI / 2, 0, 0], s: [discR, discR, 1] });
       }
 
-      // Canopy — far trees get 1 shape, near trees get full detail
       if (tp.type === "pine") {
         var layers = isFar ? 1 : (isMobile ? 2 : 3);
         for (var j = 0; j < layers; j++) {
           var lr = canopyR * (1 - j * 0.2);
           var lh = canopyH * (0.5 + j * 0.1);
-          var cone = new THREE.Mesh(new THREE.ConeGeometry(lr, lh, isFar ? 5 : coneSegs), canopyMats[(i + j) % canopyMats.length]);
-          cone.position.set(x, gY + trunkH + lh * 0.3 + j * canopyH * 0.22, z);
-          cone.rotation.set(leanX, Math.random() * Math.PI, leanZ);
-          scene.add(cone);
-          if (isNear && j === 0) canopies.push({ mesh: cone, phase: Math.random() * Math.PI * 2, baseRx: leanX });
+          var item = {
+            p: [x, gY + trunkH + lh * 0.3 + j * canopyH * 0.22, z],
+            r: [leanX, Math.random() * Math.PI, leanZ],
+            s: [lr, lh, lr],
+            c: CANOPY_COLORS[(i + j) % CANOPY_COLORS.length]
+          };
+          if (isNear && j === 0) { item.phase = Math.random() * Math.PI * 2; planSway.push(item); }
+          else planCone.push(item);
         }
       } else if (tp.type === "round") {
         var count = isFar ? 1 : (isMobile ? 2 : 3);
-        for (var j = 0; j < count; j++) {
+        for (var j2 = 0; j2 < count; j2++) {
           var sr = canopyR * (isFar ? 0.6 : (0.4 + Math.random() * 0.3));
-          var canopy = new THREE.Mesh(new THREE.SphereGeometry(sr, isFar ? 4 : sphereSegs, isFar ? 3 : sphereSegs - 1), canopyMats[(i + j) % canopyMats.length]);
-          canopy.position.set(
-            x + (isFar ? 0 : (Math.random() - 0.5) * canopyR * 0.5),
-            gY + trunkH + sr * 0.3 + j * sr * 0.4,
-            z + (isFar ? 0 : (Math.random() - 0.5) * canopyR * 0.5)
-          );
-          if (!isFar) canopy.scale.set(0.8 + Math.random() * 0.3, 0.6 + Math.random() * 0.3, 0.8 + Math.random() * 0.3);
-          scene.add(canopy);
-          if (isNear && j === 0) canopies.push({ mesh: canopy, phase: Math.random() * Math.PI * 2, baseRx: 0 });
+          var sx = isFar ? 1 : (0.8 + Math.random() * 0.3);
+          var sy = isFar ? 1 : (0.6 + Math.random() * 0.3);
+          var sz = isFar ? 1 : (0.8 + Math.random() * 0.3);
+          planSphere.push({
+            p: [
+              x + (isFar ? 0 : (Math.random() - 0.5) * canopyR * 0.5),
+              gY + trunkH + sr * 0.3 + j2 * sr * 0.4,
+              z + (isFar ? 0 : (Math.random() - 0.5) * canopyR * 0.5)
+            ],
+            r: [0, 0, 0],
+            s: [sr * sx, sr * sy, sr * sz],
+            c: CANOPY_COLORS[(i + j2) % CANOPY_COLORS.length]
+          });
         }
       } else {
         var slimH = canopyH * 1.3;
         var slimR = canopyR * 0.3;
-        var canopy = new THREE.Mesh(new THREE.ConeGeometry(slimR, slimH, isFar ? 4 : coneSegs), cMat);
-        canopy.position.set(x, gY + trunkH + slimH * 0.4, z);
-        canopy.rotation.set(leanX, Math.random() * Math.PI, leanZ);
-        scene.add(canopy);
-        if (isNear) canopies.push({ mesh: canopy, phase: Math.random() * Math.PI * 2, baseRx: leanX });
+        var slim = {
+          p: [x, gY + trunkH + slimH * 0.4, z],
+          r: [leanX, Math.random() * Math.PI, leanZ],
+          s: [slimR, slimH, slimR],
+          c: CANOPY_COLORS[i % CANOPY_COLORS.length]
+        };
+        if (isNear) { slim.phase = Math.random() * Math.PI * 2; planSway.push(slim); }
+        else planCone.push(slim);
       }
       trees.push({ x: x, z: z });
     }
-    scene._canopies = canopies;
+
+    // Unit base geometries — per-instance scale gives back the original sizes
+    var trunkGeo  = new THREE.CylinderGeometry(0.5, 1.1, 1, segs);
+    var flareGeo  = new THREE.CylinderGeometry(1.1, 1.6, 1, segs);
+    var discGeo   = new THREE.CircleGeometry(1, 5);
+    var coneGeo   = new THREE.ConeGeometry(1, 1, coneSegs);
+    var sphereGeo = new THREE.SphereGeometry(1, sphereSegs, sphereSegs - 1);
+
+    var barkMat   = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.85, flatShading: true });
+    var leafMat   = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.75, flatShading: true });
+
+    buildInstanced(trunkGeo,  barkMat,       planTrunk);
+    buildInstanced(flareGeo,  barkMat,       planFlare);
+    buildInstanced(discGeo,   groundDiscMat, planDisc);
+    buildInstanced(coneGeo,   leafMat,       planCone);
+    buildInstanced(sphereGeo, leafMat,       planSphere);
+
+    // Swaying canopies live in one small batch we can re-upload cheaply
+    var swayMesh = buildInstanced(coneGeo, leafMat, planSway);
+    scene._sway = swayMesh ? { mesh: swayMesh, items: planSway } : null;
+
+  }
+
+  // Upload a list of {p,r,s,c} transforms as a single InstancedMesh draw call.
+  function buildInstanced(geo, mat, list) {
+    if (!list.length) return null;
+    var im = new THREE.InstancedMesh(geo, mat, list.length);
+    var d = new THREE.Object3D();
+    var col = new THREE.Color();
+    for (var k = 0; k < list.length; k++) {
+      var it = list[k];
+      d.position.set(it.p[0], it.p[1], it.p[2]);
+      d.rotation.set(it.r[0], it.r[1], it.r[2]);
+      d.scale.set(it.s[0], it.s[1], it.s[2]);
+      d.updateMatrix();
+      im.setMatrixAt(k, d.matrix);
+      if (it.c !== undefined) im.setColorAt(k, col.setHex(it.c));
+    }
+    im.instanceMatrix.needsUpdate = true;
+    if (im.instanceColor) im.instanceColor.needsUpdate = true;
+    im.frustumCulled = false; // one batch spans the whole map
+    scene.add(im);
+    return im;
   }
 
   // ======================== Forest ruins — weathered stone pillars + archway ========================
@@ -1065,61 +1099,62 @@
   // ======================== Sky — Stars + Moon ========================
   // ======================== Billboard Trees — 2D silhouettes on the horizon ========================
   function createBillboardTrees() {
-    // Dark silhouette material — these are just flat cutouts
-    var billboardMats = [
-      new THREE.MeshBasicMaterial({ color: 0x0A1A10, side: THREE.DoubleSide, transparent: true, opacity: 0.7 }),
-      new THREE.MeshBasicMaterial({ color: 0x0D1F14, side: THREE.DoubleSide, transparent: true, opacity: 0.6 }),
-      new THREE.MeshBasicMaterial({ color: 0x112218, side: THREE.DoubleSide, transparent: true, opacity: 0.5 })
-    ];
+    // Distant horizon silhouettes. They used to be 60 Groups (120 meshes) that
+    // were re-aimed at the camera every frame. On a far ring, aiming them at
+    // the centre once is visually identical and costs nothing per frame, so
+    // they are now three static instanced batches. Depth is carried by
+    // per-instance colour instead of three separate opacity materials.
+    var silhouetteMat = new THREE.MeshBasicMaterial({
+      color: 0xffffff, side: THREE.DoubleSide, transparent: true, opacity: 0.62
+    });
+    var LAYER_COLORS = [0x0A1A10, 0x0D1F14, 0x112218];
 
-    var billboards = [];
+    var planTrunk = [], planTri = [], planCirc = [];
     var count = isMobile ? 30 : 60;
 
     for (var i = 0; i < count; i++) {
       var angle = (i / count) * Math.PI * 2;
-      var dist = 45 + Math.random() * 15; // far horizon ring
+      var dist = 45 + Math.random() * 15;
       var x = Math.cos(angle) * dist;
       var z = Math.sin(angle) * dist;
       var gY = terrainHeight(x, z);
-
-      // Each billboard = trunk (thin rect) + canopy (triangle or circle)
-      var group = new THREE.Group();
+      var faceIn = Math.atan2(-x, -z); // turn to face the middle of the world
       var h = 5 + Math.random() * 8;
-      var layer = Math.floor(Math.random() * 3); // depth layer determines opacity
-      var mat = billboardMats[layer];
+      var col = LAYER_COLORS[Math.floor(Math.random() * 3)];
 
-      // Trunk
-      var trunkW = 0.15 + Math.random() * 0.1;
-      var trunk = new THREE.Mesh(new THREE.PlaneGeometry(trunkW, h * 0.5), mat);
-      trunk.position.y = h * 0.25;
-      group.add(trunk);
+      planTrunk.push({
+        p: [x, gY + h * 0.25, z], r: [0, faceIn, 0],
+        s: [0.15 + Math.random() * 0.1, h * 0.5, 1], c: col
+      });
 
-      // Canopy — alternate between triangle (pine) and circle (round)
       if (Math.random() > 0.4) {
-        // Pine silhouette — triangle
-        var triH = h * 0.6;
-        var triW = 1.5 + Math.random() * 2;
-        var triGeo = new THREE.BufferGeometry();
-        triGeo.setAttribute("position", new THREE.BufferAttribute(new Float32Array([
-          -triW / 2, 0, 0,   triW / 2, 0, 0,   0, triH, 0
-        ]), 3));
-        triGeo.computeVertexNormals();
-        var tri = new THREE.Mesh(triGeo, mat);
-        tri.position.y = h * 0.35;
-        group.add(tri);
+        planTri.push({
+          p: [x, gY + h * 0.35, z], r: [0, faceIn, 0],
+          s: [1.5 + Math.random() * 2, h * 0.6, 1], c: col
+        });
       } else {
-        // Round silhouette — circle
         var circR = 1 + Math.random() * 1.5;
-        var circ = new THREE.Mesh(new THREE.CircleGeometry(circR, 8), mat);
-        circ.position.y = h * 0.55;
-        group.add(circ);
+        planCirc.push({
+          p: [x, gY + h * 0.55, z], r: [0, faceIn, 0],
+          s: [circR, circR, 1], c: col
+        });
       }
-
-      group.position.set(x, gY, z);
-      scene.add(group);
-      billboards.push(group);
     }
-    scene._billboards = billboards;
+
+    // Unit shapes — per-instance scale restores the original proportions
+    var planeGeo = new THREE.PlaneGeometry(1, 1);
+    var triGeo = new THREE.BufferGeometry();
+    triGeo.setAttribute("position", new THREE.BufferAttribute(new Float32Array([
+      -0.5, 0, 0,   0.5, 0, 0,   0, 1, 0
+    ]), 3));
+    triGeo.computeVertexNormals();
+    var circGeo = new THREE.CircleGeometry(1, 8);
+
+    scene._billboards = [
+      buildInstanced(planeGeo, silhouetteMat, planTrunk),
+      buildInstanced(triGeo,   silhouetteMat, planTri),
+      buildInstanced(circGeo,  silhouetteMat, planCirc)
+    ].filter(Boolean);
   }
 
   function createSky() {
@@ -1190,71 +1225,65 @@
     var rockMat = new THREE.MeshStandardMaterial({ color: 0x4A4A4A, roughness: 0.95, flatShading: true });
     var bushColors = [0x2D4233, 0x344E41, 0x3A5A40, 0x4A6B3F];
 
-    // Scatter rocks
+    // Planned first, then uploaded as three instanced batches. (This used to
+    // allocate a fresh material inside the bush and log loops — the exact
+    // "no new materials in loops" rule the project sets.)
+    var planRock = [], planBush = [], planLog = [];
+
     for (var i = 0; i < 30; i++) {
       var angle = Math.random() * Math.PI * 2;
       var dist = 3 + Math.random() * 35;
       var rx = Math.cos(angle) * dist;
       var rz = Math.sin(angle) * dist;
-      var dc = Math.sqrt(rx * rx + rz * rz);
-      if (dc < 14) continue;
-      var gy = getGroundY(rx, rz);
-
-      var rock = new THREE.Mesh(
-        new THREE.DodecahedronGeometry(0.1 + Math.random() * 0.25, 0),
-        rockMat
-      );
-      rock.position.set(rx, gy + 0.1, rz);
-      rock.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
-      rock.scale.set(1, 0.5 + Math.random() * 0.5, 1);
-      scene.add(rock);
+      if (Math.sqrt(rx * rx + rz * rz) < 14) continue;
+      var rr = 0.1 + Math.random() * 0.25;
+      planRock.push({
+        p: [rx, getGroundY(rx, rz) + 0.1, rz],
+        r: [Math.random() * Math.PI, Math.random() * Math.PI, 0],
+        s: [rr, rr * (0.5 + Math.random() * 0.5), rr]
+      });
     }
 
-    // Bushes (small clusters of spheres)
     for (var j = 0; j < 20; j++) {
       var ba = Math.random() * Math.PI * 2;
       var bd = 4 + Math.random() * 30;
       var bx = Math.cos(ba) * bd;
       var bz = Math.sin(ba) * bd;
-      var bdc = Math.sqrt(bx * bx + bz * bz);
-      if (bdc < 14) continue;
+      if (Math.sqrt(bx * bx + bz * bz) < 14) continue;
       var bgy = getGroundY(bx, bz);
-
       var bushColor = bushColors[Math.floor(Math.random() * bushColors.length)];
       var clusterCount = 2 + Math.floor(Math.random() * 2);
       for (var k = 0; k < clusterCount; k++) {
-        var bush = new THREE.Mesh(
-          new THREE.SphereGeometry(0.15 + Math.random() * 0.2, 5, 4),
-          new THREE.MeshStandardMaterial({ color: bushColor, roughness: 0.9, flatShading: true })
-        );
-        bush.position.set(
-          bx + (Math.random() - 0.5) * 0.5,
-          bgy + 0.15 + Math.random() * 0.15,
-          bz + (Math.random() - 0.5) * 0.5
-        );
-        bush.scale.y = 0.6 + Math.random() * 0.3;
-        scene.add(bush);
+        var br = 0.15 + Math.random() * 0.2;
+        planBush.push({
+          p: [bx + (Math.random() - 0.5) * 0.5, bgy + 0.15 + Math.random() * 0.15, bz + (Math.random() - 0.5) * 0.5],
+          r: [0, Math.random() * Math.PI, 0],
+          s: [br, br * (0.6 + Math.random() * 0.3), br],
+          c: bushColor
+        });
       }
     }
 
-    // Fallen logs
     for (var l = 0; l < 6; l++) {
       var la = Math.random() * Math.PI * 2;
       var ld = 6 + Math.random() * 25;
       var lx = Math.cos(la) * ld;
       var lz = Math.sin(la) * ld;
-      var ldc = Math.sqrt(lx * lx + lz * lz);
-      if (ldc < 14) continue;
-      var lgy = getGroundY(lx, lz);
-
-      var flog = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.1 + Math.random() * 0.1, 0.12 + Math.random() * 0.1, 1.5 + Math.random() * 2, 6),
-        new THREE.MeshStandardMaterial({ color: 0x3B2314, roughness: 0.9, flatShading: true })
-      );
-      flog.position.set(lx, lgy + 0.1, lz);
-      flog.rotation.set(0, Math.random() * Math.PI, Math.PI / 2);
-      scene.add(flog);
+      if (Math.sqrt(lx * lx + lz * lz) < 14) continue;
+      var lr = 0.1 + Math.random() * 0.1;
+      planLog.push({
+        p: [lx, getGroundY(lx, lz) + 0.1, lz],
+        r: [0, Math.random() * Math.PI, Math.PI / 2],
+        s: [lr, 1.5 + Math.random() * 2, lr]
+      });
     }
+
+    var bushMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9, flatShading: true });
+    var logMat = new THREE.MeshStandardMaterial({ color: 0x3B2314, roughness: 0.9, flatShading: true });
+
+    buildInstanced(new THREE.DodecahedronGeometry(1, 0), rockMat, planRock);
+    buildInstanced(new THREE.SphereGeometry(1, 5, 4), bushMat, planBush);
+    buildInstanced(new THREE.CylinderGeometry(1, 1.2, 1, 6), logMat, planLog);
   }
 
   // ======================== Pond ========================
@@ -1494,12 +1523,23 @@
     }
 
     // === Tree canopy wind sway (every 2nd frame) ===
-    if (scene._canopies && frame % 2 === 0) {
-      for (var ci = 0; ci < scene._canopies.length; ci++) {
-        var cp = scene._canopies[ci];
-        cp.mesh.rotation.x = cp.baseRx + Math.sin(t * 0.8 + cp.phase) * 0.02;
-        cp.mesh.rotation.z = Math.sin(t * 0.6 + cp.phase * 1.3) * 0.015;
+    // Wind sway — one small instanced batch, re-uploaded every 2nd frame
+    if (scene._sway && frame % 2 === 0) {
+      var sw = scene._sway, swItems = sw.items, swDummy = scene._swayDummy;
+      if (!swDummy) swDummy = scene._swayDummy = new THREE.Object3D();
+      for (var ci = 0; ci < swItems.length; ci++) {
+        var cp = swItems[ci];
+        swDummy.position.set(cp.p[0], cp.p[1], cp.p[2]);
+        swDummy.rotation.set(
+          cp.r[0] + Math.sin(t * 0.8 + cp.phase) * 0.02,
+          cp.r[1],
+          cp.r[2] + Math.sin(t * 0.6 + cp.phase * 1.3) * 0.015
+        );
+        swDummy.scale.set(cp.s[0], cp.s[1], cp.s[2]);
+        swDummy.updateMatrix();
+        sw.mesh.setMatrixAt(ci, swDummy.matrix);
       }
+      sw.mesh.instanceMatrix.needsUpdate = true;
     }
 
     // Canopy reveal — all lanterns flash when camera rises above (ch8)
@@ -1626,13 +1666,8 @@
     // Mist (every 3rd frame)
     if (scene._mist && frame % 3 === 2) { scene._mist.rotation.y = t * 0.002; scene._mist.position.y = Math.sin(t * 0.1) * 0.2; }
 
-    // Billboard trees face camera (every 3rd frame to save CPU)
-    if (scene._billboards && Math.floor(t * 20) % 3 === 0) {
-      for (var bi = 0; bi < scene._billboards.length; bi++) {
-        var bb = scene._billboards[bi];
-        bb.rotation.y = Math.atan2(camera.position.x - bb.position.x, camera.position.z - bb.position.z);
-      }
-    }
+    // (Horizon billboards are pre-aimed at the world centre at build time —
+    //  no per-frame re-facing loop needed.)
 
     // Ground embers pulse
     for (var gei = 0; gei < groundEmbers.length; gei++) {
