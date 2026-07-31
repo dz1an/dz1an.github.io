@@ -74,8 +74,8 @@
   var lastTouchSpawn = 0;
 
   // === Palette ===
-  var TRUNK_COLORS = [0x2D1B0E, 0x3B2314, 0x4A2E1A, 0x362015];
-  var CANOPY_COLORS = [0x344E41, 0x3A5A40, 0x5C7650, 0x2D4233, 0x4A6B3F, 0x3D5C35];
+  // (Trunk/canopy color pools removed — all forest color is baked into the
+  //  Kenney model vertex colors in models/forest.js, varied by instance tint.)
 
   var PROJECTS = [
     { name: "Vintech",     sub: "Outsourcing Platform", color: 0xE8C87A },
@@ -179,8 +179,11 @@
       ctx.fillText(sub, cvs.width / 2, pad + lines.length * lh + 2);
     }
     var tex = new THREE.CanvasTexture(cvs); tex.minFilter = THREE.LinearFilter;
-    var sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, opacity: opts.opacity || 0.85, depthWrite: false }));
-    var sc = opts.scale || 1.5; sp.scale.set(sc * (cvs.width / cvs.height), sc, 1);
+    // sizeAttenuation:false = constant on-screen size. Labels read like clean
+    // UI annotations at any distance and can never balloon across the frame.
+    var sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, opacity: opts.opacity || 0.85, depthWrite: false, sizeAttenuation: false }));
+    var sc = (opts.scale || 1.5) * 0.033;
+    sp.scale.set(sc * (cvs.width / cvs.height), sc, 1);
     return sp;
   }
 
@@ -236,7 +239,7 @@
     createMilestones();
     createFireflies(); createMist();
     createRuins();
-    createBillboardTrees(); createSky(); createSmoke(); createGroundDetails();
+    createSky(); createSmoke(); createGroundDetails();
     createPathLamps(); createAmbientFireflies();
 
     // Bind input listeners once — init() can run again after a full teardown
@@ -340,13 +343,7 @@
   }
 
   function plantForest() {
-    // Colour variety now rides on per-instance colour, so the forest needs only
-    // one bark material and one leaf material (built below), not a pool.
     var groundDiscMat = new THREE.MeshStandardMaterial({ color: 0x162218, roughness: 1.0 });
-
-    var segs = isMobile ? 5 : 6;
-    var coneSegs = isMobile ? 6 : 8;
-    var sphereSegs = isMobile ? 4 : 6;
 
     // === DESIGNED TREE POSITIONS ===
     var treePositions = [];
@@ -437,110 +434,45 @@
       }
     }
 
-    // === PLAN ALL TREES, THEN DRAW EACH SHAPE CLASS IN ONE CALL =============
-    // Every trunk/cone/sphere used to be its own Mesh (hundreds of draw calls).
-    // We now record each piece as a transform and upload them as InstancedMesh
-    // batches: unit-sized base geometries, per-instance scale reproduces the
-    // original dimensions exactly, per-instance colour keeps the palette.
-    var planTrunk = [], planFlare = [], planDisc = [];
-    var planCone = [], planSphere = [];
-    var planSway = [];   // near canopies that breathe — kept in their own batch
-                         // so the per-frame matrix upload stays tiny
-
-    for (var i = 0; i < treePositions.length; i++) {
-      var tp = treePositions[i];
-      var x = tp.x, z = tp.z;
-      var gY = getGroundY(x, z);
-      var trunkColor = TRUNK_COLORS[i % TRUNK_COLORS.length];
-
-      var distFromCenter = Math.sqrt(x * x + z * z);
-      var isNear = distFromCenter < 22;
-      var isFar = distFromCenter > 35;
-
-      var isTall = tp.size === "tall";
-      var height = isTall ? (6 + Math.random() * 4) : (3 + Math.random() * 4);
-      var trunkH = height * (0.4 + Math.random() * 0.15);
-      var canopyH = height * (0.5 + Math.random() * 0.2);
-      var canopyR = isTall ? (1.5 + Math.random() * 2) : (1 + Math.random() * 1.5);
-      var trunkR = isTall ? (0.12 + Math.random() * 0.15) : (0.08 + Math.random() * 0.1);
-      var leanX = (Math.random() - 0.5) * 0.06;
-      var leanZ = (Math.random() - 0.5) * 0.06;
-
-      planTrunk.push({ p: [x, gY + trunkH / 2, z], r: [leanX, 0, leanZ], s: [trunkR, trunkH, trunkR], c: trunkColor });
-
-      if (isNear) {
-        planFlare.push({ p: [x, gY + trunkH * 0.06, z], r: [0, 0, 0], s: [trunkR, trunkH * 0.12, trunkR], c: trunkColor });
-        var discR = trunkR * 2.5 + 0.1;
-        planDisc.push({ p: [x, gY + 0.01, z], r: [-Math.PI / 2, 0, 0], s: [discR, discR, 1] });
-      }
-
-      if (tp.type === "pine") {
-        var layers = isFar ? 1 : (isMobile ? 2 : 3);
-        for (var j = 0; j < layers; j++) {
-          var lr = canopyR * (1 - j * 0.2);
-          var lh = canopyH * (0.5 + j * 0.1);
-          var item = {
-            p: [x, gY + trunkH + lh * 0.3 + j * canopyH * 0.22, z],
-            r: [leanX, Math.random() * Math.PI, leanZ],
-            s: [lr, lh, lr],
-            c: CANOPY_COLORS[(i + j) % CANOPY_COLORS.length]
-          };
-          if (isNear && j === 0) { item.phase = Math.random() * Math.PI * 2; planSway.push(item); }
-          else planCone.push(item);
-        }
-      } else if (tp.type === "round") {
-        var count = isFar ? 1 : (isMobile ? 2 : 3);
-        for (var j2 = 0; j2 < count; j2++) {
-          var sr = canopyR * (isFar ? 0.6 : (0.4 + Math.random() * 0.3));
-          var sx = isFar ? 1 : (0.8 + Math.random() * 0.3);
-          var sy = isFar ? 1 : (0.6 + Math.random() * 0.3);
-          var sz = isFar ? 1 : (0.8 + Math.random() * 0.3);
-          planSphere.push({
-            p: [
-              x + (isFar ? 0 : (Math.random() - 0.5) * canopyR * 0.5),
-              gY + trunkH + sr * 0.3 + j2 * sr * 0.4,
-              z + (isFar ? 0 : (Math.random() - 0.5) * canopyR * 0.5)
-            ],
-            r: [0, 0, 0],
-            s: [sr * sx, sr * sy, sr * sz],
-            c: CANOPY_COLORS[(i + j2) % CANOPY_COLORS.length]
-          });
-        }
-      } else {
-        var slimH = canopyH * 1.3;
-        var slimR = canopyR * 0.3;
-        var slim = {
-          p: [x, gY + trunkH + slimH * 0.4, z],
-          r: [leanX, Math.random() * Math.PI, leanZ],
-          s: [slimR, slimH, slimR],
-          c: CANOPY_COLORS[i % CANOPY_COLORS.length]
-        };
-        if (isNear) { slim.phase = Math.random() * Math.PI * 2; planSway.push(slim); }
-        else planCone.push(slim);
-      }
-      trees.push({ x: x, z: z });
+    // --- 6. HORIZON RING (was billboard planes) — far silhouettes join the
+    // same instanced batches as the near forest, so they cost nothing extra ---
+    var ringCount = isMobile ? 30 : 60;
+    for (var ri = 0; ri < ringCount; ri++) {
+      var rAngle = (ri / ringCount) * Math.PI * 2;
+      var rDist = 45 + Math.random() * 15;
+      treePositions.push({
+        x: Math.cos(rAngle) * rDist, z: Math.sin(rAngle) * rDist,
+        type: Math.random() > 0.35 ? "pine" : "round", size: "tall", far: true
+      });
     }
 
-    // Unit base geometries — per-instance scale gives back the original sizes
-    var trunkGeo  = new THREE.CylinderGeometry(0.5, 1.1, 1, segs);
-    var flareGeo  = new THREE.CylinderGeometry(1.1, 1.6, 1, segs);
-    var discGeo   = new THREE.CircleGeometry(1, 5);
-    var coneGeo   = new THREE.ConeGeometry(1, 1, coneSegs);
-    var sphereGeo = new THREE.SphereGeometry(1, sphereSegs, sphereSegs - 1);
-
-    var barkMat   = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.85, flatShading: true });
-    var leafMat   = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.75, flatShading: true });
-
-    buildInstanced(trunkGeo,  barkMat,       planTrunk);
-    buildInstanced(flareGeo,  barkMat,       planFlare);
-    buildInstanced(discGeo,   groundDiscMat, planDisc);
-    buildInstanced(coneGeo,   leafMat,       planCone);
-    buildInstanced(sphereGeo, leafMat,       planSphere);
-
-    // Swaying canopies live in one small batch we can re-upload cheaply
-    var swayMesh = buildInstanced(coneGeo, leafMat, planSway);
-    scene._sway = swayMesh ? { mesh: swayMesh, items: planSway } : null;
-
+    // === INSTANCE THE MODELED TREES =========================================
+    // Two Kenney Mini Forest pines (baked sage vertex colors, models/forest.js)
+    // carry the whole forest in TWO draw calls; per-instance tint adds variety
+    // and the far ring is simply tinted darker so depth still reads.
+    var F = window.DZ_FOREST;
+    var planHigh = [], planRound = [], planDisc = [];
+    for (var i = 0; i < treePositions.length; i++) {
+      var tp = treePositions[i];
+      var x = tp.x, z = tp.z, gY = getGroundY(x, z);
+      var isTall = tp.size === "tall";
+      var height = tp.far ? (5 + Math.random() * 8) : isTall ? (6 + Math.random() * 4) : (3 + Math.random() * 4);
+      var isNear = !tp.far && Math.sqrt(x * x + z * z) < 22;
+      var tint = tp.far ? 0.35 + Math.random() * 0.2 : 0.8 + Math.random() * 0.35;
+      var item = { x: x, y: gY, z: z, ry: Math.random() * Math.PI * 2, t: tint };
+      if (tp.type === "round") { item.s = height * 0.7 / 1.68; planRound.push(item); }
+      else { item.s = height / 2.28; planHigh.push(item); }
+      if (isNear) {
+        var discR = 0.5 + Math.random() * 0.3;
+        planDisc.push({ p: [x, gY + 0.01, z], r: [-Math.PI / 2, 0, 0], s: [discR, discR, 1] });
+      }
+      if (!tp.far) trees.push({ x: x, z: z });
+    }
+    if (F) {
+      buildInstancedProp(F.treeHigh, planHigh);
+      buildInstancedProp(F.tree, planRound);
+    }
+    buildInstanced(new THREE.CircleGeometry(1, 5), groundDiscMat, planDisc);
   }
 
   // Upload a list of {p,r,s,c} transforms as a single InstancedMesh draw call.
@@ -565,86 +497,9 @@
     return im;
   }
 
-  // ======================== Forest ruins — weathered stone pillars + archway ========================
-  function createRuins() {
-    var stoneMat = new THREE.MeshStandardMaterial({ color: 0x555566, roughness: 0.9, flatShading: true });
-    var vineMat = new THREE.MeshStandardMaterial({ color: 0x3A5A40, roughness: 0.8 });
-
-    // Stone pillars around clearing edge
-    var pillarPositions = [
-      { x: 10, z: 3, h: 4, lean: 0.05 },
-      { x: -9, z: -2, h: 3.5, lean: -0.08 },
-      { x: 7, z: -6, h: 4.5, lean: 0.03 },
-      { x: -8, z: 5, h: 3, lean: -0.1 },  // broken/shorter
-      { x: 11, z: -4, h: 5, lean: 0.02 },
-      { x: -10, z: -7, h: 2.5, lean: 0.12 }  // very broken
-    ];
-
-    pillarPositions.forEach(function (pp, i) {
-      var gY = getGroundY(pp.x, pp.z);
-      // Pillar
-      var pillar = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.3, 0.4, pp.h, 6),
-        stoneMat
-      );
-      pillar.position.set(pp.x, gY + pp.h / 2, pp.z);
-      pillar.rotation.set(pp.lean, 0, pp.lean * 0.5);
-      scene.add(pillar);
-
-      // Mossy vine wrapping (desktop only)
-      if (!isMobile && pp.h > 3) {
-        var vine = new THREE.Mesh(
-          new THREE.TorusGeometry(0.35, 0.02, 4, 12, Math.PI * 1.5),
-          vineMat
-        );
-        vine.position.set(pp.x, gY + pp.h * 0.4, pp.z);
-        vine.rotation.set(Math.random(), Math.random(), 0);
-        scene.add(vine);
-      }
-
-      // Pillar base (wider stone)
-      var base = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.5, 0.55, 0.2, 6),
-        stoneMat
-      );
-      base.position.set(pp.x, gY + 0.1, pp.z);
-      scene.add(base);
-    });
-
-    // (Stone archway removed — it framed the grove entrance like a gate and
-    //  fought the open-trail feeling. The pillars alone carry the ruins.)
-
-    // Wildflowers in the meadow
-    for (var mfi = 0; mfi < (isMobile ? 15 : 30); mfi++) {
-      var mfa = Math.random() * Math.PI * 2;
-      var mfr = Math.random() * 8;
-      var mfx = -3 + Math.cos(mfa) * mfr;
-      var mfz = -36 + Math.sin(mfa) * mfr;
-      var mfgy = getGroundY(mfx, mfz);
-      var mfmat = [0xD8CFA8, 0xF0E68C, 0xE8E6DC, 0xC8D8A0][Math.floor(Math.random() * 4)];
-      var mfSize = 0.05 + Math.random() * 0.05;
-      var mf1 = new THREE.Mesh(
-        new THREE.PlaneGeometry(mfSize, mfSize * 1.5),
-        new THREE.MeshBasicMaterial({ color: mfmat, transparent: true, opacity: 0.45, side: THREE.DoubleSide })
-      );
-      mf1.position.set(mfx, mfgy + mfSize, mfz);
-      mf1.rotation.y = Math.random() * Math.PI;
-      scene.add(mf1);
-      var mf2 = new THREE.Mesh(
-        new THREE.PlaneGeometry(mfSize, mfSize * 1.5),
-        mf1.material
-      );
-      mf2.position.set(mfx, mfgy + mfSize, mfz);
-      mf2.rotation.y = mf1.rotation.y + Math.PI / 2;
-      scene.add(mf2);
-    }
-
-  }
-
-  // ======================== Campsite — modeled tent, campfire, bedroll ========================
-  // Camp props are real CC0 models (Kenney Survival Kit) pre-baked to sage
-  // vertex colors in models/props.js — no textures, one draw call each.
-  function buildProp(def) {
+  // Decode a baked prop (models/props.js / models/forest.js entry) into a
+  // vertex-colored BufferGeometry.
+  function propGeometry(def) {
     function bytes(s) {
       var bin = atob(s), u = new Uint8Array(bin.length);
       for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
@@ -657,7 +512,77 @@
     for (var ci = 0; ci < cu.length; ci++) cf[ci] = cu[ci] / 255;
     g.setAttribute("color", new THREE.BufferAttribute(cf, 3));
     g.setIndex(new THREE.BufferAttribute(new Uint16Array(bytes(def.i)), 1));
-    return new THREE.Mesh(g, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9 }));
+    return g;
+  }
+
+  // One InstancedMesh from a baked model: {x,y,z, ry, s|sy+sxz, t} per instance.
+  // t is a brightness tint (instanceColor multiplies the baked vertex colors).
+  var instPropMat = null;
+  function buildInstancedProp(def, list) {
+    if (!def || !list.length) return null;
+    if (!instPropMat) instPropMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9 });
+    var im = new THREE.InstancedMesh(propGeometry(def), instPropMat, list.length);
+    var d = new THREE.Object3D(), col = new THREE.Color();
+    for (var k = 0; k < list.length; k++) {
+      var it = list[k];
+      d.position.set(it.x, it.y, it.z);
+      d.rotation.set(0, it.ry || 0, 0);
+      var sy = it.sy || it.s || 1, sxz = it.sxz || it.s || 1;
+      d.scale.set(sxz, sy, sxz);
+      d.updateMatrix();
+      im.setMatrixAt(k, d.matrix);
+      im.setColorAt(k, col.setScalar(it.t !== undefined ? it.t : 1));
+    }
+    im.instanceMatrix.needsUpdate = true;
+    if (im.instanceColor) im.instanceColor.needsUpdate = true;
+    im.frustumCulled = false;
+    scene.add(im);
+    return im;
+  }
+
+  // ======================== Clearing edge — rock outcrops + meadow cover ========================
+  function createRuins() {
+    var F = window.DZ_FOREST;
+    if (!F) return; // degraded load: scene runs without outcrops/ground cover
+
+    // Rock outcrops ring the camp clearing. (These were stone "ruins" columns —
+    // upright grey slabs in a dark wood read as gravestones, which is not the
+    // story. Natural outcrops give the clearing its edge without the graveyard.)
+    var outcrops = [
+      { x: 11.5, z: 3.5, s: 1.7, ry: 0.4 },
+      { x: -10, z: -2, s: 1.3, ry: 2.1 },
+      { x: 8.5, z: -7, s: 1.9, ry: 4.0 },
+      { x: -9, z: 5.5, s: 1.1, ry: 1.2 },
+      { x: 12, z: -4.5, s: 2.0, ry: 5.3 },
+      { x: -11, z: -7.5, s: 1.0, ry: 3.0 }
+    ];
+    buildInstancedProp(F.rocksHigh, outcrops.map(function (c) {
+      return { x: c.x, y: getGroundY(c.x, c.z) - 0.25, z: c.z, ry: c.ry, sy: c.s * 0.7, sxz: c.s, t: 0.5 + Math.random() * 0.2 };
+    }));
+
+    // Meadow ground cover — modeled grass patches + plants (replaces the
+    // glowing wildflower specks: dark sage, sits on the ground, reads as turf)
+    var planGrass = [], planPlant = [];
+    var gCount = isMobile ? 6 : 10, pCount = isMobile ? 6 : 12;
+    for (var gi = 0; gi < gCount; gi++) {
+      var ga = Math.random() * Math.PI * 2, gr = Math.random() * 7;
+      var gx = -3 + Math.cos(ga) * gr, gz = -36 + Math.sin(ga) * gr;
+      planGrass.push({ x: gx, y: getGroundY(gx, gz) + 0.02, z: gz, ry: Math.random() * Math.PI * 2, s: 1.5 + Math.random() * 1.5, t: 0.9 + Math.random() * 0.3 });
+    }
+    for (var pi = 0; pi < pCount; pi++) {
+      var pa = Math.random() * Math.PI * 2, pr = 1 + Math.random() * 8;
+      var px = -3 + Math.cos(pa) * pr, pz = -36 + Math.sin(pa) * pr;
+      planPlant.push({ x: px, y: getGroundY(px, pz), z: pz, ry: Math.random() * Math.PI * 2, s: 1.2 + Math.random() * 1.4, t: 0.85 + Math.random() * 0.4 });
+    }
+    buildInstancedProp(F.grass, planGrass);
+    buildInstancedProp(F.plant, planPlant);
+  }
+
+  // ======================== Campsite — modeled tent, campfire, bedroll ========================
+  // Camp props are real CC0 models (Kenney Survival Kit) pre-baked to sage
+  // vertex colors in models/props.js — no textures, one draw call each.
+  function buildProp(def) {
+    return new THREE.Mesh(propGeometry(def), new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9 }));
   }
 
   function createCoreLantern() {
@@ -868,31 +793,21 @@
     var ropeMat = new THREE.MeshBasicMaterial({ color: 0x5C4033 });
     var frameMat = new THREE.MeshStandardMaterial({ color: 0x4A3520, roughness: 0.9 });
 
+    // Host trees — the same instanced Kenney pine as the rest of the forest
+    var HF = window.DZ_FOREST;
+    if (HF) {
+      buildInstancedProp(HF.treeHigh, positions.map(function (p) {
+        return { x: p.hostX, y: getGroundY(p.hostX, p.z), z: p.z, ry: Math.random() * Math.PI * 2, s: (5.5 + Math.random() * 1.5) / 2.28, t: 0.85 + Math.random() * 0.25 };
+      }));
+    }
+
     PROJECTS.forEach(function (proj, i) {
       var p = positions[i];
       var gY = getGroundY(p.hostX, p.z);
       var treeH = 5 + Math.random() * 2;
       var branchY = gY + treeH * 0.7;
 
-      // Host tree trunk
-      var trunk = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.08, 0.14, treeH, 6),
-        trunkMat
-      );
-      trunk.position.set(p.hostX, gY + treeH / 2, p.z);
-      scene.add(trunk);
-
-      // Host tree canopy (simple)
-      var canopyMat = new THREE.MeshStandardMaterial({ color: CANOPY_COLORS[i % 6], roughness: 0.75, flatShading: true });
-      for (var ci = 0; ci < 2; ci++) {
-        var cr = 1.2 + Math.random() * 0.8;
-        var canopy = new THREE.Mesh(new THREE.SphereGeometry(cr, 7, 6), canopyMat);
-        canopy.position.set(p.hostX + (Math.random() - 0.5) * 0.5, branchY + 1 + ci * 0.8, p.z + (Math.random() - 0.5) * 0.5);
-        canopy.scale.y = 0.7;
-        scene.add(canopy);
-      }
-
-      // Branch extending from trunk toward the path
+      // Branch extending from the host tree toward the path
       var branchLen = Math.abs(p.x - p.hostX) + 0.5;
       var branchDir = p.x > p.hostX ? 1 : -1;
       var branch = new THREE.Mesh(
@@ -1097,104 +1012,30 @@
 
   // ======================== Sky — Stars + Moon ========================
   // ======================== Billboard Trees — 2D silhouettes on the horizon ========================
-  function createBillboardTrees() {
-    // Distant horizon silhouettes. They used to be 60 Groups (120 meshes) that
-    // were re-aimed at the camera every frame. On a far ring, aiming them at
-    // the centre once is visually identical and costs nothing per frame, so
-    // they are now three static instanced batches. Depth is carried by
-    // per-instance colour instead of three separate opacity materials.
-    var silhouetteMat = new THREE.MeshBasicMaterial({
-      color: 0xffffff, side: THREE.DoubleSide, transparent: true, opacity: 0.62
-    });
-    var LAYER_COLORS = [0x0A1A10, 0x0D1F14, 0x112218];
-
-    var planTrunk = [], planTri = [], planCirc = [];
-    var count = isMobile ? 30 : 60;
-
-    for (var i = 0; i < count; i++) {
-      var angle = (i / count) * Math.PI * 2;
-      var dist = 45 + Math.random() * 15;
-      var x = Math.cos(angle) * dist;
-      var z = Math.sin(angle) * dist;
-      var gY = terrainHeight(x, z);
-      var faceIn = Math.atan2(-x, -z); // turn to face the middle of the world
-      var h = 5 + Math.random() * 8;
-      var col = LAYER_COLORS[Math.floor(Math.random() * 3)];
-
-      planTrunk.push({
-        p: [x, gY + h * 0.25, z], r: [0, faceIn, 0],
-        s: [0.15 + Math.random() * 0.1, h * 0.5, 1], c: col
-      });
-
-      if (Math.random() > 0.4) {
-        planTri.push({
-          p: [x, gY + h * 0.35, z], r: [0, faceIn, 0],
-          s: [1.5 + Math.random() * 2, h * 0.6, 1], c: col
-        });
-      } else {
-        var circR = 1 + Math.random() * 1.5;
-        planCirc.push({
-          p: [x, gY + h * 0.55, z], r: [0, faceIn, 0],
-          s: [circR, circR, 1], c: col
-        });
-      }
-    }
-
-    // Unit shapes — per-instance scale restores the original proportions
-    var planeGeo = new THREE.PlaneGeometry(1, 1);
-    var triGeo = new THREE.BufferGeometry();
-    triGeo.setAttribute("position", new THREE.BufferAttribute(new Float32Array([
-      -0.5, 0, 0,   0.5, 0, 0,   0, 1, 0
-    ]), 3));
-    triGeo.computeVertexNormals();
-    var circGeo = new THREE.CircleGeometry(1, 8);
-
-    scene._billboards = [
-      buildInstanced(planeGeo, silhouetteMat, planTrunk),
-      buildInstanced(triGeo,   silhouetteMat, planTri),
-      buildInstanced(circGeo,  silhouetteMat, planCirc)
-    ].filter(Boolean);
-  }
+  // (Billboard horizon trees removed — the far ring now rides in the same
+  //  instanced tree batches as the near forest; see plantForest.)
 
   function createSky() {
-    // Stars
-    var count = 800;
-    var positions = new Float32Array(count * 3);
-    var colors = new Float32Array(count * 3);
-    for (var i = 0; i < count; i++) {
-      // Hemisphere above (y > 0)
-      var theta = Math.random() * Math.PI * 2;
-      var phi = Math.random() * Math.PI * 0.45; // upper hemisphere only
-      var r = 80 + Math.random() * 40;
-      positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
-      positions[i * 3 + 1] = r * Math.cos(phi) + 10;
-      positions[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta);
-      var brightness = 0.4 + Math.random() * 0.6;
-      colors[i * 3] = brightness;
-      colors[i * 3 + 1] = brightness;
-      colors[i * 3 + 2] = brightness * (0.9 + Math.random() * 0.1);
-    }
-    var geo = new THREE.BufferGeometry();
-    geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-    geo.setAttribute("color", new THREE.BufferAttribute(colors, 3));
-    var stars = new THREE.Points(geo, new THREE.PointsMaterial({
-      size: 0.2, vertexColors: true, transparent: true, opacity: 0.8, sizeAttenuation: true
-    }));
-    scene.add(stars);
-    scene._stars = stars;
-
-    // Moon — small, far away, off to the side
-    var moonGeo = new THREE.SphereGeometry(1.5, 12, 12);
-    var moonMat = new THREE.MeshBasicMaterial({ color: 0xDDE8F0, transparent: true, opacity: 0.2 });
-    var moonMesh = new THREE.Mesh(moonGeo, moonMat);
-    moonMesh.position.set(-60, 55, -70);
-    scene.add(moonMesh);
-    // Moon glow
-    var glowGeo = new THREE.SphereGeometry(3, 12, 12);
-    var glowMat = new THREE.MeshBasicMaterial({ color: 0xAABBCC, transparent: true, opacity: 0.04 });
-    var moonGlow = new THREE.Mesh(glowGeo, glowMat);
-    moonGlow.position.copy(moonMesh.position); // halo belongs ON the moon
-    scene.add(moonGlow);
+    // Real moonlit sky (Kenney CC0 Skyboxes "night", downsampled and darkened
+    // to the palette by tools/bake-props/bake-sky.js). Its moon sits in almost
+    // exactly the direction the scene's moon DirectionalLight comes from, so
+    // the light in the forest reads as coming from the moon you can see.
+    // The panorama carries its own stars — the old Points star field and the
+    // fake moon sphere + halo are gone (two moons, and clutter the user called out).
+    var loader = new THREE.TextureLoader();
+    loader.load("images/sky-night.png", function (tex) {
+      if (!scene) return; // user left before the image arrived
+      tex.mapping = THREE.EquirectangularReflectionMapping;
+      if ("colorSpace" in tex) tex.colorSpace = THREE.SRGBColorSpace;
+      tex.minFilter = THREE.LinearFilter;
+      scene.background = tex;
+      // The background is tone-mapped like everything else (ACES @ exposure
+      // 1.8 = a ~3x linear gain), so the panorama at full strength renders as a
+      // near-white haze behind the treeline. 0.042 lands it just above the
+      // #0C1210 base: a dark sky you can read a moon and stars in.
+      scene.backgroundIntensity = 0.042;
+      scene._skyTex = tex;
+    }, undefined, function () { /* keep the flat #0C1210 background */ });
   }
 
   // ======================== Smoke ========================
@@ -1221,68 +1062,40 @@
 
   // ======================== Ground Details — rocks, bushes, fallen logs ========================
   function createGroundDetails() {
-    var rockMat = new THREE.MeshStandardMaterial({ color: 0x4A4A4A, roughness: 0.95, flatShading: true });
-    var bushColors = [0x2D4233, 0x344E41, 0x3A5A40, 0x4A6B3F];
+    // All modeled scatter (Mini Forest stones/rocks/plants + Survival Kit
+    // logs), one InstancedMesh per model — 5 draw calls for every ground prop
+    var F = window.DZ_FOREST, P = window.DZ_PROPS;
+    if (!F) return;
 
-    // Planned first, then uploaded as three instanced batches. (This used to
-    // allocate a fresh material inside the bush and log loops — the exact
-    // "no new materials in loops" rule the project sets.)
-    var planRock = [], planBush = [], planLog = [];
-
-    for (var i = 0; i < 30; i++) {
-      var angle = Math.random() * Math.PI * 2;
-      var dist = 3 + Math.random() * 35;
-      var rx = Math.cos(angle) * dist;
-      var rz = Math.sin(angle) * dist;
-      if (Math.sqrt(rx * rx + rz * rz) < 14) continue;
-      var rr = 0.1 + Math.random() * 0.25;
-      planRock.push({
-        p: [rx, getGroundY(rx, rz) + 0.1, rz],
-        r: [Math.random() * Math.PI, Math.random() * Math.PI, 0],
-        s: [rr, rr * (0.5 + Math.random() * 0.5), rr]
-      });
-    }
-
-    for (var j = 0; j < 20; j++) {
-      var ba = Math.random() * Math.PI * 2;
-      var bd = 4 + Math.random() * 30;
-      var bx = Math.cos(ba) * bd;
-      var bz = Math.sin(ba) * bd;
-      if (Math.sqrt(bx * bx + bz * bz) < 14) continue;
-      var bgy = getGroundY(bx, bz);
-      var bushColor = bushColors[Math.floor(Math.random() * bushColors.length)];
-      var clusterCount = 2 + Math.floor(Math.random() * 2);
-      for (var k = 0; k < clusterCount; k++) {
-        var br = 0.15 + Math.random() * 0.2;
-        planBush.push({
-          p: [bx + (Math.random() - 0.5) * 0.5, bgy + 0.15 + Math.random() * 0.15, bz + (Math.random() - 0.5) * 0.5],
-          r: [0, Math.random() * Math.PI, 0],
-          s: [br, br * (0.6 + Math.random() * 0.3), br],
-          c: bushColor
-        });
+    function scatter(count, dMin, dMax, make) {
+      var out = [];
+      for (var i = 0; i < count; i++) {
+        var a = Math.random() * Math.PI * 2;
+        var d = dMin + Math.random() * (dMax - dMin);
+        var x = Math.cos(a) * d, z = Math.sin(a) * d;
+        if (x * x + z * z < 196) continue; // keep the camp clearing open
+        out.push(make(x, z));
       }
+      return out;
     }
 
-    for (var l = 0; l < 6; l++) {
-      var la = Math.random() * Math.PI * 2;
-      var ld = 6 + Math.random() * 25;
-      var lx = Math.cos(la) * ld;
-      var lz = Math.sin(la) * ld;
-      if (Math.sqrt(lx * lx + lz * lz) < 14) continue;
-      var lr = 0.1 + Math.random() * 0.1;
-      planLog.push({
-        p: [lx, getGroundY(lx, lz) + 0.1, lz],
-        r: [0, Math.random() * Math.PI, Math.PI / 2],
-        s: [lr, 1.5 + Math.random() * 2, lr]
-      });
+    buildInstancedProp(F.stones, scatter(isMobile ? 12 : 22, 15, 38, function (x, z) {
+      return { x: x, y: getGroundY(x, z), z: z, ry: Math.random() * Math.PI * 2, s: 0.5 + Math.random() * 0.7, t: 0.7 + Math.random() * 0.4 };
+    }));
+    buildInstancedProp(F.rocksLow, scatter(isMobile ? 5 : 9, 17, 40, function (x, z) {
+      return { x: x, y: getGroundY(x, z), z: z, ry: Math.random() * Math.PI * 2, s: 1.0 + Math.random() * 1.2, t: 0.7 + Math.random() * 0.4 };
+    }));
+    buildInstancedProp(F.rocksHigh, scatter(isMobile ? 2 : 4, 24, 44, function (x, z) {
+      return { x: x, y: getGroundY(x, z), z: z, ry: Math.random() * Math.PI * 2, s: 1.4 + Math.random() * 1.2, t: 0.6 + Math.random() * 0.35 };
+    }));
+    buildInstancedProp(F.plant, scatter(isMobile ? 10 : 20, 15, 36, function (x, z) {
+      return { x: x, y: getGroundY(x, z), z: z, ry: Math.random() * Math.PI * 2, s: 1.4 + Math.random() * 1.8, t: 0.7 + Math.random() * 0.45 };
+    }));
+    if (P) {
+      buildInstancedProp(P.log, scatter(isMobile ? 4 : 6, 15, 32, function (x, z) {
+        return { x: x, y: getGroundY(x, z), z: z, ry: Math.random() * Math.PI * 2, s: 1.2 + Math.random() * 0.9, t: 0.8 + Math.random() * 0.3 };
+      }));
     }
-
-    var bushMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9, flatShading: true });
-    var logMat = new THREE.MeshStandardMaterial({ color: 0x3B2314, roughness: 0.9, flatShading: true });
-
-    buildInstanced(new THREE.DodecahedronGeometry(1, 0), rockMat, planRock);
-    buildInstanced(new THREE.SphereGeometry(1, 5, 4), bushMat, planBush);
-    buildInstanced(new THREE.CylinderGeometry(1, 1.2, 1, 6), logMat, planLog);
   }
 
   // ======================== Pond ========================
@@ -1306,37 +1119,29 @@
 
   // ======================== Plant a tree — the signature interaction ========
   // Click the ground and a pine grows there. It persists: come back and your
-  // tree is still standing. (Replaces the old ember-planting.)
-  var plantBarkMat = null, plantLeafMats = null;
+  // tree is still standing. Planted pines are the same Kenney model as the
+  // forest (shared geometry + material — one allocation for all 12).
+  var plantGeo = null, plantMat = null;
   function spawnTree(worldX, worldZ, instant, startDelay) {
     // Keep the campsite clear and stay inside the world — r²=25 covers the
     // modeled tent's farthest corner (4.86 from origin) so no pine can grow
     // through the canvas; saved trees inside the band are dropped on restore
     if (worldX * worldX + worldZ * worldZ < 25) return null;
     if (Math.abs(worldX) > 50 || Math.abs(worldZ) > 52) return null;
+    var F = window.DZ_FOREST;
+    if (!F) return null;
 
-    if (!plantBarkMat) {
-      plantBarkMat = new THREE.MeshStandardMaterial({ color: 0x3B2314, roughness: 0.85, flatShading: true });
-      plantLeafMats = CANOPY_COLORS.map(function (c) {
-        return new THREE.MeshStandardMaterial({ color: c, roughness: 0.75, flatShading: true });
-      });
+    if (!plantGeo) {
+      plantGeo = propGeometry(F.tree);
+      plantMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9 });
     }
 
     var gY = getGroundY(worldX, worldZ);
     var g = new THREE.Group();
     var h = 2.6 + Math.random() * 1.6;
-    var trunkH = h * 0.35;
-    var leaf = plantLeafMats[Math.floor(Math.random() * plantLeafMats.length)];
-
-    var trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.09, trunkH, 5), plantBarkMat);
-    trunk.position.y = trunkH / 2;
-    g.add(trunk);
-    var c1 = new THREE.Mesh(new THREE.ConeGeometry(h * 0.28, h * 0.5, 7), leaf);
-    c1.position.y = trunkH + h * 0.22;
-    g.add(c1);
-    var c2 = new THREE.Mesh(new THREE.ConeGeometry(h * 0.2, h * 0.38, 7), leaf);
-    c2.position.y = trunkH + h * 0.46;
-    g.add(c2);
+    var tree = new THREE.Mesh(plantGeo, plantMat);
+    tree.scale.setScalar(h / 1.68);
+    g.add(tree);
 
     g.position.set(worldX, gY, worldZ);
     g.rotation.y = Math.random() * Math.PI * 2;
@@ -1351,8 +1156,7 @@
     });
     if (plantedTrees.length > MAX_TREES) {
       var old = plantedTrees.shift();
-      scene.remove(old.group);
-      old.group.traverse(function (o) { if (o.geometry) o.geometry.dispose(); });
+      scene.remove(old.group); // geometry is shared (plantGeo) — never dispose per-tree
     }
     return g;
   }
@@ -1458,9 +1262,6 @@
             if (scene._mist) scene._mist.visible = false;
           } else {
             renderer.setPixelRatio(0.85);
-            if (scene._billboards) {
-              for (var pbi = 0; pbi < scene._billboards.length; pbi++) scene._billboards[pbi].visible = false;
-            }
           }
         } else if (fps > 50) {
           perfTier = 2; // comfortably fast — stop sampling
@@ -1564,25 +1365,8 @@
       }
     }
 
-    // === Tree canopy wind sway (every 2nd frame) ===
-    // Wind sway — one small instanced batch, re-uploaded every 2nd frame
-    if (scene._sway && frame % 2 === 0) {
-      var sw = scene._sway, swItems = sw.items, swDummy = scene._swayDummy;
-      if (!swDummy) swDummy = scene._swayDummy = new THREE.Object3D();
-      for (var ci = 0; ci < swItems.length; ci++) {
-        var cp = swItems[ci];
-        swDummy.position.set(cp.p[0], cp.p[1], cp.p[2]);
-        swDummy.rotation.set(
-          cp.r[0] + Math.sin(t * 0.8 + cp.phase) * 0.02,
-          cp.r[1],
-          cp.r[2] + Math.sin(t * 0.6 + cp.phase * 1.3) * 0.015
-        );
-        swDummy.scale.set(cp.s[0], cp.s[1], cp.s[2]);
-        swDummy.updateMatrix();
-        sw.mesh.setMatrixAt(ci, swDummy.matrix);
-      }
-      sw.mesh.instanceMatrix.needsUpdate = true;
-    }
+    // (Canopy wind sway removed with the modeled forest — the instanced tree
+    //  batches stay static, saving the per-frame matrix re-upload entirely.)
 
     // Canopy reveal — all lanterns flash when camera rises above (ch8)
     var canopyReveal = 0;
@@ -1682,11 +1466,8 @@
       }
     }
 
-    // Stars twinkle — pulse opacity of individual stars
-    if (scene._stars) {
-      scene._stars.rotation.y = t * 0.001;
-      scene._stars.material.opacity = 0.6 + Math.sin(t * 0.5) * 0.15;
-    }
+    // (Star field removed — the sky panorama has its own stars, and animating
+    //  them cost a per-frame material write for something nobody could see.)
 
     // Smoke rises — wind drift + dispersal (every 2nd frame)
     var windX = Math.sin(t * 0.3) * 0.4;
@@ -1862,10 +1643,13 @@
     trails = [];
     for (var k = plantedTrees.length - 1; k >= 0; k--) {
       scene.remove(plantedTrees[k].group);
-      plantedTrees[k].group.traverse(function (o) { if (o.geometry) o.geometry.dispose(); });
     }
     plantedTrees = [];
-    plantBarkMat = null; plantLeafMats = null; // rebuilt on next planting
+    // Shared planted-tree geometry/material are disposed by the scene teardown
+    // traverse in stop(); reset so the next entry rebuilds them fresh
+    if (plantGeo) { plantGeo.dispose(); plantGeo = null; }
+    if (plantMat) { plantMat.dispose(); plantMat = null; }
+    instPropMat = null;
     for (var ct = cursorTrail.length - 1; ct >= 0; ct--) {
       scene.remove(cursorTrail[ct].mesh); cursorTrail[ct].mesh.geometry.dispose(); cursorTrail[ct].mesh.material.dispose();
     }
@@ -1914,6 +1698,9 @@
             }
           }
         });
+        // scene.background is not part of the traverse — free it explicitly
+        if (scene.background && scene.background.isTexture) scene.background.dispose();
+        scene.background = null;
         if (scene.clear) scene.clear();
         scene = null;
       }

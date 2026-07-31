@@ -155,6 +155,8 @@
     </div>
     <div class="creative-music-credit">
       <span class="credit-icon"><i class="fas fa-music"></i></span> Music by <a href="https://www.youtube.com/watch?v=pM_yiZyC4dU" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline; text-decoration-color: rgba(163,177,138,0.2); pointer-events: auto;">Alex-Productions</a>
+      <span aria-hidden="true"> · </span>
+      <span class="credit-icon"><i class="fas fa-tree"></i></span> 3D models by <a href="https://kenney.nl" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline; text-decoration-color: rgba(163,177,138,0.2); pointer-events: auto;">Kenney</a> (CC0)
     </div>
 
     <!-- Scroll container — drives the 3D camera -->
@@ -1159,21 +1161,32 @@ world.<span class="code-fn">render</span>();</pre>
   <script src="vendor/typed/typed.min.js"></script>
   <script src="js/theme.js"></script>
   <script>
-    // Lazy-load Three.js + camp props + creative.js only when needed
+    // Lazy-load Three.js + baked models + creative.js only when needed
     window.loadCreativeMode = function(callback) {
+      function fetchData(src, done) {
+        var s = document.createElement("script");
+        s.src = src;
+        s.onload = s.onerror = done; // data files degrade gracefully on failure
+        document.body.appendChild(s);
+      }
       if (typeof THREE !== "undefined") {
-        if (window.DZ_PROPS) { callback(); return; }
-        // Three landed but the props fetch failed earlier — retry just the
-        // props so a re-entry heals the camp instead of staying degraded
-        var sp = document.createElement("script");
-        sp.src = "models/props.js";
-        sp.onload = sp.onerror = function() { callback(); };
-        document.body.appendChild(sp);
+        // Three landed but a data fetch failed earlier — retry just the
+        // missing files so a re-entry heals instead of staying degraded
+        var missing = [];
+        if (!window.DZ_PROPS) missing.push("models/props.js");
+        if (!window.DZ_FOREST) missing.push("models/forest.js");
+        if (!missing.length) { callback(); return; }
+        var left = missing.length;
+        missing.forEach(function(src) {
+          fetchData(src, function() { if (--left === 0) callback(); });
+        });
         return;
       }
-      var threeReady = false, propsSettled = false;
-      function maybeLoadCreative() {
-        if (!threeReady || !propsSettled) return;
+      var pending = 3; // three.min.js + props.js + forest.js, fetched in parallel
+      var threeOk = false;
+      function settle() {
+        if (--pending > 0) return;
+        if (!threeOk) return; // no scene without Three
         var s3 = document.createElement("script");
         s3.src = "js/creative.js";
         s3.onload = callback;
@@ -1181,14 +1194,10 @@ world.<span class="code-fn">render</span>();</pre>
       }
       var s1 = document.createElement("script");
       s1.src = "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js";
-      s1.onload = function() { threeReady = true; maybeLoadCreative(); };
-      // Baked camp models — pure data (window.DZ_PROPS), no THREE dependency,
-      // so fetch concurrently; a failed load still opens the scene, degraded
-      var s2 = document.createElement("script");
-      s2.src = "models/props.js";
-      s2.onload = s2.onerror = function() { propsSettled = true; maybeLoadCreative(); };
+      s1.onload = function() { threeOk = true; settle(); };
       document.body.appendChild(s1);
-      document.body.appendChild(s2);
+      fetchData("models/props.js", settle);
+      fetchData("models/forest.js", settle);
     };
   </script>
 
