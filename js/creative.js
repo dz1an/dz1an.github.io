@@ -68,7 +68,7 @@
   }
 
   var TREE_COUNT = isMobile ? 30 : 52;
-  var AMBIENT_FF_COUNT = isMobile ? 12 : 14;
+  var AMBIENT_FF_COUNT = isMobile ? 5 : 7;
   var PATH_LAMP_COUNT = isMobile ? 5 : 8;
   var lastTouchSpawn = 0;
 
@@ -597,21 +597,8 @@
       scene.add(base);
     });
 
-    // Stone archway at grove entrance (z ~ -8)
-    var archGY = getGroundY(0, -8);
-    // Left pillar
-    var archL = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.3, 4, 6), stoneMat);
-    archL.position.set(-1.5, archGY + 2, -8);
-    scene.add(archL);
-    // Right pillar
-    var archR = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.3, 4, 6), stoneMat);
-    archR.position.set(1.5, archGY + 2, -8);
-    scene.add(archR);
-    // Lintel (horizontal bar, slightly cracked/tilted)
-    var lintel = new THREE.Mesh(new THREE.BoxGeometry(3.5, 0.3, 0.4), stoneMat);
-    lintel.position.set(0, archGY + 4.1, -8);
-    lintel.rotation.z = 0.03; // slightly tilted for age
-    scene.add(lintel);
+    // (Stone archway removed — it framed the grove entrance like a gate and
+    //  fought the open-trail feeling. The pillars alone carry the ruins.)
 
     // Wildflowers in the meadow
     for (var mfi = 0; mfi < (isMobile ? 15 : 30); mfi++) {
@@ -816,8 +803,6 @@
     // Where the path began — university, at the trail entrance
     signpost(2.3, 38, "WMSU · 2020", "Where the path began", "BS Computer Science");
 
-    // Rising above — executive education, late in the lantern grove
-    signpost(-2.6, -24.5, "AIM · 2025", "Rising above", "Executive Education — Digital Transformation");
 
     // A mark left behind — stone cairn for the national award
     var cx = 2.6, cz = -30, cgY = getGroundY(cx, cz);
