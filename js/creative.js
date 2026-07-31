@@ -26,6 +26,7 @@
   var trees = [];
   var lanterns = [];
   var fireflies = [];
+  var wayLabels = []; // static waypoint labels — faded by camera distance in animate()
   var trails = [];
   var spawned = [];
   var scrollEl = null;
@@ -181,6 +182,19 @@
     var sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, opacity: opts.opacity || 0.85, depthWrite: false }));
     var sc = opts.scale || 1.5; sp.scale.set(sc * (cvs.width / cvs.height), sc, 1);
     return sp;
+  }
+
+  // Label visibility by real 3D distance: fade OUT when the camera is nearly on
+  // top of a label (stops giant blurry text filling the frame) and beyond ~30
+  // units (stops every zone's text stacking into one crowded view).
+  function distVis(p) {
+    var dx = p.x - camera.position.x, dy = p.y - camera.position.y, dz = p.z - camera.position.z;
+    var d = Math.sqrt(dx * dx + dy * dy + dz * dz);
+    var nearV = (d - 1.6) / 2.2;
+    var farV = (30 - d) / 8;
+    if (nearV < 0) nearV = 0; else if (nearV > 1) nearV = 1;
+    if (farV < 0) farV = 0; else if (farV > 1) farV = 1;
+    return nearV * farV;
   }
 
   // ======================== Init ========================
@@ -607,11 +621,11 @@
       var mfx = -3 + Math.cos(mfa) * mfr;
       var mfz = -36 + Math.sin(mfa) * mfr;
       var mfgy = getGroundY(mfx, mfz);
-      var mfmat = [0xFFFFFF, 0xF0E68C, 0xE8E6DC, 0xC8D8A0][Math.floor(Math.random() * 4)];
+      var mfmat = [0xD8CFA8, 0xF0E68C, 0xE8E6DC, 0xC8D8A0][Math.floor(Math.random() * 4)];
       var mfSize = 0.05 + Math.random() * 0.05;
       var mf1 = new THREE.Mesh(
         new THREE.PlaneGeometry(mfSize, mfSize * 1.5),
-        new THREE.MeshBasicMaterial({ color: mfmat, transparent: true, opacity: 0.7, side: THREE.DoubleSide })
+        new THREE.MeshBasicMaterial({ color: mfmat, transparent: true, opacity: 0.45, side: THREE.DoubleSide })
       );
       mf1.position.set(mfx, mfgy + mfSize, mfz);
       mf1.rotation.y = Math.random() * Math.PI;
@@ -627,91 +641,64 @@
 
   }
 
-  // ======================== Campsite — tent, campfire, seated figure ========================
+  // ======================== Campsite — modeled tent, campfire, bedroll ========================
+  // Camp props are real CC0 models (Kenney Survival Kit) pre-baked to sage
+  // vertex colors in models/props.js — no textures, one draw call each.
+  function buildProp(def) {
+    function bytes(s) {
+      var bin = atob(s), u = new Uint8Array(bin.length);
+      for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+      return u.buffer;
+    }
+    var g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.BufferAttribute(new Float32Array(bytes(def.p)), 3));
+    g.setAttribute("normal", new THREE.BufferAttribute(new Float32Array(bytes(def.n)), 3));
+    var cu = new Uint8Array(bytes(def.c)), cf = new Float32Array(cu.length);
+    for (var ci = 0; ci < cu.length; ci++) cf[ci] = cu[ci] / 255;
+    g.setAttribute("color", new THREE.BufferAttribute(cf, 3));
+    g.setIndex(new THREE.BufferAttribute(new Uint16Array(bytes(def.i)), 1));
+    return new THREE.Mesh(g, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9 }));
+  }
+
   function createCoreLantern() {
     var gY = 0;
-    var logMat = new THREE.MeshStandardMaterial({ color: 0x3B2314, roughness: 0.9 });
-    var stoneMat = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.95, flatShading: true });
+    var PROPS = window.DZ_PROPS;
 
-    // === Camp tent (teepee-style, entrance facing the fire) ===
+    // === Canvas tent — a real A-frame model, mouth turned toward the fire ===
     var shelterX = 2.5, shelterZ = -2.5;
     var sgY = getGroundY(shelterX, shelterZ);
-    var tentMat = new THREE.MeshStandardMaterial({ color: 0x6E7A55, roughness: 0.92, flatShading: true });
-    var tent = new THREE.Group();
-    // Canvas — a fuller, slightly leaning teepee with visible facets
-    var tentBody = new THREE.Mesh(new THREE.ConeGeometry(1.15, 1.95, 7), tentMat);
-    tentBody.position.y = 0.975;
-    tentBody.rotation.y = 0.4;      // facet edge faces the fire — reads hand-pitched
-    tentBody.rotation.z = 0.04;     // gentle lean
-    tent.add(tentBody);
-    // Doorway — a dark wedge inset into the canvas, facing the campfire
-    var tentDoor = new THREE.Mesh(
-      new THREE.ConeGeometry(0.34, 0.95, 4),
-      new THREE.MeshStandardMaterial({ color: 0x1B1C14, roughness: 1 })
-    );
-    tentDoor.position.set(0, 0.48, 0.62);
-    tentDoor.rotation.y = Math.PI / 4;
-    tent.add(tentDoor);
-    // Frame poles — long, crossed above the apex like a real teepee
-    var tentPoleMat = new THREE.MeshStandardMaterial({ color: 0x3B2A1A, roughness: 0.9 });
-    for (var tp = 0; tp < 4; tp++) {
-      var ta = (tp / 4) * Math.PI * 2 + 0.5;
-      var tpole = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.028, 2.7, 4), tentPoleMat);
-      tpole.position.set(Math.cos(ta) * 0.22, 1.32, Math.sin(ta) * 0.22);
-      tpole.rotation.set(Math.sin(ta) * 0.22, 0, -Math.cos(ta) * 0.22);
-      tent.add(tpole);
+    if (PROPS) {
+      var tent = buildProp(PROPS.tent);
+      tent.position.set(shelterX, sgY, shelterZ);
+      tent.rotation.y = Math.atan2(0 - shelterX, 0.5 - shelterZ); // aim the model's front at the campfire
+      scene.add(tent);
     }
-    // Guy ropes staked to the ground — small detail, big "camp" read
-    var ropeMat = new THREE.MeshBasicMaterial({ color: 0x5C4033 });
-    var stakeMat = new THREE.MeshStandardMaterial({ color: 0x2A1F15, roughness: 0.9 });
-    [[-1.35, 0.5], [1.05, -1.15]].forEach(function (gr) {
-      var rope = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 1.15, 3), ropeMat);
-      rope.position.set(gr[0] * 0.62, 0.62, gr[1] * 0.62);
-      rope.lookAt(new THREE.Vector3(gr[0] * 1.15, 0, gr[1] * 1.15).add(tent.position));
-      rope.rotateX(Math.PI / 2);
-      tent.add(rope);
-      var stake = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.035, 0.16, 4), stakeMat);
-      stake.position.set(gr[0] * 1.12, 0.06, gr[1] * 1.12);
-      stake.rotation.z = 0.3;
-      tent.add(stake);
-    });
-    tent.position.set(shelterX, sgY, shelterZ);
-    scene.add(tent);
 
-    // Bedroll just inside the tent
+    // Bedroll inside the tent, lying along its open axis — visible through the
+    // mouth from the fire side (the model is an open-ended A-frame)
     var sleepBag = new THREE.Mesh(new THREE.CapsuleGeometry(0.15, 0.8, 4, 8), new THREE.MeshStandardMaterial({ color: 0x4A3B2A, roughness: 0.8 }));
-    sleepBag.position.set(shelterX + 0.3, sgY + 0.1, shelterZ - 0.3);
-    sleepBag.rotation.set(0, 0.2, Math.PI / 2);
+    sleepBag.position.set(shelterX - 0.3, sgY + 0.1, shelterZ + 0.35);
+    sleepBag.rotation.set(0, 0.88, Math.PI / 2);
     scene.add(sleepBag);
 
-    // === CAMPFIRE — more detailed ===
-    // Fire ring (stones, varied)
-    var stoneCount = isMobile ? 6 : 10;
-    for (var si = 0; si < stoneCount; si++) {
-      var stoneAngle = (si / 10) * Math.PI * 2;
-      var sr = 0.08 + Math.random() * 0.08;
-      var stone = new THREE.Mesh(new THREE.DodecahedronGeometry(sr, 0), stoneMat);
-      stone.position.set(Math.cos(stoneAngle) * 0.85, gY + 0.06, Math.sin(stoneAngle) * 0.85 + 0.5);
-      stone.scale.y = 0.5;
-      stone.rotation.set(Math.random(), Math.random(), 0);
-      scene.add(stone);
-    }
+    // === Campfire — modeled stone fire pit with stacked logs ===
+    if (PROPS) {
+      var firePit = buildProp(PROPS.fire);
+      firePit.position.set(0, gY, 0.5);
+      firePit.rotation.y = 0.7;
+      scene.add(firePit);
 
-    // Log teepee (3 logs leaning together)
-    for (var li = 0; li < 3; li++) {
-      var la = (li / 3) * Math.PI * 2;
-      var log = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.055, 0.9, 5), logMat);
-      log.position.set(Math.cos(la) * 0.22, gY + 0.34, Math.sin(la) * 0.22 + 0.5);
-      log.rotation.set(Math.cos(la) * 0.4, la, Math.sin(la) * 0.4);
-      scene.add(log);
+      // Log seats pulled up to the fire, across from the tent
+      var seat1 = buildProp(PROPS.log);
+      seat1.position.set(-1.55, getGroundY(-1.55, 1.35), 1.35);
+      seat1.rotation.y = 0.55;
+      scene.add(seat1);
+      var seat2 = buildProp(PROPS.log);
+      seat2.position.set(1.6, getGroundY(1.6, 1.7), 1.7);
+      seat2.rotation.y = -0.9;
+      seat2.scale.setScalar(0.85);
+      scene.add(seat2);
     }
-    // Base logs (flat, under the teepee)
-    var baseLog1 = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.06, 0.8, 5), logMat);
-    baseLog1.position.set(0, gY + 0.08, 0.5); baseLog1.rotation.set(0, 0.8, Math.PI / 2);
-    scene.add(baseLog1);
-    var baseLog2 = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.055, 0.7, 5), logMat);
-    baseLog2.position.set(0.08, gY + 0.08, 0.58); baseLog2.rotation.set(0, -0.5, Math.PI / 2);
-    scene.add(baseLog2);
 
     // Fire light — main warm flicker (bright, close range)
     var fireLight = new THREE.PointLight(0xFF8C33, 3.5, 20);
@@ -821,6 +808,7 @@
       var label = makeLabel(labelText, { fontSize: 16, sub: subText, scale: 1.0, opacity: 0.55 });
       label.position.set(x, gY + 2.1, z);
       scene.add(label);
+      wayLabels.push({ sp: label, base: 0.55 });
     }
 
     // Where the path began — university, at the trail entrance
@@ -843,6 +831,7 @@
     });
     awardLabel.position.set(cx, cgY + 1.7, cz);
     scene.add(awardLabel);
+    wayLabels.push({ sp: awardLabel, base: 0.75 });
 
     // The next lantern — LUMI, not lit yet (in development)
     var lx = -2.2, lz = -31.5, lgY = getGroundY(lx, lz);
@@ -861,6 +850,7 @@
     });
     lumiLabel.position.set(lx, lgY + 2.05, lz);
     scene.add(lumiLabel);
+    wayLabels.push({ sp: lumiLabel, base: 0.5 });
   }
 
   function createProjectLanterns() {
@@ -993,10 +983,11 @@
     TECH.forEach(function (name, i) {
       var col = i % 4;
       var row = Math.floor(i / 4);
-      // Spread across the meadow clearing
-      var x = -5 + col * 3 + (Math.random() - 0.5) * 1;
-      var z = -33 - row * 4 + (Math.random() - 0.5) * 1;
-      var y = 2 + row * 0.8 + Math.random() * 1.5; // eye level, not above canopy
+      // Wide, deep spread — rows 5.5 apart so the far rows sit in the distance
+      // fade instead of stacking legibly on top of the near row
+      var x = -8 + col * 4.2 + (Math.random() - 0.5) * 1.2;
+      var z = -32 - row * 5.5 + (Math.random() - 0.5) * 1.5;
+      var y = 2 + row * 1.0 + Math.random() * 1.8; // eye level, not above canopy
 
       var color = ffColors[i % ffColors.length];
       var mesh = new THREE.Mesh(new THREE.SphereGeometry(0.08, 6, 6), new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.9 }));
@@ -1004,7 +995,7 @@
       var light = null;
       // No per-firefly PointLights — the emissive-looking MeshBasic spheres
       // read as glowing on their own, and lights here were pure GPU cost.
-      var label = makeLabel(name, { fontSize: 22, fontWeight: "600", color: "#DAD7CD", scale: 1.8, opacity: 0.01 });
+      var label = makeLabel(name, { fontSize: 20, fontWeight: "600", color: "#DAD7CD", scale: 1.4, opacity: 0.01 });
       label.position.set(x, y + 0.8, z); scene.add(label);
       fireflies.push({
         mesh: mesh, light: light, label: label, baseX: x, baseY: y, baseZ: z, color: color,
@@ -1318,8 +1309,10 @@
   // tree is still standing. (Replaces the old ember-planting.)
   var plantBarkMat = null, plantLeafMats = null;
   function spawnTree(worldX, worldZ, instant, startDelay) {
-    // Keep the campsite clear and stay inside the world
-    if (worldX * worldX + worldZ * worldZ < 20) return null;
+    // Keep the campsite clear and stay inside the world — r²=25 covers the
+    // modeled tent's farthest corner (4.86 from origin) so no pine can grow
+    // through the canvas; saved trees inside the band are dropped on restore
+    if (worldX * worldX + worldZ * worldZ < 25) return null;
     if (Math.abs(worldX) > 50 || Math.abs(worldZ) > 52) return null;
 
     if (!plantBarkMat) {
@@ -1626,10 +1619,12 @@
 
       var revealNear = Math.max(near, canopyReveal);
       var tG = lerp(0.15, 1.2, revealNear), tL = lerp(0.3, 1.8, revealNear);
-      var tO = lerp(0.0, 0.95, revealNear), tS = lerp(0.8, 1.3, revealNear);
+      var tO = lerp(0.0, 0.95, revealNear) * distVis(lan.label.position), tS = lerp(0.8, 1.3, revealNear);
       lan.mesh.material.emissiveIntensity += (tG - lan.mesh.material.emissiveIntensity) * 0.03;
       lan.light.intensity += (tL - lan.light.intensity) * 0.03;
-      lan.label.material.opacity += (tO - lan.label.material.opacity) * 0.025;
+      // Fade out faster than in — a label you've walked past must not linger huge
+      var oRate = tO < lan.label.material.opacity ? 0.09 : 0.025;
+      lan.label.material.opacity += (tO - lan.label.material.opacity) * oRate;
       lan.mesh.scale.setScalar(lan.mesh.scale.x + (tS - lan.mesh.scale.x) * 0.03);
       // Flicker the light subtly
       lan.light.intensity *= 0.95 + (sinT6 + Math.sin(li * 2) * 0.5) * 0.05;
@@ -1653,7 +1648,7 @@
       // Direct set from proximity — no slow lerp, responsive to scroll
       var fO = lerp(0.05, 0.95, techProximity);
       var fL = lerp(0.02, 0.6, techProximity);
-      var fLO = lerp(0.0, 0.9, techProximity);
+      var fLO = lerp(0.0, 0.9, techProximity) * distVis(ff.label.position);
       var fS = lerp(0.3, 1.8, techProximity);
       ff.mesh.material.opacity = fO;
       if (ff.light) ff.light.intensity = fL;
@@ -1661,6 +1656,15 @@
       ff.mesh.scale.setScalar(fS);
       // Flicker
       if (techProximity > 0.1) ff.mesh.material.opacity *= 0.85 + (sinT3 + Math.sin(fi * 2.5) * 0.5) * 0.15;
+    }
+
+    // Waypoint labels (signposts, award cairn, LUMI) — pure distance fade so a
+    // marker you're standing on never fills the frame (every 2nd frame)
+    if (frame % 2 === 0) {
+      for (var wli = 0; wli < wayLabels.length; wli++) {
+        var wl = wayLabels[wli];
+        wl.sp.material.opacity = wl.base * distVis(wl.sp.position);
+      }
     }
 
     // Ambient fireflies wander and flicker (every 2nd frame, staggered from canopy)
@@ -1917,7 +1921,7 @@
       // its cached render lists so the freed scene isn't retained.
       if (renderer && renderer.renderLists) renderer.renderLists.dispose();
       camera = null; clock = null;
-      trees = []; lanterns = []; fireflies = [];
+      trees = []; lanterns = []; fireflies = []; wayLabels = [];
       perfFrames = 0; perfStart = 0; perfTier = 0;
     },
     isRunning: function () { return isActive; }

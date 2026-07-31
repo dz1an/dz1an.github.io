@@ -1159,19 +1159,36 @@ world.<span class="code-fn">render</span>();</pre>
   <script src="vendor/typed/typed.min.js"></script>
   <script src="js/theme.js"></script>
   <script>
-    // Lazy-load Three.js + creative.js only when needed
+    // Lazy-load Three.js + camp props + creative.js only when needed
     window.loadCreativeMode = function(callback) {
-      if (typeof THREE !== "undefined") { callback(); return; }
+      if (typeof THREE !== "undefined") {
+        if (window.DZ_PROPS) { callback(); return; }
+        // Three landed but the props fetch failed earlier — retry just the
+        // props so a re-entry heals the camp instead of staying degraded
+        var sp = document.createElement("script");
+        sp.src = "models/props.js";
+        sp.onload = sp.onerror = function() { callback(); };
+        document.body.appendChild(sp);
+        return;
+      }
+      var threeReady = false, propsSettled = false;
+      function maybeLoadCreative() {
+        if (!threeReady || !propsSettled) return;
+        var s3 = document.createElement("script");
+        s3.src = "js/creative.js";
+        s3.onload = callback;
+        document.body.appendChild(s3);
+      }
       var s1 = document.createElement("script");
       s1.src = "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js";
-      s1.onload = function() {
-        // Load creative.js
-        var s2 = document.createElement("script");
-        s2.src = "js/creative.js";
-        s2.onload = callback;
-        document.body.appendChild(s2);
-      };
+      s1.onload = function() { threeReady = true; maybeLoadCreative(); };
+      // Baked camp models — pure data (window.DZ_PROPS), no THREE dependency,
+      // so fetch concurrently; a failed load still opens the scene, degraded
+      var s2 = document.createElement("script");
+      s2.src = "models/props.js";
+      s2.onload = s2.onerror = function() { propsSettled = true; maybeLoadCreative(); };
       document.body.appendChild(s1);
+      document.body.appendChild(s2);
     };
   </script>
 
