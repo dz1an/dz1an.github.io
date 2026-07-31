@@ -40,21 +40,21 @@
 
   var MAX_TRAILS = isMobile ? 20 : 50;
   var MAX_SPAWNED = isMobile ? 12 : 25;
-  var groundEmbers = [];
-  var MAX_EMBERS = 20;
-  // Restore embers from previous visit
-  function saveEmbers() {
+  var plantedTrees = [];
+  var MAX_TREES = 12;
+  // The forest remembers: trees planted by the visitor persist across visits
+  function saveTrees() {
     try {
-      var data = groundEmbers.map(function(e) { return { x: e.mesh.position.x, z: e.mesh.position.z }; });
-      localStorage.setItem("forestEmbers", JSON.stringify(data));
+      var data = plantedTrees.map(function(e) { return { x: e.x, z: e.z }; });
+      localStorage.setItem("plantedTrees", JSON.stringify(data));
     } catch(e) {}
   }
 
-  function restoreEmbers() {
+  function restoreTrees() {
     if (!scene) return; // user may exit before the delayed restore fires
     try {
-      var data = JSON.parse(localStorage.getItem("forestEmbers") || "[]");
-      data.forEach(function(d) { spawnEmber(d.x, d.z); });
+      var data = JSON.parse(localStorage.getItem("plantedTrees") || "[]");
+      data.forEach(function(d, i) { spawnTree(d.x, d.z, false, i * 0.15); });
       if (data.length > 0 && scene._brandLabel) {
         // Show "welcome back" — temporarily change brand label
         scene._brandLabel.material.map.dispose();
@@ -1305,24 +1305,55 @@
     }
   }
 
-  function spawnEmber(worldX, worldZ) {
-    var eY = getGroundY(worldX, worldZ);
-    var ember = new THREE.Mesh(
-      new THREE.CircleGeometry(0.06 + Math.random() * 0.05, 6),
-      new THREE.MeshBasicMaterial({
-        color: [0xFF8833, 0xFFAA33, 0xE8C87A, 0xFFCC55][Math.floor(Math.random() * 4)],
-        transparent: true, opacity: 0.7, depthWrite: false
-      })
-    );
-    ember.rotation.x = -Math.PI / 2;
-    ember.position.set(worldX, eY + 0.03, worldZ);
-    scene.add(ember);
-    groundEmbers.push({ mesh: ember, phase: Math.random() * Math.PI * 2 });
-    saveEmbers();
-    if (groundEmbers.length > MAX_EMBERS) {
-      var old = groundEmbers.shift();
-      scene.remove(old.mesh); old.mesh.geometry.dispose(); old.mesh.material.dispose();
+  // ======================== Plant a tree — the signature interaction ========
+  // Click the ground and a pine grows there. It persists: come back and your
+  // tree is still standing. (Replaces the old ember-planting.)
+  var plantBarkMat = null, plantLeafMats = null;
+  function spawnTree(worldX, worldZ, instant, startDelay) {
+    // Keep the campsite clear and stay inside the world
+    if (worldX * worldX + worldZ * worldZ < 20) return null;
+    if (Math.abs(worldX) > 50 || Math.abs(worldZ) > 52) return null;
+
+    if (!plantBarkMat) {
+      plantBarkMat = new THREE.MeshStandardMaterial({ color: 0x3B2314, roughness: 0.85, flatShading: true });
+      plantLeafMats = CANOPY_COLORS.map(function (c) {
+        return new THREE.MeshStandardMaterial({ color: c, roughness: 0.75, flatShading: true });
+      });
     }
+
+    var gY = getGroundY(worldX, worldZ);
+    var g = new THREE.Group();
+    var h = 2.6 + Math.random() * 1.6;
+    var trunkH = h * 0.35;
+    var leaf = plantLeafMats[Math.floor(Math.random() * plantLeafMats.length)];
+
+    var trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.09, trunkH, 5), plantBarkMat);
+    trunk.position.y = trunkH / 2;
+    g.add(trunk);
+    var c1 = new THREE.Mesh(new THREE.ConeGeometry(h * 0.28, h * 0.5, 7), leaf);
+    c1.position.y = trunkH + h * 0.22;
+    g.add(c1);
+    var c2 = new THREE.Mesh(new THREE.ConeGeometry(h * 0.2, h * 0.38, 7), leaf);
+    c2.position.y = trunkH + h * 0.46;
+    g.add(c2);
+
+    g.position.set(worldX, gY, worldZ);
+    g.rotation.y = Math.random() * Math.PI * 2;
+    g.scale.setScalar(instant ? 1 : 0.001);
+    scene.add(g);
+
+    plantedTrees.push({
+      group: g,
+      grow: instant ? 1 : 0,
+      delay: startDelay || 0,
+      x: worldX, z: worldZ
+    });
+    if (plantedTrees.length > MAX_TREES) {
+      var old = plantedTrees.shift();
+      scene.remove(old.group);
+      old.group.traverse(function (o) { if (o.geometry) o.geometry.dispose(); });
+    }
+    return g;
   }
 
   // ======================== Events ========================
@@ -1365,14 +1396,24 @@
   }
   function onClick(e) {
     var wp = getWorldPos(e.clientX, e.clientY);
-    if (scrollProgress >= 0.20 && scrollProgress <= 0.42) {
-      spawnEmber(wp.x, wp.z);
+    var planted = spawnTree(wp.x, wp.z, false, 0);
+    if (planted) {
+      saveTrees();
+      // a couple of fireflies rise from the fresh sapling
+      spawnFirefly(wp.x, 1.2, wp.z);
+      spawnFirefly(wp.x + 0.3, 1.6, wp.z - 0.2);
     } else {
-      spawnFirefly(wp.x, wp.y, wp.z);
+      spawnFirefly(wp.x, wp.y, wp.z); // clicked the camp/sky — just sparkle
     }
     if (window.playSound) playSound("click");
   }
-  function onTouch(e) { e.preventDefault(); isMouseDown = true; var t = e.touches[0]; var wp = getWorldPos(t.clientX, t.clientY); spawnFirefly(wp.x, wp.y, wp.z); lastTouchSpawn = Date.now(); }
+  function onTouch(e) {
+    e.preventDefault(); isMouseDown = true;
+    var t = e.touches[0]; var wp = getWorldPos(t.clientX, t.clientY);
+    if (spawnTree(wp.x, wp.z, false, 0)) { saveTrees(); }
+    else spawnFirefly(wp.x, wp.y, wp.z);
+    lastTouchSpawn = Date.now();
+  }
   function onTouchDrag(e) {
     e.preventDefault(); var t = e.touches[0];
     mouse.ndcX = (t.clientX / window.innerWidth) * 2 - 1;
@@ -1669,10 +1710,16 @@
     // (Horizon billboards are pre-aimed at the world centre at build time —
     //  no per-frame re-facing loop needed.)
 
-    // Ground embers pulse
-    for (var gei = 0; gei < groundEmbers.length; gei++) {
-      var ge = groundEmbers[gei];
-      ge.mesh.material.opacity = 0.35 + Math.sin(t * 2 + ge.phase) * 0.2;
+    // Planted trees grow in — ease-out with a small overshoot, like a sprout
+    for (var pti = 0; pti < plantedTrees.length; pti++) {
+      var pt = plantedTrees[pti];
+      if (pt.grow >= 1) continue;
+      if (pt.delay > 0) { pt.delay -= 1 / 60; continue; }
+      pt.grow = Math.min(1, pt.grow + 1 / 90); // ~1.5s
+      var gpr = pt.grow;
+      var overshoot = 1 + Math.sin(gpr * Math.PI) * 0.12 * (1 - gpr);
+      var eased = 1 - Math.pow(1 - gpr, 3);
+      pt.group.scale.setScalar(Math.max(0.001, eased * overshoot));
     }
 
     // Cursor trail fade
@@ -1705,28 +1752,9 @@
       if (trd.life <= 0) { scene.remove(tr); tr.geometry.dispose(); tr.material.dispose(); trails.splice(ti, 1); }
     }
 
-    // Chapter transition burst — detect chapter boundary crossings
-    var currentChapter = Math.floor(scrollProgress * 10);
-    if (scene._lastChapter === undefined) scene._lastChapter = currentChapter;
-    if (currentChapter !== scene._lastChapter) {
-      scene._lastChapter = currentChapter;
-      // Burst of fireflies at camera position
-      for (var bi = 0; bi < 8; bi++) {
-        var ba = Math.random() * Math.PI * 2;
-        var br = 2 + Math.random() * 4;
-        spawnFirefly(
-          camera.position.x + Math.cos(ba) * br,
-          camera.position.y - 1 + Math.random() * 3,
-          camera.position.z + Math.sin(ba) * br - 3
-        );
-      }
-    }
-
-    // Velocity ambient fireflies
-    if (scrollVelocity > 0.003 && Math.random() < scrollVelocity * 8) {
-      var sa = Math.random() * Math.PI * 2, sr = 3 + Math.random() * 8;
-      spawnFirefly(camera.position.x + Math.cos(sa) * sr, camera.position.y - 1 + Math.random() * 3, camera.position.z + Math.sin(sa) * sr - 5);
-    }
+    // (Chapter-crossing bursts and velocity-spawned fireflies removed — the
+    //  ambient fireflies carry the atmosphere; particles now appear only when
+    //  the visitor plants a tree. Quieter forest, clearer signature moment.)
 
     var shapeCount = lanterns.length + fireflies.length + spawned.length;
     if (shapeCount !== lastShapeCount) { canvas.setAttribute("data-shapes", shapeCount); lastShapeCount = shapeCount; }
@@ -1820,10 +1848,12 @@
     spawned = [];
     for (var j = trails.length - 1; j >= 0; j--) { scene.remove(trails[j]); trails[j].geometry.dispose(); trails[j].material.dispose(); }
     trails = [];
-    for (var k = groundEmbers.length - 1; k >= 0; k--) {
-      scene.remove(groundEmbers[k].mesh); groundEmbers[k].mesh.geometry.dispose(); groundEmbers[k].mesh.material.dispose();
+    for (var k = plantedTrees.length - 1; k >= 0; k--) {
+      scene.remove(plantedTrees[k].group);
+      plantedTrees[k].group.traverse(function (o) { if (o.geometry) o.geometry.dispose(); });
     }
-    groundEmbers = [];
+    plantedTrees = [];
+    plantBarkMat = null; plantLeafMats = null; // rebuilt on next planting
     for (var ct = cursorTrail.length - 1; ct >= 0; ct--) {
       scene.remove(cursorTrail[ct].mesh); cursorTrail[ct].mesh.geometry.dispose(); cursorTrail[ct].mesh.material.dispose();
     }
@@ -1838,7 +1868,7 @@
       isActive = true; canvas.style.display = "block"; canvas.style.pointerEvents = "auto";
       clock.start(); animate();
       // Restore previous visit embers after scene is ready
-      setTimeout(restoreEmbers, 500);
+      setTimeout(restoreTrees, 500);
       // Try to auto-play audio immediately, retry on first interaction if blocked
       initAudio();
       var audioRetry = function () {
@@ -1857,7 +1887,7 @@
       isActive = false; stopAudio();
       if (animationId) { cancelAnimationFrame(animationId); animationId = null; }
       if (canvas) { canvas.style.display = "none"; canvas.style.pointerEvents = "none"; }
-      saveEmbers();
+      saveTrees();
       cleanup();
       // Full teardown — free GPU memory + geometry so code mode stays smooth
       // after visiting the forest. Re-entering rebuilds via init().

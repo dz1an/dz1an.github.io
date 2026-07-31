@@ -79,6 +79,7 @@
     window.location.href = "mailto:" + getEmail() + "?subject=" + subject + "&body=" + body;
   }
 
+
   if (form) {
     form.addEventListener("submit", function (e) {
       e.preventDefault();

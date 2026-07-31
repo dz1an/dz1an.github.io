@@ -214,15 +214,9 @@
     var shapeCountEl = document.getElementById("creativeShapeCount");
 
     function startShapeCounter() {
-      if (shapeCounterInterval) return;
-      shapeCounterInterval = setInterval(function () {
-        if (shapeCountEl && window.creativeScene && window.creativeScene.isRunning()) {
-          var canvas = document.getElementById("creativeCanvas");
-          // Access shape count from the scene's children count minus static objects
-          var count = canvas ? canvas.getAttribute("data-shapes") || "0" : "0";
-          shapeCountEl.textContent = "lights: " + count;
-        }
-      }, 200);
+      // Telemetry counter removed from the HUD — the hint line is static now.
+      // Kept as a no-op so existing call sites stay valid.
+      if (!shapeCountEl) return;
     }
 
     function stopShapeCounter() {
@@ -392,72 +386,52 @@
 })();
 
 // ============================================
-// Terminal Preloader — Boot Sequence
+// Branded arrival — the pine grows with load progress, then the curtain lifts
 // ============================================
 (function () {
   var isReturn = localStorage.getItem("visited") === "true";
   localStorage.setItem("visited", "true");
 
-  var bootLines = isReturn
-    ? [
-        { text: '<span class="term-muted">[cache]</span> assets loaded from local storage <span class="term-success">✓</span>', delay: 100 },
-        { text: '<span class="term-muted">[sw]</span> service worker active <span class="term-success">✓</span>', delay: 80 },
-        { text: "restoring <span class='term-accent'>//dzian</span> session...", delay: 150 },
-        { text: '<span class="term-success">welcome back.</span> launching portfolio ↗', delay: 200 },
-      ]
-    : [
-        { text: "loading modules...", delay: 200 },
-        { text: '<span class="term-muted">[core]</span> css-variables <span class="term-success">✓</span>', delay: 150 },
-        { text: '<span class="term-muted">[core]</span> design-system <span class="term-success">✓</span>', delay: 120 },
-        { text: '<span class="term-muted">[plugin]</span> particles.js <span class="term-success">✓</span>', delay: 180 },
-        { text: '<span class="term-muted">[plugin]</span> typed.js <span class="term-success">✓</span>', delay: 100 },
-        { text: '<span class="term-muted">[plugin]</span> scroll-reveal <span class="term-success">✓</span>', delay: 130 },
-        { text: "compiling <span class='term-accent'>//dzian</span>...", delay: 300 },
-        { text: '<span class="term-success">ready.</span> launching portfolio ↗', delay: 400 },
-      ];
-
-  var terminalBody = document.getElementById("terminalBody");
-  if (!terminalBody) {
-    // Fallback if terminal HTML not found
+  var fill = document.getElementById("plFill");
+  var pct = document.getElementById("plPct");
+  if (!fill || !pct) {
     window.addEventListener("load", function () {
       document.body.classList.add("loaded");
     });
     return;
   }
 
-  var totalDelay = 300; // initial pause
-
-  bootLines.forEach(function (line) {
-    totalDelay += line.delay;
-    setTimeout(function () {
-      var div = document.createElement("div");
-      div.className = "terminal-line";
-      div.innerHTML = line.text;
-      terminalBody.appendChild(div);
-      // Auto-scroll to bottom
-      terminalBody.scrollTop = terminalBody.scrollHeight;
-    }, totalDelay);
-  });
-
-  // After all lines, wait for window load then reveal site
-  var bootDone = false;
+  // Progress ramps toward 90% on a timer, then snaps to 100% when the window
+  // actually finishes loading — honest enough, and never stalls the visitor.
+  var progress = 0;
   var windowLoaded = false;
+  var rampMs = isReturn ? 700 : 1600;
+  var start = performance.now();
 
-  function tryReveal() {
-    if (bootDone && windowLoaded) {
-      document.body.classList.add("loaded");
-    }
+  function paint(p) {
+    // The pine grows bottom-up: reveal the coloured copy from the ground line
+    fill.style.clipPath = "inset(" + (100 - p) + "% 0 0 0)";
+    pct.textContent = Math.round(p) + "%";
   }
 
-  setTimeout(function () {
-    bootDone = true;
-    tryReveal();
-  }, totalDelay + 300);
+  function tick(now) {
+    var target = windowLoaded ? 100 : Math.min(90, ((now - start) / rampMs) * 90);
+    progress += (target - progress) * 0.14;
+    if (windowLoaded && progress > 99.2) progress = 100;
+    paint(progress);
+    if (progress >= 100) {
+      setTimeout(function () { document.body.classList.add("loaded"); }, 260);
+      return;
+    }
+    requestAnimationFrame(tick);
+  }
 
-  window.addEventListener("load", function () {
-    windowLoaded = true;
-    tryReveal();
-  });
+  paint(0);
+  requestAnimationFrame(tick);
+
+  window.addEventListener("load", function () { windowLoaded = true; });
+  // Safety: never trap the visitor behind the loader
+  setTimeout(function () { windowLoaded = true; }, 6000);
 })();
 
 // ============================================
