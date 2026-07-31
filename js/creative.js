@@ -638,20 +638,43 @@
     var sgY = getGroundY(shelterX, shelterZ);
     var tentMat = new THREE.MeshStandardMaterial({ color: 0x6E7A55, roughness: 0.92, flatShading: true });
     var tent = new THREE.Group();
-    var tentBody = new THREE.Mesh(new THREE.ConeGeometry(0.95, 1.6, 8), tentMat);
-    tentBody.position.y = 0.8; tent.add(tentBody);
-    // Dark entrance flap, facing the campfire (+z toward z:0.5)
+    // Canvas — a fuller, slightly leaning teepee with visible facets
+    var tentBody = new THREE.Mesh(new THREE.ConeGeometry(1.15, 1.95, 7), tentMat);
+    tentBody.position.y = 0.975;
+    tentBody.rotation.y = 0.4;      // facet edge faces the fire — reads hand-pitched
+    tentBody.rotation.z = 0.04;     // gentle lean
+    tent.add(tentBody);
+    // Doorway — a dark wedge inset into the canvas, facing the campfire
     var tentDoor = new THREE.Mesh(
-      new THREE.PlaneGeometry(0.4, 0.8),
-      new THREE.MeshStandardMaterial({ color: 0x24251C, roughness: 1 })
+      new THREE.ConeGeometry(0.34, 0.95, 4),
+      new THREE.MeshStandardMaterial({ color: 0x1B1C14, roughness: 1 })
     );
-    tentDoor.position.set(0, 0.42, 0.9); tent.add(tentDoor);
-    // Support poles poking out the top
+    tentDoor.position.set(0, 0.48, 0.62);
+    tentDoor.rotation.y = Math.PI / 4;
+    tent.add(tentDoor);
+    // Frame poles — long, crossed above the apex like a real teepee
     var tentPoleMat = new THREE.MeshStandardMaterial({ color: 0x3B2A1A, roughness: 0.9 });
-    for (var tp = 0; tp < 3; tp++) {
-      var tpole = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.5, 4), tentPoleMat);
-      tpole.position.set(0, 1.6, 0); tpole.rotation.z = (tp - 1) * 0.18; tent.add(tpole);
+    for (var tp = 0; tp < 4; tp++) {
+      var ta = (tp / 4) * Math.PI * 2 + 0.5;
+      var tpole = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.028, 2.7, 4), tentPoleMat);
+      tpole.position.set(Math.cos(ta) * 0.22, 1.32, Math.sin(ta) * 0.22);
+      tpole.rotation.set(Math.sin(ta) * 0.22, 0, -Math.cos(ta) * 0.22);
+      tent.add(tpole);
     }
+    // Guy ropes staked to the ground — small detail, big "camp" read
+    var ropeMat = new THREE.MeshBasicMaterial({ color: 0x5C4033 });
+    var stakeMat = new THREE.MeshStandardMaterial({ color: 0x2A1F15, roughness: 0.9 });
+    [[-1.35, 0.5], [1.05, -1.15]].forEach(function (gr) {
+      var rope = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 1.15, 3), ropeMat);
+      rope.position.set(gr[0] * 0.62, 0.62, gr[1] * 0.62);
+      rope.lookAt(new THREE.Vector3(gr[0] * 1.15, 0, gr[1] * 1.15).add(tent.position));
+      rope.rotateX(Math.PI / 2);
+      tent.add(rope);
+      var stake = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.035, 0.16, 4), stakeMat);
+      stake.position.set(gr[0] * 1.12, 0.06, gr[1] * 1.12);
+      stake.rotation.z = 0.3;
+      tent.add(stake);
+    });
     tent.position.set(shelterX, sgY, shelterZ);
     scene.add(tent);
 
@@ -668,7 +691,7 @@
       var stoneAngle = (si / 10) * Math.PI * 2;
       var sr = 0.08 + Math.random() * 0.08;
       var stone = new THREE.Mesh(new THREE.DodecahedronGeometry(sr, 0), stoneMat);
-      stone.position.set(Math.cos(stoneAngle) * 0.55, gY + 0.06, Math.sin(stoneAngle) * 0.55 + 0.5);
+      stone.position.set(Math.cos(stoneAngle) * 0.85, gY + 0.06, Math.sin(stoneAngle) * 0.85 + 0.5);
       stone.scale.y = 0.5;
       stone.rotation.set(Math.random(), Math.random(), 0);
       scene.add(stone);
@@ -677,17 +700,17 @@
     // Log teepee (3 logs leaning together)
     for (var li = 0; li < 3; li++) {
       var la = (li / 3) * Math.PI * 2;
-      var log = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.05, 0.6, 5), logMat);
-      log.position.set(Math.cos(la) * 0.12, gY + 0.25, Math.sin(la) * 0.12 + 0.5);
+      var log = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.055, 0.9, 5), logMat);
+      log.position.set(Math.cos(la) * 0.22, gY + 0.34, Math.sin(la) * 0.22 + 0.5);
       log.rotation.set(Math.cos(la) * 0.4, la, Math.sin(la) * 0.4);
       scene.add(log);
     }
     // Base logs (flat, under the teepee)
-    var baseLog1 = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.05, 0.5, 5), logMat);
+    var baseLog1 = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.06, 0.8, 5), logMat);
     baseLog1.position.set(0, gY + 0.08, 0.5); baseLog1.rotation.set(0, 0.8, Math.PI / 2);
     scene.add(baseLog1);
-    var baseLog2 = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.05, 0.45, 5), logMat);
-    baseLog2.position.set(0.05, gY + 0.08, 0.55); baseLog2.rotation.set(0, -0.5, Math.PI / 2);
+    var baseLog2 = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.055, 0.7, 5), logMat);
+    baseLog2.position.set(0.08, gY + 0.08, 0.58); baseLog2.rotation.set(0, -0.5, Math.PI / 2);
     scene.add(baseLog2);
 
     // Fire light — main warm flicker (bright, close range)
@@ -722,8 +745,8 @@
       );
       ember.position.set(0, gY + 0.3, 0.5);
       ember.userData = {
-        baseX: (Math.random() - 0.5) * 0.3,
-        baseZ: 0.5 + (Math.random() - 0.5) * 0.3,
+        baseX: (Math.random() - 0.5) * 0.6,
+        baseZ: 0.5 + (Math.random() - 0.5) * 0.6,
         speed: 0.5 + Math.random() * 1.5,
         maxH: 1.5 + Math.random() * 2.5,
         phase: Math.random() * Math.PI * 2,
@@ -985,8 +1008,8 @@
       label.position.set(x, y + 0.8, z); scene.add(label);
       fireflies.push({
         mesh: mesh, light: light, label: label, baseX: x, baseY: y, baseZ: z, color: color,
-        phase: Math.random() * Math.PI * 2, speed: 0.3 + Math.random() * 0.8,
-        ampX: 0.3 + Math.random() * 0.8, ampY: 0.2 + Math.random() * 0.4, ampZ: 0.3 + Math.random() * 0.8
+        phase: Math.random() * Math.PI * 2, speed: 0.12 + Math.random() * 0.25,
+        ampX: 0.15 + Math.random() * 0.35, ampY: 0.1 + Math.random() * 0.2, ampZ: 0.15 + Math.random() * 0.35
       });
     });
   }
@@ -1072,10 +1095,10 @@
         mesh: mesh, light: light,
         baseX: x, baseY: y, baseZ: z,
         phase: Math.random() * Math.PI * 2,
-        speed: 0.3 + Math.random() * 1.0,
-        ampX: 0.3 + Math.random() * 1.0,
-        ampY: 0.2 + Math.random() * 0.5,
-        ampZ: 0.3 + Math.random() * 1.0
+        speed: 0.1 + Math.random() * 0.3,
+        ampX: 0.15 + Math.random() * 0.4,
+        ampY: 0.1 + Math.random() * 0.25,
+        ampZ: 0.15 + Math.random() * 0.4
       });
     }
     scene._ambientFFs = ambientFFs;

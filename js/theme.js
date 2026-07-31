@@ -401,26 +401,55 @@
     return;
   }
 
-  // Progress ramps toward 90% on a timer, then snaps to 100% when the window
-  // actually finishes loading — honest enough, and never stalls the visitor.
+  // Progress ramps toward 90% on a timer, snaps to 100% on real window-load,
+  // and the loader holds for a minimum dwell so the growth is actually SEEN
+  // (on cached loads it used to flash past in a blink).
   var progress = 0;
   var windowLoaded = false;
-  var rampMs = isReturn ? 700 : 1600;
+  var minDwell = isReturn ? 1600 : 2600;
+  var rampMs = minDwell - 600;
   var start = performance.now();
+  var preEl = document.getElementById("preloader");
+  var ground = document.getElementById("plGround");
+
+  // The pine grows in STAGES — trunk, then each tier with a beat between —
+  // instead of one continuous wipe. viewBox tier lines mapped to inset %.
+  function visualInset(p) {
+    var stages = [
+      [0, 14, 100, 88],   // trunk
+      [14, 22, 88, 88],   // beat
+      [22, 48, 88, 54],   // bottom tier
+      [48, 56, 54, 54],   // beat
+      [56, 80, 54, 26],   // middle tier
+      [80, 86, 26, 26],   // beat
+      [86, 100, 26, 0]    // crown
+    ];
+    for (var i = 0; i < stages.length; i++) {
+      var s = stages[i];
+      if (p <= s[1]) {
+        var f = (p - s[0]) / Math.max(0.0001, s[1] - s[0]);
+        f = f < 0 ? 0 : f > 1 ? 1 : f;
+        f = f * f * (3 - 2 * f);
+        return s[2] + (s[3] - s[2]) * f;
+      }
+    }
+    return 0;
+  }
 
   function paint(p) {
-    // The pine grows bottom-up: reveal the coloured copy from the ground line
-    fill.style.clipPath = "inset(" + (100 - p) + "% 0 0 0)";
+    fill.style.clipPath = "inset(" + visualInset(p).toFixed(2) + "% 0 0 0)";
     pct.textContent = Math.round(p) + "%";
+    if (ground) ground.style.transform = "scaleX(" + (p / 100).toFixed(3) + ")";
   }
 
   function tick(now) {
     var target = windowLoaded ? 100 : Math.min(90, ((now - start) / rampMs) * 90);
-    progress += (target - progress) * 0.14;
+    progress += (target - progress) * 0.12;
     if (windowLoaded && progress > 99.2) progress = 100;
     paint(progress);
-    if (progress >= 100) {
-      setTimeout(function () { document.body.classList.add("loaded"); }, 260);
+    if (progress >= 100 && (now - start) >= minDwell) {
+      if (preEl) preEl.classList.add("pl-done"); // settle bounce + fireflies blink in
+      setTimeout(function () { document.body.classList.add("loaded"); }, 700);
       return;
     }
     requestAnimationFrame(tick);
