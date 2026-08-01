@@ -166,7 +166,11 @@
   // ============================================================
   var stage3d = (function () {
     var THREE_URL = "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js";
-    var renderer, scene, camera, island, heroPine, raf = null;
+    var renderer, scene, camera, island, heroPine, fog, groundMat, raf = null;
+    // The page floods from cream to brand green behind the canvas; the fog and
+    // floor follow it so the wood is part of the page, not pasted on top.
+    var CREAM = { r: 0.949, g: 0.949, b: 0.918 };
+    var GREEN = { r: 0.184, g: 0.286, b: 0.231 };
     var ready = false, progress = 0, mx = 0, my = 0, cmx = 0, cmy = 0, t0 = 0;
     var canvas = document.getElementById("stageCanvas");
     var wrap = document.getElementById("stageTree");
@@ -184,20 +188,9 @@
       document.body.appendChild(s);
     }
 
-    // Soft-edged ground: a radial alpha fade so the disc melts into whatever
-    // the page background happens to be (cream at the top of the scroll, green
-    // once the brand ground floods in).
-    function groundTexture() {
-      var c = document.createElement("canvas");
-      c.width = c.height = 128;
-      var ctx = c.getContext("2d");
-      var g = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
-      g.addColorStop(0, "rgba(255,255,255,1)");
-      g.addColorStop(0.55, "rgba(255,255,255,0.85)");
-      g.addColorStop(1, "rgba(255,255,255,0)");
-      ctx.fillStyle = g; ctx.fillRect(0, 0, 128, 128);
-      return new THREE.CanvasTexture(c);
-    }
+    // (The radial ground-fade texture that used to live here is gone: the
+    //  floor now dissolves with scene fog instead of an alpha disc, which is
+    //  what removed the visible "island on a page" edge.)
 
     function geom(def) {
       function bytes(s) {
@@ -249,32 +242,32 @@
       renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: !isSmall });
       renderer.setClearColor(0x000000, 0);
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 1.25;
+      renderer.toneMappingExposure = 0.95;
 
-      // Bright, warm daylight — the opposite of the playground's night
-      scene.add(new THREE.AmbientLight(0xE9EEDF, 2.1));
-      scene.add(new THREE.HemisphereLight(0xFFFFFF, 0x6E7F5E, 1.5));
-      var key = new THREE.DirectionalLight(0xFFF4DC, 2.6);
-      key.position.set(-8, 14, 9);
+      // Deliberately restrained light. Cranked up, the baked (night-tuned)
+      // foliage blows out to a flat mint green and the whole thing reads as a
+      // generic asset-pack field — this keeps it in the brand's sage range.
+      scene.add(new THREE.AmbientLight(0xDDE4D2, 1.0));
+      scene.add(new THREE.HemisphereLight(0xF4F6EC, 0x5A6B4E, 0.75));
+      var key = new THREE.DirectionalLight(0xFFF6E2, 1.45);
+      key.position.set(-9, 13, 7);
       scene.add(key);
-      var rim = new THREE.DirectionalLight(0xCFE0CB, 0.9);
-      rim.position.set(10, 6, -8);
-      scene.add(rim);
+
+      // Depth fog is what makes this a wood rather than a field of models:
+      // distance dissolves into the page itself. Its colour is re-tinted every
+      // frame to match whatever the page is doing (cream -> brand green).
+      fog = new THREE.Fog(0xF2F2EA, 12, 46);
+      scene.fog = fog;
 
       island = new THREE.Group();
       scene.add(island);
 
-      // Ground the stand sits on
-      var ground = new THREE.Mesh(
-        new THREE.PlaneGeometry(1, 1),
-        new THREE.MeshBasicMaterial({
-          map: groundTexture(), color: 0x9DB08A,
-          transparent: true, opacity: 0.5, depthWrite: false
-        })
-      );
+      // The forest floor. Same colour family as the fog so it never reads as a
+      // separate slab — it just gives the trunks something to stand on.
+      groundMat = new THREE.MeshStandardMaterial({ color: 0x8C9C7A, roughness: 1 });
+      var ground = new THREE.Mesh(new THREE.PlaneGeometry(300, 300), groundMat);
       ground.rotation.x = -Math.PI / 2;
-      ground.scale.setScalar(58);   // wide enough that its faded rim is always
-      ground.position.y = -0.02;    // outside a full-bleed frame
+      ground.position.y = -0.01;
       island.add(ground);
 
       // Hero pine — the brand tree, dead centre, the thing we fly into.
@@ -285,38 +278,44 @@
       heroPine = new THREE.Mesh(geom(PINE), new THREE.MeshStandardMaterial({
         vertexColors: true, roughness: 0.85
       }));
-      heroPine.scale.setScalar(4.4 / PINE_H);
+      heroPine.scale.setScalar(6.2 / PINE_H);
       island.add(heroPine);
 
-      // A stand around it, thinning outward, with a gap kept clear at the
-      // front so the hero pine is never crowded
-      var pines = [], rocks = [], tufts = [];
-      // Full-bleed needs depth on every side, so the stand runs further out
-      var rings = isSmall ? [{ n: 6, r: 5.2, s: 3.0 }, { n: 9, r: 9.0, s: 2.4 }, { n: 10, r: 14, s: 2.0 }]
-                          : [{ n: 7, r: 5.0, s: 3.2 }, { n: 11, r: 8.6, s: 2.7 },
-                             { n: 13, r: 13.0, s: 2.2 }, { n: 15, r: 19.0, s: 1.9 }];
-      var seed = 0;
+      // Composed, not scattered. Even rings of identical trees are exactly
+      // what made this read as a stock asset field, so these are hand-placed:
+      // a few close ones framing the edges, the rest falling away behind the
+      // hero into the fog. x, z, height.
+      var STAND = [
+        [-6.4,   1.8, 4.6], [ 7.1,   3.2, 5.1], [-9.8,  -3.4, 4.2],
+        [ 10.4, -5.6, 4.8], [-4.2,  -8.2, 3.8], [ 4.6,  -9.8, 3.5],
+        [-14.5, -9.0, 4.0], [ 15.2, -12.0, 3.9], [-2.6, -16.0, 3.2],
+        [ 8.8, -18.5, 3.0], [-11.0, -20.0, 3.1], [ 18.0, -23.0, 3.3],
+        [-19.5, -26.0, 3.0], [ 5.0, -28.0, 2.8], [-6.0, -33.0, 2.7],
+        [ 13.0, -35.0, 2.9], [-24.0, -38.0, 2.8], [ 2.0, -42.0, 2.6]
+      ];
+      var seed = 7;
       function rnd() { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; }
-      rings.forEach(function (ring, ri) {
-        for (var i = 0; i < ring.n; i++) {
-          var a = (i / ring.n) * Math.PI * 2 + ri * 0.6 + rnd() * 0.25;
-          if (Math.abs(Math.sin(a)) < 0.28 && Math.cos(a) > 0) continue; // keep the front open
-          var r = ring.r + rnd() * 1.6;
-          var h = ring.s + rnd() * 1.1;
-          pines.push({
-            x: Math.cos(a) * r, z: Math.sin(a) * r, ry: rnd() * 6.283,
-            s: h / PINE_H, t: 0.9 + rnd() * 0.4 - ri * 0.05
-          });
-          if (rnd() > 0.55) rocks.push({ x: Math.cos(a) * (r - 1.5), z: Math.sin(a) * (r - 1.5), ry: rnd() * 6.283, s: 0.5 + rnd() * 0.6, t: 1.15 + rnd() * 0.3 });
-          tufts.push({ x: Math.cos(a + 0.3) * (r - 2.2), z: Math.sin(a + 0.3) * (r - 2.2), ry: rnd() * 6.283, s: 1.1 + rnd() * 1.2, t: 1.0 + rnd() * 0.35 });
-        }
-      });
+
+      var pines = [];
+      for (var i = 0; i < STAND.length; i++) {
+        var p3 = STAND[i];
+        if (isSmall && i % 3 === 2) continue;          // thin out on phones
+        var depth = Math.min(1, Math.abs(p3[1]) / 42);  // farther = paler
+        pines.push({
+          x: p3[0], z: p3[1], ry: rnd() * 6.283,
+          s: (p3[2] + rnd() * 0.4) / PINE_H,
+          t: 0.92 - depth * 0.18 + rnd() * 0.1
+        });
+      }
       instance(PINE, pines);
-      instance(F.stones, rocks);
-      instance(F.plant, tufts);
-      instance(F.grass, tufts.map(function (g2) {
-        return { x: g2.x * 0.82, z: g2.z * 0.82, ry: g2.ry * 1.7, s: g2.s * 1.5, t: 0.9 };
-      }));
+
+      // A handful of rocks at the hero's feet for scale. No grass patches —
+      // dark tufts dotted over a pale floor were the "swamp" read.
+      instance(F.stones, [
+        { x: -2.9, z: 1.6, ry: 0.6, s: 0.85, t: 1.05 },
+        { x: 3.4, z: -1.2, ry: 2.4, s: 0.62, t: 1.0 },
+        { x: -5.6, z: -4.4, ry: 4.1, s: 0.7, t: 0.95 }
+      ]);
 
       onResize();
       ready = true;
@@ -354,20 +353,33 @@
       var b = ease(seg(p, 0.28, 0.56));   // swing aside
       var c = ease(seg(p, 0.62, 1.0));    // fly in
 
-      var dist = 26 - a * 5 - c * 20.2;               // 26 -> 21 -> 0.8
-      var height = 7.5 - a * 1.6 - c * 3.6;
-      var orbit = -0.5 + a * 0.35 + b * 0.5 + c * 0.55 + t * 0.014; // always drifting
+      // Fog + floor track the page flood, so the horizon always dissolves into
+      // whatever colour the page is behind the canvas.
+      var flood = ease(seg(p, 0.02, 0.30));
+      var fr = CREAM.r + (GREEN.r - CREAM.r) * flood;
+      var fg = CREAM.g + (GREEN.g - CREAM.g) * flood;
+      var fb = CREAM.b + (GREEN.b - CREAM.b) * flood;
+      fog.color.setRGB(fr, fg, fb);
+      groundMat.color.setRGB(fr * 0.72, fg * 0.78, fb * 0.66);
+      // Pull the fog in as we push through the trees
+      fog.near = 12 - c * 9;
+      fog.far = 46 - c * 26;
+
+      // Eye level, not a diorama seen from above — a high camera looking down
+      // on evenly spaced trees is what read as a model railway.
+      var dist = 19 - a * 3.5 - c * 14.3;             // 19 -> 15.5 -> 1.2
+      var height = 3.1 - a * 0.5 + c * 0.6;
+      var orbit = -0.42 + a * 0.28 + b * 0.42 + c * 0.5 + t * 0.012; // always drifting
       camera.position.set(
-        Math.sin(orbit) * dist + cmx * (1.2 - c),
-        height + cmy * 0.7,
+        Math.sin(orbit) * dist + cmx * (0.9 - c * 0.7),
+        height + cmy * 0.4,
         Math.cos(orbit) * dist
       );
       // Aim up the trunk as we close in, so the pine fills the frame
-      camera.lookAt(0, 1.6 + c * 1.5, 0);
+      camera.lookAt(0, 2.4 + c * 2.2, 0);
 
       // The stand slides right while the copy takes the left
       island.position.x = b * 4.6 - c * 3.2;
-      island.rotation.y = t * 0.03;
 
       renderer.render(scene, camera);
       if (!reduceMotion) raf = requestAnimationFrame(frame);
