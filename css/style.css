@@ -158,7 +158,14 @@
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 1000;
+  /* MUST sit above .creative-scroll (1001). This element is position:fixed with
+     a z-index, so it creates a stacking context: every child is clamped to THIS
+     layer no matter what z-index it declares. At 1000 the whole HUD — social
+     buttons, hint, credits — sat under the full-viewport scroll overlay and
+     nothing down there could be clicked. Raising it is safe because the HUD is
+     pointer-events:none, so scroll and drag still pass through to the container
+     beneath; only children that opt back in with pointer-events:auto are hit. */
+  z-index: 1002;
   pointer-events: none;
 }
 
