@@ -282,6 +282,14 @@
 }
 
 /* Stats corner */
+/* Hint wording follows the input device: mouse gets "click", touch gets "tap".
+   Done in CSS so there is no JS/UA sniffing to keep in sync. */
+.hint-coarse { display: none; }
+@media (pointer: coarse) {
+  .hint-fine { display: none; }
+  .hint-coarse { display: inline; }
+}
+
 .creative-hud-stats {
   position: fixed;
   bottom: 48px;
@@ -750,27 +758,32 @@
   .chapter-left, .chapter-right { margin: 0; }
   .chapter-content { max-width: 100%; padding: 20px; margin: 0 16px; }
 
+  /* Bottom-anchored, but clear of the HUD hint text and the social buttons
+     that sit along the bottom edge */
   .creative-chapter {
-    padding: 70px 0 80px;
+    padding: 70px 0 132px;
     align-items: flex-end;
   }
 
-  /* Mobile: card fades in slowly with delay so user sees forest first */
+  /* Mobile: card fades in slowly with delay so user sees forest first.
+     No max-height/overflow here on purpose — a scrollable card inside a
+     scroll-driven journey traps the gesture: dragging the text moved the card
+     instead of walking the trail. Cards size to their copy instead. */
   .chapter-content {
     opacity: 0;
     background: rgba(12, 18, 16, 0);
     border-color: transparent;
     box-shadow: none;
     transition: opacity 1.2s ease 0.8s, background 1.2s ease 0.8s, border-color 1.2s ease 0.8s, box-shadow 1.2s ease 0.8s;
-    max-height: 50vh;
-    overflow-y: auto;
   }
 
+  /* Readable over a lantern-lit forest — the old 0.2 wash left text sitting
+     on bright canopy. Darker plate, visible edge. */
   .chapter-content.chapter-visible {
     opacity: 1;
-    background: rgba(12, 18, 16, 0.2);
-    border-color: rgba(163, 177, 138, 0.05);
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    background: rgba(10, 16, 14, 0.62);
+    border-color: rgba(163, 177, 138, 0.14);
+    box-shadow: 0 8px 34px rgba(0, 0, 0, 0.4);
   }
 
   /* Less blur on mobile — let forest show through */
@@ -814,7 +827,22 @@
   }
   .creative-hud-brand { font-size: 0.85rem; }
   .creative-hud-back { font-size: 0.75rem; padding: 8px 14px; min-height: 40px; }
-  .creative-hud-stats { display: none; }
+  /* Keep the hint on phones — tap-to-plant works on touch now, so hiding the
+     only instruction for it made the signature interaction undiscoverable.
+     Compact and centred above the bottom edge instead. */
+  .creative-hud-stats {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    bottom: 74px;
+    text-align: center;
+    font-size: 0.68rem;
+    opacity: 0.62;
+  }
   .creative-hud-social { bottom: 20px; left: 16px; }
   .creative-hud-social a { width: 44px; height: 44px; font-size: 1rem; }
 

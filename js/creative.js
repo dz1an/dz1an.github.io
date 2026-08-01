@@ -257,7 +257,6 @@
     // (The three weak fill PointLights that used to sit here were removed —
     //  they cost the same per-pixel as a lamp light while adding almost no
     //  visible light. That budget now pays for real lights on the path lamps.)
-    scene._fills = [];
 
     buildTerrain(); createDirtPath();
     plantForest();
@@ -270,19 +269,37 @@
     createSky(); createSmoke(); createGroundDetails();
     createPathLamps(); createAmbientFireflies();
 
-    // Bind input listeners once — init() can run again after a full teardown
+    // Bind input listeners once — init() can run again after a full teardown.
+    //
+    // These MUST live on the scroll container, not the canvas. .creative-scroll
+    // is a full-viewport fixed overlay at z-index 1001 with pointer-events:auto
+    // (it has to be hit-testable to scroll at all), so it sits above the canvas
+    // and swallows every pointer event — canvas-bound listeners never fired,
+    // which meant plant-a-tree was silently dead on every device.
     if (!listenersBound) {
       listenersBound = true;
-      canvas.addEventListener("mousemove", onMouseMove);
-      canvas.addEventListener("mousedown", function () { isMouseDown = true; });
-      canvas.addEventListener("mouseup", function () { isMouseDown = false; });
-      canvas.addEventListener("click", onClick);
-      canvas.addEventListener("touchstart", onTouch, { passive: false });
-      canvas.addEventListener("touchmove", onTouchDrag, { passive: false });
-      canvas.addEventListener("touchend", function () { isMouseDown = false; });
+      var surface = document.getElementById("creativeScroll") || canvas;
+      surface.addEventListener("mousemove", onMouseMove);
+      surface.addEventListener("mousedown", function () { isMouseDown = true; });
+      surface.addEventListener("mouseup", function () { isMouseDown = false; });
+      surface.addEventListener("click", onClick);
+      // Touch stays PASSIVE so the container keeps its native momentum scroll —
+      // the journey is driven by scrolling, so stealing touchmove (the old
+      // behaviour) made the walk unscrollable on phones. A tree is planted on a
+      // deliberate tap instead: little movement, short duration.
+      surface.addEventListener("touchstart", onTouchStart, { passive: true });
+      surface.addEventListener("touchmove", onTouchMove, { passive: true });
+      surface.addEventListener("touchend", onTouchEnd, { passive: true });
       window.addEventListener("resize", onResize);
     }
     return true;
+  }
+
+  // Pointer events that land on real UI (chapter cards, HUD, links) must never
+  // plant a tree behind them.
+  function isSceneSurface(target) {
+    if (!target || !target.closest) return true;
+    return !target.closest(".chapter-content, .creative-hud, .creative-dots, a, button");
   }
 
   // ======================== Terrain ========================
@@ -930,15 +947,22 @@
       globe.position.set(p.x, globeY, p.z);
       scene.add(globe);
 
-      // Warm point light (intensity is driven per-frame in animate())
-      var light = new THREE.PointLight(proj.color, 1.6, 17);
-      light.position.set(p.x, globeY, p.z);
-      scene.add(light);
+      // Warm point light (intensity is driven per-frame in animate()).
+      // Phones skip it: 5 lantern lights on top of the campfire and lamps is
+      // the single biggest per-pixel cost in the scene, and the additive halo
+      // below sells the same look for free.
+      var light = null;
+      if (!isMobile) {
+        light = new THREE.PointLight(proj.color, 1.6, 17);
+        light.position.set(p.x, globeY, p.z);
+        scene.add(light);
+      }
 
       // Soft additive halo so the lantern reads as a bright source, not just a
       // lit globe. Free — no extra light. It tracks the globe's sway below.
       var lanternHalo = new THREE.Sprite(new THREE.SpriteMaterial({
-        map: getGlowTexture(), color: proj.color, transparent: true, opacity: 0.6,
+        map: getGlowTexture(), color: proj.color, transparent: true,
+        opacity: isMobile ? 0.78 : 0.6,
         blending: THREE.AdditiveBlending, depthWrite: false
       }));
       lanternHalo.position.set(p.x, globeY, p.z);
@@ -1327,6 +1351,7 @@
     }
   }
   function onClick(e) {
+    if (!isSceneSurface(e.target)) return; // clicked a card, the HUD or a link
     var wp = getWorldPos(e.clientX, e.clientY);
     var planted = spawnTree(wp.x, wp.z, false, 0);
     if (planted) {
@@ -1339,24 +1364,36 @@
     }
     if (window.playSound) playSound("click");
   }
-  function onTouch(e) {
-    e.preventDefault(); isMouseDown = true;
-    var t = e.touches[0]; var wp = getWorldPos(t.clientX, t.clientY);
-    if (spawnTree(wp.x, wp.z, false, 0)) { saveTrees(); }
-    else spawnFirefly(wp.x, wp.y, wp.z);
-    lastTouchSpawn = Date.now();
-  }
-  function onTouchDrag(e) {
-    e.preventDefault(); var t = e.touches[0];
+  // Tap = plant, drag = walk. Nothing here calls preventDefault, so the scroll
+  // container keeps native momentum scrolling on phones.
+  var tapX = 0, tapY = 0, tapAt = 0, tapMoved = false;
+  function onTouchStart(e) {
+    var t = e.touches[0];
+    tapX = t.clientX; tapY = t.clientY; tapAt = Date.now(); tapMoved = false;
     mouse.ndcX = (t.clientX / window.innerWidth) * 2 - 1;
     mouse.ndcY = -(t.clientY / window.innerHeight) * 2 + 1;
-    // Throttle: max 1 spawn per 100ms on touch drag
-    var now = Date.now();
-    if (now - lastTouchSpawn > 100) {
-      var wp = getWorldPos(t.clientX, t.clientY);
+  }
+  function onTouchMove(e) {
+    var t = e.touches[0];
+    if (Math.abs(t.clientX - tapX) > 10 || Math.abs(t.clientY - tapY) > 10) tapMoved = true;
+    mouse.ndcX = (t.clientX / window.innerWidth) * 2 - 1;
+    mouse.ndcY = -(t.clientY / window.innerHeight) * 2 + 1;
+  }
+  function onTouchEnd(e) {
+    isMouseDown = false;
+    if (tapMoved || Date.now() - tapAt > 450) return;      // that was a scroll
+    if (!isSceneSurface(e.target)) return;                  // tapped the UI
+    var t = e.changedTouches && e.changedTouches[0];
+    if (!t) return;
+    var wp = getWorldPos(t.clientX, t.clientY);
+    if (spawnTree(wp.x, wp.z, false, 0)) {
+      saveTrees();
+      spawnFirefly(wp.x, 1.2, wp.z);
+      spawnFirefly(wp.x + 0.3, 1.6, wp.z - 0.2);
+    } else {
       spawnFirefly(wp.x, wp.y, wp.z);
-      lastTouchSpawn = now;
     }
+    if (window.playSound) playSound("click");
   }
   function onResize() { clearTimeout(resizeTimeout); resizeTimeout = setTimeout(function () { if (!camera || !renderer) return; camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); }, 100); }
   function updateScroll() {
@@ -1424,14 +1461,9 @@
     scene.fog.near += (fogNearTarget - scene.fog.near) * 0.05;
     scene.fog.far += (fogFarTarget - scene.fog.far) * 0.05;
 
-    // Lighting
-    var fills = scene._fills;
-    if (fills) {
-      var vb = Math.min(scrollVelocity * 40, 0.4);
-      fills[0].intensity = 0.4 + vb + (scrollProgress > 0.2 && scrollProgress < 0.45 ? 0.3 : 0);
-      fills[1].intensity = 0.3 + vb + (scrollProgress > 0.38 && scrollProgress < 0.65 ? 0.3 : 0);
-      fills[2].intensity = 0.2 + vb + (scrollProgress > 0.6 && scrollProgress < 0.8 ? 0.3 : 0);
-    }
+    // (The per-chapter fill-light ramp lived here. The three fill PointLights
+    //  it drove were removed in favour of real lights on the path lamps, so
+    //  there is nothing left to ramp.)
     // Moon rises through the walk — stays soft on purpose so the campfire and
     // lamps remain the brightest things in frame
     if (scene._moon) scene._moon.intensity = 0.45 + scrollProgress * 0.4;
@@ -1535,7 +1567,7 @@
       var bobY = Math.sin(t * 0.5 + li * 0.9) * 0.05;
       lan.mesh.position.y = lan.baseY + bobY;
       lan.mesh.position.x = lan.x + sway;
-      lan.light.position.set(lan.mesh.position.x, lan.baseY + bobY, lan.z);
+      if (lan.light) lan.light.position.set(lan.mesh.position.x, lan.baseY + bobY, lan.z);
       lan.label.position.set(lan.mesh.position.x, lan.baseY + bobY + 0.8, lan.z);
       if (lan.halo) lan.halo.position.set(lan.mesh.position.x, lan.baseY + bobY, lan.z);
 
@@ -1549,13 +1581,13 @@
       var tG = lerp(0.35, 1.8, revealNear), tL = lerp(1.1, 3.2, revealNear);
       var tO = lerp(0.0, 0.95, revealNear) * distVis(lan.label.position), tS = lerp(0.8, 1.3, revealNear);
       lan.mesh.material.emissiveIntensity += (tG - lan.mesh.material.emissiveIntensity) * 0.03;
-      lan.light.intensity += (tL - lan.light.intensity) * 0.03;
+      if (lan.light) lan.light.intensity += (tL - lan.light.intensity) * 0.03;
       // Fade out faster than in — a label you've walked past must not linger huge
       var oRate = tO < lan.label.material.opacity ? 0.09 : 0.025;
       lan.label.material.opacity += (tO - lan.label.material.opacity) * oRate;
       lan.mesh.scale.setScalar(lan.mesh.scale.x + (tS - lan.mesh.scale.x) * 0.03);
       // Flicker the light subtly
-      lan.light.intensity *= 0.95 + (sinT6 + Math.sin(li * 2) * 0.5) * 0.05;
+      if (lan.light) lan.light.intensity *= 0.95 + (sinT6 + Math.sin(li * 2) * 0.5) * 0.05;
     }
 
     // Fireflies — glow strongest in ch6 zone (0.63-0.75)
