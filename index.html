@@ -149,60 +149,6 @@
       <a href="https://www.linkedin.com/in/john-kent-evangelista-lsswb-482435307/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
       <a href="https://github.com/kent-vintazk" target="_blank" rel="noopener noreferrer" aria-label="GitHub"><i class="fab fa-github"></i></a>
     </div>
-    <!-- Panel for clickable world objects. Content lives here as templates so
-         it stays in HTML; creative.js copies the matching one in. -->
-    <div class="obj-panel" id="objPanel" role="dialog" aria-modal="true">
-      <div class="obj-paper">
-        <button class="obj-x" id="objPanelClose" aria-label="Close"><i class="fas fa-xmark"></i></button>
-        <div id="objPanelBody"></div>
-      </div>
-    </div>
-
-    <div class="obj-templates" hidden>
-      <div id="panelJournal">
-        <span class="obj-kicker">// field notes</span>
-        <h3>The Journal</h3>
-        <p class="obj-lede">What was slow, what changed, what it does now.</p>
-        <div class="obj-entry"><h4>ZamGo</h4><p class="o-was">Nobody could find local businesses.</p><p class="o-now">636+ indexed and searchable by category. <a href="https://zamgo.vintazk.com" target="_blank" rel="noopener noreferrer">Open&nbsp;↗</a></p></div>
-        <div class="obj-entry"><h4>Vintech</h4><p class="o-was">The day ran on scattered sheets.</p><p class="o-now">One platform the team runs its day on. Senior Developer &amp; Team Lead. <a href="https://app.vintech.vintazk.com" target="_blank" rel="noopener noreferrer">Open&nbsp;↗</a></p></div>
-        <div class="obj-entry"><h4>Vintazk University</h4><p class="o-was">Training nobody could track or prove.</p><p class="o-now">Courses, progress and proof in one place. <a href="https://vintazkacademy.vintazk.com" target="_blank" rel="noopener noreferrer">Open&nbsp;↗</a></p></div>
-        <div class="obj-entry"><h4>Barangay Connect</h4><p class="o-was">Resident requests handled on paper, in person.</p><p class="o-now">Requests raised and tracked online.</p></div>
-        <div class="obj-entry"><h4>SmartScore</h4><p class="o-was">Exam papers checked by hand, one at a time.</p><p class="o-now">A camera reads the answer sheet and returns the score. Python + OpenCV · 2023–2024 · WMSU.</p></div>
-      </div>
-
-      <div id="panelCamp">
-        <span class="obj-kicker">// the camp</span>
-        <h3>Who's out here</h3>
-        <p class="obj-lede">John Kent Evangelista — software developer, Zamboanga City.</p>
-        <p>I build the systems behind real operations: records, sales, training, resident services. The slow, manual parts of the work become software that runs them.</p>
-        <p>You don't need to know tech to work with me. Tell me what's slowing you down and I'll tell you whether software is even the answer.</p>
-        <p class="obj-cta"><a href="main.html">See the main site&nbsp;↗</a></p>
-      </div>
-
-      <div id="panelAward">
-        <span class="obj-kicker">// a mark left behind</span>
-        <h3>2025 Productivity Olympics</h3>
-        <p class="obj-lede">National Winner — with the VINTAZK team.</p>
-        <p>Won for a system people actually use, which is the only kind worth building.</p>
-        <p class="obj-cta"><a href="https://www.linkedin.com/pulse/zampen-pride-vintazk-outsourcing-triumphs-2025-productivity-4fjdc/" target="_blank" rel="noopener noreferrer">Read the story&nbsp;↗</a></p>
-      </div>
-
-      <div id="panelLumi">
-        <span class="obj-kicker">// not lit yet</span>
-        <h3>LUMI</h3>
-        <p class="obj-lede">The next lantern — in development.</p>
-        <p>Still being written. When it's running somewhere real, it gets a light on this trail like the others.</p>
-      </div>
-
-      <div id="panelStart">
-        <span class="obj-kicker">// where the path began</span>
-        <h3>WMSU · 2020</h3>
-        <p class="obj-lede">BS Computer Science, Western Mindanao State University.</p>
-        <p>Also where SmartScore was built — automated exam checking with computer vision, as Project Lead, 2023–2024.</p>
-        <p>Since then: Lean Six Sigma White Belt, and executive education in digital transformation at the Asian Institute of Management.</p>
-      </div>
-    </div>
-
     <div class="creative-hud-stats" id="creativeStats">
       <span class="hint-fine">scroll to walk</span>
       <span class="hint-coarse">swipe to walk</span>
@@ -1252,6 +1198,64 @@ world.<span class="code-fn">render</span>();</pre>
       fetchData("models/forest.js", settle);
     };
   </script>
+
+  <!-- These MUST live outside .creative-hud: that element is z-index 1000 and
+       creates a stacking context, so a panel inside it can never rise above
+       .creative-scroll (z-index 1001) and would open invisibly behind it. -->
+  <!-- Panel for clickable world objects. Content lives here as templates so
+       it stays in HTML; creative.js copies the matching one in. -->
+  <div class="obj-panel" id="objPanel" role="dialog" aria-modal="true">
+    <div class="obj-paper">
+      <button class="obj-x" id="objPanelClose" aria-label="Close"><i class="fas fa-xmark"></i></button>
+      <div id="objPanelBody"></div>
+    </div>
+  </div>
+
+  <div class="obj-templates" hidden>
+    <div id="panelJournal">
+      <span class="obj-kicker">// field notes</span>
+      <h3>The Journal</h3>
+      <p class="obj-lede">What was slow, what changed, what it does now.</p>
+      <div class="obj-entry"><h4>ZamGo</h4><p class="o-was">Nobody could find local businesses.</p><p class="o-now">636+ indexed and searchable by category. <a href="https://zamgo.vintazk.com" target="_blank" rel="noopener noreferrer">Open&nbsp;↗</a></p></div>
+      <div class="obj-entry"><h4>Vintech</h4><p class="o-was">The day ran on scattered sheets.</p><p class="o-now">One platform the team runs its day on. Senior Developer &amp; Team Lead. <a href="https://app.vintech.vintazk.com" target="_blank" rel="noopener noreferrer">Open&nbsp;↗</a></p></div>
+      <div class="obj-entry"><h4>Vintazk University</h4><p class="o-was">Training nobody could track or prove.</p><p class="o-now">Courses, progress and proof in one place. <a href="https://vintazkacademy.vintazk.com" target="_blank" rel="noopener noreferrer">Open&nbsp;↗</a></p></div>
+      <div class="obj-entry"><h4>Barangay Connect</h4><p class="o-was">Resident requests handled on paper, in person.</p><p class="o-now">Requests raised and tracked online.</p></div>
+      <div class="obj-entry"><h4>SmartScore</h4><p class="o-was">Exam papers checked by hand, one at a time.</p><p class="o-now">A camera reads the answer sheet and returns the score. Python + OpenCV · 2023–2024 · WMSU.</p></div>
+    </div>
+
+    <div id="panelCamp">
+      <span class="obj-kicker">// the camp</span>
+      <h3>Who's out here</h3>
+      <p class="obj-lede">John Kent Evangelista — software developer, Zamboanga City.</p>
+      <p>I build the systems behind real operations: records, sales, training, resident services. The slow, manual parts of the work become software that runs them.</p>
+      <p>You don't need to know tech to work with me. Tell me what's slowing you down and I'll tell you whether software is even the answer.</p>
+      <p class="obj-cta"><a href="main.html">See the main site&nbsp;↗</a></p>
+    </div>
+
+    <div id="panelAward">
+      <span class="obj-kicker">// a mark left behind</span>
+      <h3>2025 Productivity Olympics</h3>
+      <p class="obj-lede">National Winner — with the VINTAZK team.</p>
+      <p>Won for a system people actually use, which is the only kind worth building.</p>
+      <p class="obj-cta"><a href="https://www.linkedin.com/pulse/zampen-pride-vintazk-outsourcing-triumphs-2025-productivity-4fjdc/" target="_blank" rel="noopener noreferrer">Read the story&nbsp;↗</a></p>
+    </div>
+
+    <div id="panelLumi">
+      <span class="obj-kicker">// not lit yet</span>
+      <h3>LUMI</h3>
+      <p class="obj-lede">The next lantern — in development.</p>
+      <p>Still being written. When it's running somewhere real, it gets a light on this trail like the others.</p>
+    </div>
+
+    <div id="panelStart">
+      <span class="obj-kicker">// where the path began</span>
+      <h3>WMSU · 2020</h3>
+      <p class="obj-lede">BS Computer Science, Western Mindanao State University.</p>
+      <p>Also where SmartScore was built — automated exam checking with computer vision, as Project Lead, 2023–2024.</p>
+      <p>Since then: Lean Six Sigma White Belt, and executive education in digital transformation at the Asian Institute of Management.</p>
+    </div>
+  </div>
+
 
 </body>
 

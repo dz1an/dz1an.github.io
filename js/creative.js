@@ -716,12 +716,12 @@
     // The journal on the log by the fire — the chapter is named after it
     if (window.DZ_FOREST && window.DZ_FOREST.journal) {
       var jbook = buildProp(window.DZ_FOREST.journal);
-      jbook.scale.setScalar(3.4);
-      jbook.position.set(-1.45, getGroundY(-1.55, 1.35) + 0.33, 1.3);
-      jbook.rotation.y = 0.55;
+      jbook.scale.setScalar(2.5);
+      jbook.position.set(-1.55, getGroundY(-1.55, 1.35) + 0.30, 1.35);
+      jbook.rotation.set(0, 0.55, 0.06);
       jbook.castShadow = true;
       scene.add(jbook);
-      registerClickable(-1.45, getGroundY(-1.55, 1.35) + 0.4, 1.3, 0.95, 'panelJournal', 0.85);
+      registerClickable(-1.55, getGroundY(-1.55, 1.35) + 0.35, 1.35, 0.9, 'panelJournal', 0.8);
     }
     // The tent — who is out here
     registerClickable(shelterX, sgY + 1.0, shelterZ, 1.5, 'panelCamp', 1.5);
@@ -1409,10 +1409,13 @@
     if (!scene) return;
     var hit = new THREE.Mesh(
       new THREE.SphereGeometry(radius, 8, 6),
-      new THREE.MeshBasicMaterial()
+      // NOT visible:false — the raycaster skips invisible objects, which is
+      // exactly why the first clickable journal never responded. Fully
+      // transparent draws nothing and stays hittable.
+      new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false })
     );
     hit.position.set(x, y, z);
-    hit.visible = false;              // never drawn; raycaster still sees it
+    hit.renderOrder = -1;
     scene.add(hit);
 
     // Marker — a small additive dot hovering over the object
@@ -1652,7 +1655,7 @@
     // These intensities are the fire's real output — they OVERWRITE whatever
     // the PointLights were constructed with, so tune the campfire here.
     if (scene._fireLight) {
-      var flicker = 5.2 + sinT8 * 1.1 + Math.sin(t * 13) * 0.5 + Math.sin(t * 21) * 0.25;
+      var flicker = 3.9 + sinT8 * 0.85 + Math.sin(t * 13) * 0.4 + Math.sin(t * 21) * 0.2;
       scene._fireLight.intensity = flicker * cAmp;
       var colorShift = sinT3 * 0.5 + 0.5;
       scene._fireLight.color.setRGB(1.0, 0.45 + colorShift * 0.15, 0.15 + colorShift * 0.1);
@@ -2072,7 +2075,7 @@
       // its cached render lists so the freed scene isn't retained.
       if (renderer && renderer.renderLists) renderer.renderLists.dispose();
       camera = null; clock = null;
-      trees = []; lanterns = []; fireflies = []; wayLabels = [];
+      trees = []; lanterns = []; fireflies = []; wayLabels = []; clickables = [];
       perfFrames = 0; perfStart = 0; perfTier = 0;
     },
     isRunning: function () { return isActive; }
