@@ -1195,6 +1195,12 @@ world.<span class="code-fn">render</span>();</pre>
       var s1 = document.createElement("script");
       s1.src = "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js";
       s1.onload = function() { threeOk = true; settle(); };
+      s1.onerror = function() {
+        // Without Three there is no scene at all — say so instead of leaving
+        // the Build & Run button looking dead
+        pending = 0;
+        if (window.showToast) showToast("Couldn't load the 3D engine", "Check your connection and try again", "fa-triangle-exclamation");
+      };
       document.body.appendChild(s1);
       fetchData("models/props.js", settle);
       fetchData("models/forest.js", settle);

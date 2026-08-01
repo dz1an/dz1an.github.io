@@ -750,6 +750,18 @@
       stone.rotation.set(Math.random(), Math.random(), 0);
       scene.add(stone);
     }
+    // The award itself resting on the cairn — a real trophy model (Kenney
+    // Starter Kit Basic Scene) baked to firefly gold. Unlit like every other
+    // milestone: the lantern light nearby is what catches it.
+    var MF = window.DZ_FOREST;
+    if (MF) {
+      var trophy = buildProp(MF.trophy);
+      trophy.position.set(cx, cgY + 0.82, cz);
+      trophy.rotation.y = -0.5;
+      trophy.scale.setScalar(1.15);
+      scene.add(trophy);
+    }
+
     var awardLabel = makeLabel("2025 Productivity Olympics", {
       fontSize: 18, fontWeight: "700", color: "#FFD24A",
       sub: "National Winner — with the VINTAZK team", scale: 1.15, opacity: 0.75
@@ -1016,26 +1028,60 @@
   //  instanced tree batches as the near forest; see plantForest.)
 
   function createSky() {
-    // Real moonlit sky (Kenney CC0 Skyboxes "night", downsampled and darkened
-    // to the palette by tools/bake-props/bake-sky.js). Its moon sits in almost
-    // exactly the direction the scene's moon DirectionalLight comes from, so
-    // the light in the forest reads as coming from the moon you can see.
-    // The panorama carries its own stars — the old Points star field and the
-    // fake moon sphere + halo are gone (two moons, and clutter the user called out).
-    var loader = new THREE.TextureLoader();
-    loader.load("images/sky-night.png", function (tex) {
-      if (!scene) return; // user left before the image arrived
-      tex.mapping = THREE.EquirectangularReflectionMapping;
-      if ("colorSpace" in tex) tex.colorSpace = THREE.SRGBColorSpace;
-      tex.minFilter = THREE.LinearFilter;
-      scene.background = tex;
-      // The background is tone-mapped like everything else (ACES @ exposure
-      // 1.8 = a ~3x linear gain), so the panorama at full strength renders as a
-      // near-white haze behind the treeline. 0.042 lands it just above the
-      // #0C1210 base: a dark sky you can read a moon and stars in.
-      scene.backgroundIntensity = 0.042;
-      scene._skyTex = tex;
-    }, undefined, function () { /* keep the flat #0C1210 background */ });
+    // Procedural moonlit sky over the flat #0C1210 background.
+    //
+    // A photographic panorama (Kenney CC0 Skyboxes "night") was tried here and
+    // removed on purpose: scene.background is tone-mapped like everything else
+    // (ACES at exposure 1.8 — about a 3x linear gain), so at full strength it
+    // rendered as a near-white haze behind the treeline, and darkened enough to
+    // sit right it collapsed into swirling contour bands, because a near-black
+    // sky has almost no 8-bit levels left to hold a gradient. Points and a flat
+    // moon are smooth by construction, cost nothing, weigh 0 KB, and land
+    // exactly on the palette. Don't reintroduce a photo sky here.
+    //
+    // Everything below is unlit + fog:false — the sky sits far past the fog far
+    // plane (75), so fogged materials would vanish entirely.
+    var starCount = isMobile ? 200 : 380;
+    var sPos = new Float32Array(starCount * 3);
+    var sCol = new Float32Array(starCount * 3);
+    var STAR_TINTS = [0xDAD7CD, 0xE8C87A, 0xA3B18A, 0xEDEAE0];
+    var tint = new THREE.Color(), v = new THREE.Vector3();
+    for (var i = 0; i < starCount; i++) {
+      do { // upper hemisphere only — no stars under the horizon
+        v.set(Math.random() * 2 - 1, Math.random() * 0.95 + 0.05, Math.random() * 2 - 1);
+      } while (v.lengthSq() > 1 || v.lengthSq() < 0.04);
+      v.normalize().multiplyScalar(110);
+      sPos[i * 3] = v.x; sPos[i * 3 + 1] = v.y + 6; sPos[i * 3 + 2] = v.z;
+      tint.setHex(STAR_TINTS[i % STAR_TINTS.length]);
+      var b = 0.3 + Math.random() * 0.7; // varied magnitudes read as depth
+      sCol[i * 3] = tint.r * b; sCol[i * 3 + 1] = tint.g * b; sCol[i * 3 + 2] = tint.b * b;
+    }
+    var sGeo = new THREE.BufferGeometry();
+    sGeo.setAttribute("position", new THREE.BufferAttribute(sPos, 3));
+    sGeo.setAttribute("color", new THREE.BufferAttribute(sCol, 3));
+    scene.add(new THREE.Points(sGeo, new THREE.PointsMaterial({
+      size: 0.85, sizeAttenuation: true, vertexColors: true,
+      transparent: true, opacity: 0.85, depthWrite: false, fog: false
+    })));
+
+    // The moon sits in the direction the moon DirectionalLight comes from
+    // (-20, 30, 10), so the light through the trees reads as coming from the
+    // moon you can actually see.
+    var dir = new THREE.Vector3(-20, 30, 10).normalize().multiplyScalar(105);
+    var halo = new THREE.Mesh(
+      new THREE.CircleGeometry(11, 24),
+      new THREE.MeshBasicMaterial({ color: 0x9FB0A6, transparent: true, opacity: 0.10, depthWrite: false, fog: false })
+    );
+    halo.position.copy(dir).multiplyScalar(1.02); // behind the disc so it draws first
+    halo.lookAt(0, 0, 0);
+    scene.add(halo);
+    var moonDisc = new THREE.Mesh(
+      new THREE.CircleGeometry(4.2, 32),
+      new THREE.MeshBasicMaterial({ color: 0xE9EEDF, transparent: true, opacity: 0.92, depthWrite: false, fog: false })
+    );
+    moonDisc.position.copy(dir);
+    moonDisc.lookAt(0, 0, 0);
+    scene.add(moonDisc);
   }
 
   // ======================== Smoke ========================

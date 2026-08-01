@@ -58,7 +58,7 @@ const FOLIAGE = ramp([0x344E41, 0x5C7650, 0xA9C46C], 150, 200); // deep sage -> 
 const GROUND  = ramp([0x2E4636, 0x4A5F45], 150, 200);           // grass patches sit dark
 const WOOD    = ramp([0x2E2116, 0x4A3726], 100, 190); // dark bark — warm trunks read orange at night
 const STONE   = ramp([0x2F3340, 0x565C68], 95, 145);            // rocks — dark slate, night-legible
-const RUIN    = ramp([0x4A4A5C, 0x8A8A98], 130, 210);           // column (was sandstone)
+const GOLD    = ramp([0x6B5424, 0xE8C87A, 0xFFE9B0], 110, 215); // award trophy -> firefly gold
 
 function classify(kind, c) {
   const [r, g, b] = c, L = (r + g + b) / 3;
@@ -67,7 +67,7 @@ function classify(kind, c) {
   if (kind === 'ground') return isGreen ? GROUND(L) : WOOD(L);
   if (kind === 'plant') return isGreen ? FOLIAGE(L * 0.92) : WOOD(L);
   if (kind === 'stone') return STONE(L);
-  if (kind === 'ruin') return RUIN(L);
+  if (kind === 'gold') return GOLD(L);
   if (kind === 'wood') return WOOD(L);
   return [L, L, L];
 }
@@ -156,7 +156,7 @@ const forest = {
   stones:    bake('stones', 'stone', mf),
   plant:     bake('plant', 'plant', mf),
   grass:     bake('patch-grass', 'ground', mf),
-  column:    bake('column-damaged', 'ruin', ar)
+  trophy:    bake('trophy', 'gold', ar)
 };
 
 const out = '// Forest set — CC0 models by Kenney (kenney.nl): Mini Forest + Starter Kit\n' +

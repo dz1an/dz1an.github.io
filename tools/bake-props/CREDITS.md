@@ -7,7 +7,7 @@ CC0 imposes no requirement to credit; the site credits Kenney anyway (creative-m
 | --- | --- | --- |
 | [Survival Kit](https://kenney.nl/assets/survival-kit) | `tent-canvas`, `campfire-pit`, `tree-log` | `models/props.js` |
 | [Mini Forest](https://kenney.nl/assets/mini-forest) | `tree`, `tree-high`, `rocks-low`, `rocks-high`, `stones`, `plant`, `patch-grass` | `models/forest.js` |
-| [Starter Kit: Basic Scene](https://github.com/KenneyNL/Starter-Kit-Basic-Scene) | `column-damaged` | `models/forest.js` |
+| [Starter Kit: Basic Scene](https://github.com/KenneyNL/Starter-Kit-Basic-Scene) | `trophy` (the award cairn) | `models/forest.js` |
 
 The `.glb` files and `colormap*.png` atlases in this directory are the unmodified
 originals. The bakers (`bake.js`, `bake-forest.js`) sample each model's atlas per
