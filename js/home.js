@@ -256,61 +256,21 @@
     function pineOf(F) { return F.pineRound || F.treeHigh; }
     function pineH(F) { return F.pineRound ? 1.25 : 2.28; }
 
-    // ---- HERO VISTA — a wood receding into the page ----------------------
+    // ---- HERO — one tree ------------------------------------------------
+    // Deliberately a SINGLE pine on transparent background: no stand, no
+    // ground plane, no fog. A whole forest here read as a stock asset field,
+    // and any ground plane inside a scissored rect shows its own hard edge —
+    // the accent then looks like a pasted panel instead of part of the page.
     function buildVista(el) {
       var F = window.DZ_FOREST;
       var scene = new THREE.Scene();
-      var camera = new THREE.PerspectiveCamera(38, 1, 0.1, 200);
+      var camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
       daylight(scene);
-      // Fog is what makes this a wood rather than a field of models: distance
-      // dissolves into the page's own cream.
-      scene.fog = new THREE.Fog(0xF2F2EA, 12, 46);
-
-      var ground = new THREE.Mesh(
-        new THREE.PlaneGeometry(300, 300),
-        new THREE.MeshStandardMaterial({ color: 0x8C9C7A, roughness: 1 })
-      );
-      ground.rotation.x = -Math.PI / 2;
-      ground.position.y = -0.01;
-      scene.add(ground);
 
       var PINE = pineOf(F), PH = pineH(F);
       var hero = mesh(PINE, "pine");
-      hero.scale.setScalar(6.2 / PH);
+      hero.scale.setScalar(2.6 / PH);
       scene.add(hero);
-
-      // Hand-placed, not ringed — even rings of identical trees are exactly
-      // what made an earlier pass read as a stock asset field.
-      var STAND = [
-        [-6.4, 1.8, 4.6], [7.1, 3.2, 5.1], [-9.8, -3.4, 4.2],
-        [10.4, -5.6, 4.8], [-4.2, -8.2, 3.8], [4.6, -9.8, 3.5],
-        [-14.5, -9.0, 4.0], [15.2, -12.0, 3.9], [-2.6, -16.0, 3.2],
-        [8.8, -18.5, 3.0], [-11.0, -20.0, 3.1], [18.0, -23.0, 3.3],
-        [-19.5, -26.0, 3.0], [5.0, -28.0, 2.8], [-6.0, -33.0, 2.7],
-        [13.0, -35.0, 2.9], [-24.0, -38.0, 2.8], [2.0, -42.0, 2.6]
-      ];
-      var pines = [];
-      for (var i = 0; i < STAND.length; i++) {
-        var s3 = STAND[i];
-        if (isSmall && i % 3 === 2) continue;
-        var depth = Math.min(1, Math.abs(s3[1]) / 42);
-        pines.push({
-          x: s3[0], z: s3[1], ry: rnd() * 6.283,
-          s: (s3[2] + rnd() * 0.4) / PH,
-          t: 0.92 - depth * 0.18 + rnd() * 0.1
-        });
-      }
-      instance(PINE, pines, scene, "pine");
-      // No grass tufts: dark blobs dotted over a pale floor read as a swamp.
-      instance(F.stones, [
-        { x: -2.9, z: 1.6, ry: 0.6, s: 0.85, t: 1.05 },
-        { x: 3.4, z: -1.2, ry: 2.4, s: 0.62, t: 1.0 },
-        { x: -5.6, z: -4.4, ry: 4.1, s: 0.7, t: 0.95 }
-      ], scene, "stones");
-      instance(F.plant, [
-        { x: -4.4, z: 2.6, ry: 1.1, s: 1.6, t: 0.95 },
-        { x: 5.2, z: 1.2, ry: 3.3, s: 1.4, t: 0.9 }
-      ], scene, "plant");
 
       var cmx = 0, cmy = 0;
       return {
@@ -319,15 +279,10 @@
           // Eased pointer parallax lives here so it stops when the loop sleeps
           cmx += (mx - cmx) * 0.05;
           cmy += (my - cmy) * 0.05;
-          var p = clamp01(-r.top / (r.height || 1));   // 0 at rest, 1 as it exits
-          var dist = 17 + p * 2;
-          var orbit = -0.42 + t * 0.008;
-          camera.position.set(
-            Math.sin(orbit) * dist + cmx * 0.9,
-            3.0 + p * 0.6 + cmy * 0.4,
-            Math.cos(orbit) * dist
-          );
-          camera.lookAt(0, 3.2, 0);
+          hero.rotation.y = t * 0.12;                 // slow, like the old hero
+          var p = clamp01(-r.top / (r.height || 1));  // 0 at rest, 1 as it exits
+          camera.position.set(cmx * 0.5, 1.3 + p * 0.5 + cmy * 0.25, 6.3);
+          camera.lookAt(0, 1.3, 0);
         }
       };
     }
@@ -367,16 +322,11 @@
       // Extra lift: the camp props are baked for the playground's night, and
       // against the green block they otherwise sink into it.
       scene.add(new THREE.AmbientLight(0xE6EFE2, 0.55));
-      // Green fog so the camp melts into the contact block behind it
-      scene.fog = new THREE.Fog(0x344E41, 6, 18);
 
-      var ground = new THREE.Mesh(
-        new THREE.PlaneGeometry(40, 40),
-        new THREE.MeshStandardMaterial({ color: 0x3E5A4B, roughness: 1 })
-      );
-      ground.rotation.x = -Math.PI / 2;
-      ground.position.y = -0.01;
-      scene.add(ground);
+      // NO ground plane and NO fog here on purpose. Inside a scissored rect
+      // either one paints a hard-edged rectangle across the section — the
+      // accent then reads as a pasted panel. The props sit straight on the
+      // block's own green instead.
 
       // This anchor is a WIDE band (roughly 6:1), so the camp is spread across
       // it rather than clustered in the middle — props bunched at centre read
@@ -430,57 +380,11 @@
       };
     }
 
-    // ---- PINE DIVIDER — a breath between two dense sections --------------
-    function buildPines(el) {
-      var F = window.DZ_FOREST;
-      var scene = new THREE.Scene();
-      var camera = new THREE.PerspectiveCamera(26, 1, 0.1, 60);
-      camera.lookAt(0, 2.0, 0);
-      daylight(scene);
-      scene.fog = new THREE.Fog(0xF2F2EA, 8, 22);
+    // (The pine-divider accent was removed: a treeline needs a ground plane,
+    //  and any ground plane inside a scissored rect draws a hard-edged strip
+    //  across the page.)
 
-      var ground = new THREE.Mesh(
-        new THREE.PlaneGeometry(120, 120),
-        new THREE.MeshStandardMaterial({ color: 0x8C9C7A, roughness: 1 })
-      );
-      ground.rotation.x = -Math.PI / 2;
-      ground.position.y = -0.01;
-      scene.add(ground);
-
-      // A treeline across the full width of the band — this anchor is ~7:1, so
-      // a handful of trees near the centre would just float in dead space.
-      var PINE = pineOf(F), PH = pineH(F);
-      var LINE = [
-        [-13.0, -3.0, 3.0], [-10.2, -0.5, 3.6], [-7.4, -4.5, 2.7],
-        [-4.6, -1.2, 3.3], [-1.6, -5.0, 2.5], [1.4, -1.8, 3.5],
-        [4.2, -4.2, 2.8], [7.0, -0.8, 3.4], [10.0, -3.6, 2.9], [12.8, -1.0, 3.2]
-      ];
-      var line = [];
-      for (var i = 0; i < LINE.length; i++) {
-        var d3 = LINE[i];
-        line.push({
-          x: d3[0], z: d3[1], ry: rnd() * 6.283,
-          s: d3[2] / PH, t: 0.98 - Math.min(1, Math.abs(d3[1]) / 6) * 0.16
-        });
-      }
-      instance(PINE, line, scene, "pine");
-      instance(F.stones, [
-        { x: -8.6, z: 1.0, ry: 0.9, s: 0.55, t: 1.0 },
-        { x: 2.8, z: 1.2, ry: 2.7, s: 0.48, t: 0.95 },
-        { x: 9.0, z: 0.6, ry: 4.6, s: 0.5, t: 0.92 }
-      ], scene, "stones");
-
-      return {
-        el: el, scene: scene, camera: camera, lw: 0, lh: 0,
-        update: function (t, r, vh) {
-          var seen = clamp01((vh - r.top) / (vh + (r.height || 1)));
-          camera.position.set((seen - 0.5) * 0.8, 2.2, 9);
-          camera.lookAt(0, 2.0, 0);
-        }
-      };
-    }
-
-    var BUILD = { vista: buildVista, trophy: buildTrophy, camp: buildCamp, pines: buildPines };
+    var BUILD = { vista: buildVista, trophy: buildTrophy, camp: buildCamp };
 
     function frame(time) {
       raf = null;

@@ -187,7 +187,6 @@ a { color: var(--sage); }
 .fx { pointer-events: none; }
 .fx-trophy { width: clamp(84px, 9vw, 130px); height: 130px; align-self: flex-end; }
 .fx-camp { height: clamp(150px, 22vw, 230px); margin-top: 40px; }
-.fx-pines { height: 150px; }
 
 .h-solid { font-weight: 900; }
 .h-italic { font-style: italic; font-weight: 300; color: var(--sage); text-transform: lowercase; }
@@ -530,8 +529,6 @@ a.bf-value:hover { color: var(--sage); }
   .hero-mark { height: min(42vh, 320px); }
   .hero-foot { letter-spacing: 0.1em; bottom: 16px; }
   .hero-cue { bottom: 52px; }
-  /* The divider is pure ornament — first thing to go on a phone */
-  .fx-pines { display: none; }
   .fx-camp { height: 140px; margin-top: 24px; }
   .fx-trophy { height: 96px; }
   .blockproof .bg-body { font-size: 0.98rem; }
