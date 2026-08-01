@@ -695,33 +695,72 @@
   function createCoreLantern() {
     var gY = 0;
     var PROPS = window.DZ_PROPS;
+    var CAMP = window.DZ_CAMP;
 
-    // === Canvas tent — a real A-frame model, mouth turned toward the fire ===
+    // === Canvas tent — a real bushcraft lean-to, mouth turned toward the fire ===
+    // models/camp.js is the preferred set (a hand-modeled tarp shelter on branch
+    // poles); the Kenney A-frame in props.js is the fallback if that file fails
+    // to load, so the camp is never empty.
     var shelterX = 2.5, shelterZ = -2.5;
     var sgY = getGroundY(shelterX, shelterZ);
-    if (PROPS) {
-      var tent = buildProp(PROPS.tent);
+    if (CAMP) {
+      var tent = buildProp(CAMP.tent);
       tent.position.set(shelterX, sgY, shelterZ);
-      tent.rotation.y = Math.atan2(0 - shelterX, 0.5 - shelterZ); // aim the model's front at the campfire
+      tent.scale.setScalar(0.62);                                 // 3.53 model units tall -> ~2.2, the old tent's height
+      tent.rotation.y = Math.atan2(0 - shelterX, 0.5 - shelterZ); // aim the model's open side at the campfire
       scene.add(tent);
+    } else if (PROPS) {
+      var tentAlt = buildProp(PROPS.tent);
+      tentAlt.position.set(shelterX, sgY, shelterZ);
+      tentAlt.rotation.y = Math.atan2(0 - shelterX, 0.5 - shelterZ);
+      scene.add(tentAlt);
     }
 
     // Bedroll inside the tent, lying along its open axis — visible through the
-    // mouth from the fire side (the model is an open-ended A-frame)
+    // mouth from the fire side (the model is an open-ended shelter)
     var sleepBag = new THREE.Mesh(new THREE.CapsuleGeometry(0.15, 0.8, 4, 8), new THREE.MeshStandardMaterial({ color: 0x4A3B2A, roughness: 0.8 }));
     sleepBag.position.set(shelterX - 0.3, sgY + 0.1, shelterZ + 0.35);
     sleepBag.rotation.set(0, 0.88, Math.PI / 2);
     scene.add(sleepBag);
 
 
-    // === Campfire — modeled stone fire pit with stacked logs ===
-    if (PROPS) {
-      var firePit = buildProp(PROPS.fire);
+    // === Campfire — a real burning log stack, with the fire's own flame mesh ===
+    if (CAMP) {
+      var firePit = buildProp(CAMP.fire);
       firePit.position.set(0, gY, 0.5);
+      firePit.scale.setScalar(1.5);
       firePit.rotation.y = 0.7;
       scene.add(firePit);
 
-      // Log seats pulled up to the fire, across from the tent
+      // The flame is unlit on purpose: it is the light source, so shading it
+      // would darken the one thing in the scene that should never be dark.
+      var flame = new THREE.Mesh(propGeometry(CAMP.flame), new THREE.MeshBasicMaterial({
+        vertexColors: true, transparent: true, opacity: 0.95, depthWrite: false, fog: false
+      }));
+      flame.position.set(0, gY + 0.12, 0.5);
+      flame.scale.setScalar(1.9);
+      scene.add(flame);
+      scene._flame = flame;
+
+      // Fallen trunks from the same set, out at the clearing edge — kept well
+      // clear of the fire and the log seats, they're scenery, not furniture
+      var fallen = buildProp(CAMP.logs);
+      fallen.position.set(-5.0, getGroundY(-5.0, 4.4), 4.4);
+      fallen.rotation.y = 1.15;
+      fallen.scale.setScalar(0.45);
+      scene.add(fallen);
+
+      // (CAMP.crate is baked and available, but it's terracotta — off the sage +
+      // firefly palette — so it stays out of the clearing.)
+    } else if (PROPS) {
+      var pitAlt = buildProp(PROPS.fire);
+      pitAlt.position.set(0, gY, 0.5);
+      pitAlt.rotation.y = 0.7;
+      scene.add(pitAlt);
+    }
+
+    // Log seats pulled up to the fire, across from the tent
+    if (PROPS) {
       var seat1 = buildProp(PROPS.log);
       seat1.position.set(-1.55, getGroundY(-1.55, 1.35), 1.35);
       seat1.rotation.y = 0.55;
@@ -1574,6 +1613,15 @@
     }
     if (scene._firePool) {
       scene._firePool.material.opacity = (0.42 + sinT6 * 0.07) * cAmp;
+    }
+    // The modeled flame licks on the same beat — stretched vertically and
+    // rocked slightly, never scaled uniformly (that reads as a pulsing ball).
+    if (scene._flame) {
+      var fl = scene._flame;
+      fl.scale.set(1.9 + sinT6 * 0.10, 1.9 + sinT8 * 0.26 + Math.sin(t * 13) * 0.09, 1.9 + sinT4 * 0.10);
+      fl.rotation.z = Math.sin(t * 5.5) * 0.05;
+      fl.rotation.y = t * 0.35;
+      fl.material.opacity = Math.min(1, 0.55 + cAmp * 0.45);
     }
     if (scene._fireUp) {
       scene._fireUp.intensity = (0.4 + sinT5 * 0.15) * cAmp;

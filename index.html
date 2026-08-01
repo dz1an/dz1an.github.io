@@ -1165,6 +1165,7 @@ world.<span class="code-fn">render</span>();</pre>
         var missing = [];
         if (!window.DZ_PROPS) missing.push("models/props.js");
         if (!window.DZ_FOREST) missing.push("models/forest.js");
+        if (!window.DZ_CAMP) missing.push("models/camp.js");
         if (!missing.length) { callback(); return; }
         var left = missing.length;
         missing.forEach(function(src) {
@@ -1172,7 +1173,7 @@ world.<span class="code-fn">render</span>();</pre>
         });
         return;
       }
-      var pending = 3; // three.min.js + props.js + forest.js, fetched in parallel
+      var pending = 4; // three.min.js + props.js + forest.js + camp.js, fetched in parallel
       var threeOk = false;
       function settle() {
         if (--pending > 0) return;
@@ -1194,6 +1195,7 @@ world.<span class="code-fn">render</span>();</pre>
       document.body.appendChild(s1);
       fetchData("models/props.js", settle);
       fetchData("models/forest.js", settle);
+      fetchData("models/camp.js", settle);
     };
   </script>
 
