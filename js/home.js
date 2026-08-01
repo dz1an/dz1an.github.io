@@ -199,9 +199,11 @@
       // Real 3D dolly — stays sharp at any size. The turn is a gentle quarter
       // rotation rather than the old ~full spin, so the approach reads as
       // walking up to the tree instead of the tree twirling.
-      var radius = 118 - c * 88;                    // 118% -> 30% (as it always was)
+      var radius = 118 - c * 60;                    // 118% -> 58%: this is a whole
+                                                    // diorama now, not a single tree —
+                                                    // diving to 30% puts the camera inside it
       var theta = 15 + a * 18 + c * 52;             // ~85deg total, eased per act
-      var phi = 82 - c * 10;                        // lifts slightly as we close in
+      var phi = 80 - c * 6;                         // looks slightly down on the scene
       if (sMv) sMv.cameraOrbit = theta.toFixed(1) + "deg " + phi.toFixed(1) + "deg " + radius.toFixed(1) + "%";
       // NOTE: do NOT fade the pine out at the end. The copy is already dimming
       // to 15% here, so fading the tree too leaves the last frame as two ghosts
