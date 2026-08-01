@@ -713,18 +713,6 @@
     sleepBag.rotation.set(0, 0.88, Math.PI / 2);
     scene.add(sleepBag);
 
-    // The journal on the log by the fire — the chapter is named after it
-    if (window.DZ_FOREST && window.DZ_FOREST.journal) {
-      var jbook = buildProp(window.DZ_FOREST.journal);
-      jbook.scale.setScalar(2.5);
-      jbook.position.set(-1.55, getGroundY(-1.55, 1.35) + 0.30, 1.35);
-      jbook.rotation.set(0, 0.55, 0.06);
-      jbook.castShadow = true;
-      scene.add(jbook);
-      registerClickable(-1.55, getGroundY(-1.55, 1.35) + 0.35, 1.35, 0.9, 'panelJournal', 0.8);
-    }
-    // The tent — who is out here
-    registerClickable(shelterX, sgY + 1.0, shelterZ, 1.5, 'panelCamp', 1.5);
 
     // === Campfire — modeled stone fire pit with stacked logs ===
     if (PROPS) {
@@ -881,7 +869,6 @@
 
     // Where the path began — university, at the trail entrance
     signpost(2.3, 38, "WMSU · 2020", "Where the path began", "BS Computer Science");
-    registerClickable(2.3, getGroundY(2.3, 38) + 1.0, 38, 1.2, "panelStart", 1.1);
 
 
     // A mark left behind — stone cairn for the national award
@@ -905,8 +892,6 @@
       trophy.scale.setScalar(1.15);
       scene.add(trophy);
     }
-
-    registerClickable(cx, cgY + 0.9, cz, 1.1, "panelAward", 0.75);
     var awardLabel = makeLabel("2025 Productivity Olympics", {
       fontSize: 18, fontWeight: "700", color: "#FFD24A",
       sub: "National Winner — with the VINTAZK team", scale: 1.15, opacity: 0.75
@@ -933,7 +918,6 @@
     lumiLabel.position.set(lx, lgY + 2.05, lz);
     scene.add(lumiLabel);
     wayLabels.push({ sp: lumiLabel, base: 0.5 });
-    registerClickable(lx, lgY + 1.2, lz, 1.0, "panelLumi", 0.8);
   }
 
   function createProjectLanterns() {
@@ -1397,80 +1381,6 @@
     return g;
   }
 
-  // ======================== Clickable objects ========================
-  // Things in the world you can open. The lesson from the first attempt: the
-  // model itself is a hopeless hit target (a book is half a unit across and
-  // the camera never gets near it), so each one gets a GENEROUS invisible
-  // proxy sphere, plus a pulsing marker so you can tell it is interactive.
-  var clickables = [];
-  var glowTexShared = null;
-
-  function registerClickable(x, y, z, radius, panelId, markerY) {
-    if (!scene) return;
-    var hit = new THREE.Mesh(
-      new THREE.SphereGeometry(radius, 8, 6),
-      // NOT visible:false — the raycaster skips invisible objects, which is
-      // exactly why the first clickable journal never responded. Fully
-      // transparent draws nothing and stays hittable.
-      new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false })
-    );
-    hit.position.set(x, y, z);
-    hit.renderOrder = -1;
-    scene.add(hit);
-
-    // Marker — a small additive dot hovering over the object
-    var mk = new THREE.Sprite(new THREE.SpriteMaterial({
-      map: getGlowTexture(), color: 0xE8C87A, transparent: true, opacity: 0.5,
-      blending: THREE.AdditiveBlending, depthWrite: false, fog: false
-    }));
-    mk.position.set(x, y + (markerY === undefined ? radius + 0.35 : markerY), z);
-    mk.scale.setScalar(0.55);
-    scene.add(mk);
-
-    clickables.push({ hit: hit, marker: mk, panel: panelId, base: mk.position.y });
-  }
-
-  function objectAt(cx, cy) {
-    if (!clickables.length || !raycaster || !camera) return null;
-    mouseVec.set((cx / window.innerWidth) * 2 - 1, -(cy / window.innerHeight) * 2 + 1);
-    raycaster.setFromCamera(mouseVec, camera);
-    var meshes = [];
-    for (var i = 0; i < clickables.length; i++) meshes.push(clickables[i].hit);
-    var hits = raycaster.intersectObjects(meshes, false);
-    if (!hits.length) return null;
-    for (var k = 0; k < clickables.length; k++) {
-      if (clickables[k].hit === hits[0].object) return clickables[k];
-    }
-    return null;
-  }
-
-  function openPanel(panelId) {
-    var panel = document.getElementById("objPanel");
-    var body = document.getElementById("objPanelBody");
-    var src = document.getElementById(panelId);
-    if (!panel || !body || !src) return;
-    body.innerHTML = src.innerHTML;
-    panel.classList.add("open");
-    if (window.playSound) playSound("success");
-    var close = document.getElementById("objPanelClose");
-    if (close) close.focus();
-  }
-  function closePanel() {
-    var panel = document.getElementById("objPanel");
-    if (panel) panel.classList.remove("open");
-  }
-  (function bindPanel() {
-    var close = document.getElementById("objPanelClose");
-    if (close) close.addEventListener("click", closePanel);
-    var panel = document.getElementById("objPanel");
-    if (panel) panel.addEventListener("click", function (e) {
-      if (e.target === panel) closePanel();
-    });
-    document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape") closePanel();
-    });
-  })();
-
   // ======================== Events ========================
   function getWorldPos(cx, cy) {
     mouseVec.set((cx / window.innerWidth) * 2 - 1, -(cy / window.innerHeight) * 2 + 1);
@@ -1482,13 +1392,6 @@
   var lastMouseSpawn = 0;
   var hoverAt = 0;
   function onMouseMove(e) {
-    // Throttled hover test — cheap, and it is what tells people these are
-    // clickable at all.
-    var nowH = Date.now();
-    if (nowH - hoverAt > 90) {
-      hoverAt = nowH;
-      if (canvas) canvas.style.cursor = objectAt(e.clientX, e.clientY) ? "pointer" : "";
-    }
     mouse.ndcX = (e.clientX / window.innerWidth) * 2 - 1;
     mouse.ndcY = -(e.clientY / window.innerHeight) * 2 + 1;
     if (isMouseDown) {
@@ -1519,9 +1422,6 @@
   }
   function onClick(e) {
     if (!isSceneSurface(e.target)) return; // clicked a card, the HUD or a link
-    var obj = objectAt(e.clientX, e.clientY);
-    if (obj) { openPanel(obj.panel); return; }   // before planting, or the
-                                                 // click falls through to ground
     var wp = getWorldPos(e.clientX, e.clientY);
     var planted = spawnTree(wp.x, wp.z, false, 0);
     if (planted) {
@@ -1555,8 +1455,6 @@
     if (!isSceneSurface(e.target)) return;                  // tapped the UI
     var t = e.changedTouches && e.changedTouches[0];
     if (!t) return;
-    var objT = objectAt(t.clientX, t.clientY);
-    if (objT) { openPanel(objT.panel); return; }
     var wp = getWorldPos(t.clientX, t.clientY);
     if (spawnTree(wp.x, wp.z, false, 0)) {
       saveTrees();
@@ -1796,17 +1694,6 @@
       ff.mesh.scale.setScalar(fS);
       // Flicker
       if (techProximity > 0.1) ff.mesh.material.opacity *= 0.85 + (sinT3 + Math.sin(fi * 2.5) * 0.5) * 0.15;
-    }
-
-    // Clickable markers breathe so they read as interactive, and fade out when
-    // you are far away so they never litter the frame.
-    if (frame % 2 === 0) {
-      for (var cli = 0; cli < clickables.length; cli++) {
-        var cl = clickables[cli];
-        var vis = distVis(cl.marker.position);
-        cl.marker.material.opacity = 0.5 * vis * (0.72 + Math.sin(t * 2.2 + cli) * 0.28);
-        cl.marker.position.y = cl.base + Math.sin(t * 1.4 + cli * 1.3) * 0.06;
-      }
     }
 
     // Waypoint labels (signposts, award cairn, LUMI) — pure distance fade so a
@@ -2075,7 +1962,7 @@
       // its cached render lists so the freed scene isn't retained.
       if (renderer && renderer.renderLists) renderer.renderLists.dispose();
       camera = null; clock = null;
-      trees = []; lanterns = []; fireflies = []; wayLabels = []; clickables = [];
+      trees = []; lanterns = []; fireflies = []; wayLabels = [];
       perfFrames = 0; perfStart = 0; perfTier = 0;
     },
     isRunning: function () { return isActive; }
