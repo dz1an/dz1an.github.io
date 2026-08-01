@@ -711,6 +711,19 @@
     var sleepBag = new THREE.Mesh(new THREE.CapsuleGeometry(0.15, 0.8, 4, 8), new THREE.MeshStandardMaterial({ color: 0x4A3B2A, roughness: 0.8 }));
     sleepBag.position.set(shelterX - 0.3, sgY + 0.1, shelterZ + 0.35);
     sleepBag.rotation.set(0, 0.88, Math.PI / 2);
+
+    // The journal — the chapter is named after it, so it should exist and it
+    // should hold the actual work. Sits on the log seat by the fire; clicking
+    // it opens the entries (see onClick / openJournal).
+    if (window.DZ_FOREST && window.DZ_FOREST.journal) {
+      var jbook = buildProp(window.DZ_FOREST.journal);
+      jbook.scale.setScalar(3.4);                 // model is only 15cm wide
+      jbook.position.set(-1.42, getGroundY(-1.55, 1.35) + 0.34, 1.28);
+      jbook.rotation.y = 0.55;
+      jbook.castShadow = true;
+      scene.add(jbook);
+      scene._journal = jbook;
+    }
     scene.add(sleepBag);
 
     // === Campfire — modeled stone fire pit with stacked logs ===
@@ -1381,6 +1394,31 @@
     return g;
   }
 
+  // ======================== The journal ========================
+  function openJournal() {
+    var panel = document.getElementById("journalPanel");
+    if (!panel) return;
+    panel.classList.add("open");
+    if (window.playSound) playSound("success");
+    var close = document.getElementById("journalClose");
+    if (close) close.focus();
+  }
+  function closeJournal() {
+    var panel = document.getElementById("journalPanel");
+    if (panel) panel.classList.remove("open");
+  }
+  (function bindJournal() {
+    var close = document.getElementById("journalClose");
+    if (close) close.addEventListener("click", closeJournal);
+    var panel = document.getElementById("journalPanel");
+    if (panel) panel.addEventListener("click", function (e) {
+      if (e.target === panel) closeJournal();   // click the backdrop
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") closeJournal();
+    });
+  })();
+
   // ======================== Events ========================
   function getWorldPos(cx, cy) {
     mouseVec.set((cx / window.innerWidth) * 2 - 1, -(cy / window.innerHeight) * 2 + 1);
@@ -1419,8 +1457,18 @@
       }
     }
   }
+  // Did this screen point hit the journal? Checked BEFORE planting, otherwise
+  // clicking the book would just drop a tree behind it.
+  function hitJournal(cx, cy) {
+    if (!scene || !scene._journal || !raycaster) return false;
+    mouseVec.set((cx / window.innerWidth) * 2 - 1, -(cy / window.innerHeight) * 2 + 1);
+    raycaster.setFromCamera(mouseVec, camera);
+    return raycaster.intersectObject(scene._journal, false).length > 0;
+  }
+
   function onClick(e) {
     if (!isSceneSurface(e.target)) return; // clicked a card, the HUD or a link
+    if (hitJournal(e.clientX, e.clientY)) { openJournal(); return; }
     var wp = getWorldPos(e.clientX, e.clientY);
     var planted = spawnTree(wp.x, wp.z, false, 0);
     if (planted) {
@@ -1454,6 +1502,7 @@
     if (!isSceneSurface(e.target)) return;                  // tapped the UI
     var t = e.changedTouches && e.changedTouches[0];
     if (!t) return;
+    if (hitJournal(t.clientX, t.clientY)) { openJournal(); return; }
     var wp = getWorldPos(t.clientX, t.clientY);
     if (spawnTree(wp.x, wp.z, false, 0)) {
       saveTrees();
