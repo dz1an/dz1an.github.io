@@ -210,14 +210,21 @@
       // at the island's dirt underside. The p term is a slow continuous turn that
       // runs the whole stage, so the ~53vh gap between act 2 and act 3 keeps
       // moving instead of freezing mid-scroll.
-      var radius = 134 - a * 16 - b * 6 - c * 54;   // 134% -> 58%
+      //
+      // THE END OF THE PUSH NEVER GOES BELOW ~95%. model-viewer defines 100% as
+      // the distance at which the model exactly fits the frame, so anything under
+      // that overflows the pinned stage and `overflow:hidden` slices the model in
+      // half along the pin's bottom edge. That hard horizontal cut is the single
+      // thing that has been complained about most on this page — the approach has
+      // to get its drama from starting WIDE, not from ending close.
+      var radius = 158 - a * 22 - b * 12 - c * 28;  // 158% -> 96%: 1.65x growth, never clips
       var theta = 8 + p * 20 + a * 18 + b * 12 + c * 64;  // ~122deg — a third of a turn
       var phi = 54 + a * 18 + b * 8 + c * 8;        // 54deg (above) -> 88deg (eye level)
       if (sMv) {
         sMv.cameraOrbit = theta.toFixed(1) + "deg " + phi.toFixed(1) + "deg " + radius.toFixed(1) + "%";
-        // Aim rises from the island's middle into the canopy on the final push,
-        // so closing in tilts the view up through the trees instead of at soil.
-        sMv.cameraTarget = "0m " + (1.75 + c * 0.85).toFixed(2) + "m 0m";
+        // Aim lifts only slightly. Raising it far pushes the model DOWN the frame,
+        // which reintroduces the bottom cut from the other direction.
+        sMv.cameraTarget = "0m " + (1.85 + c * 0.25).toFixed(2) + "m 0m";
       }
       // NOTE: do NOT fade the pine out at the end. The copy is already dimming
       // to 15% here, so fading the tree too leaves the last frame as two ghosts
