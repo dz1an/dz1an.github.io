@@ -199,48 +199,6 @@ a { color: var(--sage); }
 }
 .stage.is-dark .stage-foot { color: rgba(255, 255, 255, 0.5); }
 
-/* ============ THE PLACE — pinned town fly-through =========================
-   Same architecture as the stage: a tall section with a sticky 100vh pin and a
-   full-bleed canvas, so the scene has no visible edge of its own. */
-.place { position: relative; height: 300vh; background: var(--bg); }
-.place-pin {
-  position: sticky; top: 0; height: 100vh; overflow: hidden;
-  display: flex; align-items: flex-end; justify-content: center;
-}
-#placeCanvas {
-  position: absolute; inset: 0; width: 100%; height: 100%;
-  opacity: 0; transition: opacity 1s ease;
-}
-#placeCanvas.is-ready { opacity: 1; }
-
-/* Copy rides over the town, one line at a time */
-.place-copy {
-  position: relative; z-index: 2;
-  width: 100%; max-width: 1100px; padding: 0 24px 12vh;
-  text-align: center;
-}
-.place-line {
-  margin: 0 auto; max-width: 20ch;
-  font-size: clamp(1.6rem, 4.4vw, 3.2rem);
-  font-weight: 900; line-height: 1.05; letter-spacing: -0.02em;
-  color: var(--ink);
-  opacity: 0; transform: translateY(18px);
-  position: absolute; left: 0; right: 0; bottom: 12vh;
-}
-.place-line.on { opacity: 1; transform: translateY(0); }
-@media (prefers-reduced-motion: no-preference) {
-  .place-line { transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
-}
-/* No JS / reduced motion: unpin and just stack the lines as a short passage */
-@media (prefers-reduced-motion: reduce) {
-  .place { height: auto; }
-  .place-pin { position: static; height: auto; padding: 72px 0; }
-  .place-line { position: static; opacity: 1; transform: none; margin-bottom: 0.6rem; }
-}
-html:not(.js) .place { height: auto; }
-html:not(.js) .place-pin { position: static; height: auto; padding: 72px 0; }
-html:not(.js) .place-line { position: static; opacity: 1; transform: none; margin-bottom: 0.6rem; }
-
 /* Nav flips to light while the green ground is up */
 .top.on-dark {
   background: transparent; border-bottom-color: transparent;
