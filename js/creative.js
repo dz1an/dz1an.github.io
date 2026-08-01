@@ -239,8 +239,13 @@
       // lever for that: it scales the whole image before tone mapping, so the
       // campfire stays exactly as dominant relative to everything else. Raising
       // ambient instead is what once flattened this scene into mint daylight.
-      renderer.toneMappingExposure = 2.25;
-      renderer.shadowMap.enabled = false;
+      renderer.toneMappingExposure = 1.95;
+      // ONE directional shadow, desktop only. The no-shadows rule was about
+      // the ~15 PointLights (each would need a cube map); a single directional
+      // map is affordable and it is the only thing that stops flat-shaded
+      // low-poly geometry reading as clay. The fps governor turns it off.
+      renderer.shadowMap.enabled = !isMobile;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     }
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.15));
@@ -256,9 +261,22 @@
     // Phones skip the five project-lantern PointLights for performance, so they
     // lose light the desktop has and the wood goes muddy. Give the ambient back
     // just that much — this is compensation, not a brighter look.
-    scene.add(new THREE.AmbientLight(0x33573F, isMobile ? 1.6 : 1.3));
-    var moon = new THREE.DirectionalLight(0xAABBCC, 1.0);
+    scene.add(new THREE.AmbientLight(0x2A4E3A, isMobile ? 1.1 : 0.8));
+    var moon = new THREE.DirectionalLight(0xAABBCC, 1.0);   // driven per-frame below
     moon.position.set(-20, 30, 10);
+    if (!isMobile) {
+      moon.castShadow = true;
+      moon.shadow.mapSize.width = 1024;
+      moon.shadow.mapSize.height = 1024;
+      // Tight box, not the whole 120-unit map: resolution is what makes the
+      // shadow read as shape rather than mush. It follows the camera below.
+      moon.shadow.camera.left = -26; moon.shadow.camera.right = 26;
+      moon.shadow.camera.top = 26; moon.shadow.camera.bottom = -26;
+      moon.shadow.camera.near = 1; moon.shadow.camera.far = 90;
+      moon.shadow.bias = -0.0012;
+      moon.shadow.normalBias = 0.03;
+      scene.add(moon.target);
+    }
     scene.add(moon); scene._moon = moon;
 
     // (The three weak fill PointLights that used to sit here were removed —
@@ -330,8 +348,9 @@
 
     // Base terrain
     var terrain = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({
-      color: 0x243D28, roughness: 0.95, flatShading: true
+      color: 0x1E3423, roughness: 0.95, flatShading: true
     }));
+    terrain.receiveShadow = true;
     terrain.rotation.x = -Math.PI / 2;
     scene.add(terrain);
     scene._terrain = terrain;
@@ -345,8 +364,9 @@
     }
     coverGeo.computeVertexNormals();
     var cover = new THREE.Mesh(coverGeo, new THREE.MeshStandardMaterial({
-      color: 0x2B4632, roughness: 1.0, transparent: true, opacity: 0.6
+      color: 0x243C29, roughness: 1.0, transparent: true, opacity: 0.6
     }));
+    cover.receiveShadow = true;
     cover.rotation.x = -Math.PI / 2;
     scene.add(cover);
   }
@@ -544,6 +564,7 @@
     }
     im.instanceMatrix.needsUpdate = true;
     if (im.instanceColor) im.instanceColor.needsUpdate = true;
+    im.castShadow = true;
     im.frustumCulled = false; // one batch spans the whole map
     scene.add(im);
     return im;
@@ -587,6 +608,8 @@
     }
     im.instanceMatrix.needsUpdate = true;
     if (im.instanceColor) im.instanceColor.needsUpdate = true;
+    // The forest itself casts — this is the batch that matters for shape
+    im.castShadow = true;
     im.frustumCulled = false;
     scene.add(im);
     return im;
@@ -1480,7 +1503,15 @@
     //  there is nothing left to ramp.)
     // Moon rises through the walk — stays soft on purpose so the campfire and
     // lamps remain the brightest things in frame
-    if (scene._moon) scene._moon.intensity = (isMobile ? 0.78 : 0.66) + scrollProgress * 0.4;
+    if (scene._moon) {
+      scene._moon.intensity = (isMobile ? 1.25 : 1.15) + scrollProgress * 0.45;
+      if (scene._moon.castShadow) {
+        // keep the moon's DIRECTION fixed, just carry its shadow box along
+        scene._moon.position.set(camera.position.x - 20, 30, camera.position.z + 10);
+        scene._moon.target.position.set(camera.position.x, 0, camera.position.z - 6);
+        scene._moon.target.updateMatrixWorld();
+      }
+    }
 
     // Campfire — flickering light + rising embers
     // Campfire visible while near the campsite (scroll 0.15 to 0.50), then fades but never fully
