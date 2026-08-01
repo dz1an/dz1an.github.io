@@ -196,15 +196,29 @@
       var shiftX = b * 16 - c * 16;                 // settles right, returns to centre as it grows
       sTree.style.transform = "translateX(" + shiftX.toFixed(2) + "vw)";
 
-      // Real 3D dolly — stays sharp at any size. The turn is a gentle quarter
-      // rotation rather than the old ~full spin, so the approach reads as
-      // walking up to the tree instead of the tree twirling.
-      var radius = 118 - c * 60;                    // 118% -> 58%: this is a whole
-                                                    // diorama now, not a single tree —
-                                                    // diving to 30% puts the camera inside it
-      var theta = 15 + a * 18 + c * 52;             // ~85deg total, eased per act
-      var phi = 80 - c * 6;                         // looks slightly down on the scene
-      if (sMv) sMv.cameraOrbit = theta.toFixed(1) + "deg " + phi.toFixed(1) + "deg " + radius.toFixed(1) + "%";
+      // Real 3D dolly — stays sharp at any size, because the wrapper never scales.
+      //
+      // The subject is a forest diorama on an island, not a single tree, so the
+      // move is "circle it, then walk down into it" rather than a straight dive:
+      //
+      //   act 1  high and wide, looking DOWN at the whole island while the title
+      //          still owns the frame — it reads as a little world, seen at once
+      //   act 2  descend toward standing height as the copy lands beside it
+      //   act 3  close in until the pines break the top of the frame
+      //
+      // phi never passes 90: one degree below the horizon and you are looking up
+      // at the island's dirt underside. The p term is a slow continuous turn that
+      // runs the whole stage, so the ~53vh gap between act 2 and act 3 keeps
+      // moving instead of freezing mid-scroll.
+      var radius = 134 - a * 16 - b * 6 - c * 54;   // 134% -> 58%
+      var theta = 8 + p * 20 + a * 18 + b * 12 + c * 64;  // ~122deg — a third of a turn
+      var phi = 54 + a * 18 + b * 8 + c * 8;        // 54deg (above) -> 88deg (eye level)
+      if (sMv) {
+        sMv.cameraOrbit = theta.toFixed(1) + "deg " + phi.toFixed(1) + "deg " + radius.toFixed(1) + "%";
+        // Aim rises from the island's middle into the canopy on the final push,
+        // so closing in tilts the view up through the trees instead of at soil.
+        sMv.cameraTarget = "0m " + (1.75 + c * 0.85).toFixed(2) + "m 0m";
+      }
       // NOTE: do NOT fade the pine out at the end. The copy is already dimming
       // to 15% here, so fading the tree too leaves the last frame as two ghosts
       // on empty green. The pine owns this beat at full strength.

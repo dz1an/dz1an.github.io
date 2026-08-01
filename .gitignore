@@ -12,3 +12,6 @@ desktop.ini
 # Tooling artifacts (this is a no-build static site, but just in case)
 node_modules/
 *.log
+
+# Derivable from forest_scene.glb by prep-forest-scene-tex.js (~8MB of PNGs)
+tools/bake-props/forest-scene-tex/
