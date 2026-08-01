@@ -127,31 +127,68 @@ a { color: var(--sage); }
 .btn-ghostlight { background: none; color: #fff; border: 1px solid rgba(255,255,255,0.4); }
 .btn-ghostlight:hover { border-color: #fff; }
 
-/* ============ STAGE — pinned scroll scene (hero -> intro in one shot) ======
-   Scroll drives: cream floods to green, the title dissolves into the ground,
-   the pine grows + slides aside, the intro arrives. JS writes the values;
-   CSS only defines the resting state so it degrades gracefully. */
-.stage { position: relative; height: 380vh; }
-.stage-pin {
-  position: sticky; top: 0; height: 100vh; overflow: hidden;
+/* ============ HERO — one calm screen, no pin ================================
+   The page scrolls normally. A forest vista renders behind the title on the
+   shared #fxCanvas; the SVG mark holds the frame until (or instead of) WebGL.
+   The old 380vh pinned camera-flight stage lived here and was removed: the
+   scroll hijack read as out of place, and the 3D now continues down the page
+   as small anchored accents instead of one hero stunt. */
+.hero {
+  position: relative;
+  min-height: 84vh; min-height: 84svh;
   display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
 }
-
-/* The brand ground that floods in (same tile as .blockgreen so they fuse) */
-.stage-bg {
-  position: absolute; inset: 0; opacity: 0; pointer-events: none;
-  background-color: var(--green);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96'%3E%3Cg fill='none' stroke='%232C4237' stroke-width='2'%3E%3Cpath d='M14 34 L24 14 L34 34 Z'/%3E%3C/g%3E%3Ctext x='56' y='78' font-family='monospace' font-size='20' font-weight='700' fill='%232C4237'%3E//%3C/text%3E%3C/svg%3E");
-  will-change: opacity;
+.hero-vista { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.hero-mark {
+  position: absolute; inset: 0; margin: auto;
+  width: auto; height: min(56vh, 480px);
+  opacity: 0.92; transition: opacity 0.6s ease;
 }
+.hero-vista.has-3d .hero-mark { opacity: 0; }
 
-.stage-title {
-  position: relative; z-index: 2; text-align: center; padding: 0 16px;
+.hero-title {
+  text-align: center; padding: 0 16px;
   font-size: clamp(3.6rem, 15vw, 13.5rem);
   line-height: 0.95; letter-spacing: -0.03em;
   text-transform: uppercase; color: var(--ink);
-  will-change: opacity, transform;
 }
+.hero-foot {
+  position: absolute; left: 0; right: 0; bottom: 24px; z-index: 3;
+  text-align: center; padding: 0 24px;
+  font-family: var(--mono); font-size: 0.78rem; font-weight: 500;
+  letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-muted);
+}
+.hero-cue {
+  position: absolute; left: 50%; bottom: 64px; z-index: 3;
+  width: 1px; height: 34px; background: var(--ink-muted); opacity: 0.55;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hero-cue span {
+    position: absolute; left: -2px; top: 0;
+    width: 5px; height: 5px; border-radius: 50%; background: var(--sage);
+    animation: cueDrop 1.8s ease-in-out infinite;
+  }
+  @keyframes cueDrop {
+    0% { transform: translateY(0); opacity: 0; }
+    25% { opacity: 1; }
+    100% { transform: translateY(29px); opacity: 0; }
+  }
+}
+
+/* ---- Shared 3D canvas + accent anchors -------------------------------
+   One fixed transparent canvas for every accent (hero vista, trophy, camp,
+   pine divider). It sits ABOVE section backgrounds but BELOW section content,
+   so accents paint onto their block without ever covering text. Each anchor
+   below is just an empty box; the renderer scissors into its rect. With no
+   WebGL they are inert whitespace. */
+#fxCanvas { position: fixed; inset: 0; z-index: 2; pointer-events: none; }
+.blockgreen > .wrap, .blocklight > .wrap, .hero > .wrap { position: relative; z-index: 3; }
+.fx { pointer-events: none; }
+.fx-trophy { width: clamp(84px, 9vw, 130px); height: 130px; align-self: flex-end; }
+.fx-camp { height: clamp(150px, 22vw, 230px); margin-top: 40px; }
+.fx-pines { height: 150px; }
+
 .h-solid { font-weight: 900; }
 .h-italic { font-style: italic; font-weight: 300; color: var(--sage); text-transform: lowercase; }
 .h-outline {
@@ -160,19 +197,6 @@ a { color: var(--sage); }
 }
 @supports not (-webkit-text-stroke: 1px black) {
   .h-outline { color: var(--sage-light); }
-}
-
-/* The pine — a large canvas so the camera can dolly right into it without
-   clipping at the element edge (the model's on-screen size is driven by
-   camera-orbit radius, not by CSS scale, so it stays sharp when it fills). */
-/* Full-bleed: the scene is the whole pinned viewport, so there is no canvas
-   edge or ground rim in frame — you are standing in it, not looking at a
-   panel of it. */
-.stage-tree {
-  position: absolute; z-index: 1;
-  inset: 0; transform: none;
-  width: 100%; height: 100%;
-  pointer-events: none;
 }
 
 /* ---- Film grain -----------------------------------------------------
@@ -210,44 +234,13 @@ a { color: var(--sage); }
    and eased back out on leave. */
 .btn.is-magnetic { transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, color 0.2s ease; }
 
-/* The WebGL stand of pines. Never CSS-scaled — the dolly is a real camera
-   move, so the geometry stays sharp at any size. */
-#stageCanvas {
-  display: block; width: 100%; height: 100%;
-  opacity: 0; transition: opacity 0.9s ease;
-}
-#stageCanvas.is-ready { opacity: 1; }
+/* The green block now opens with the pitch, so its copy needs breathing room */
+.blockproof .bg-head { margin-bottom: 1.2rem; }
+.blockproof .bg-body { max-width: 620px; margin-bottom: 1.2rem; }
+.blockproof .bg-tags { margin-bottom: 1.6rem; }
+.blockproof .bg-cta { margin-bottom: 64px; }
 
-/* Fallback mark — visible until WebGL takes over, and the permanent state if
-   it never does (no WebGL, reduced data, script blocked). */
-.stage-mark {
-  position: absolute; inset: 0; margin: auto;
-  width: auto; height: min(62vh, 520px);
-  opacity: 0.92; transition: opacity 0.6s ease;
-}
-.stage-tree.has-3d .stage-mark { opacity: 0; }
-
-/* Intro copy — arrives as the ground turns green */
-.stage-intro {
-  position: absolute; inset: 0; z-index: 3;
-  display: flex; align-items: center;
-  opacity: 0; pointer-events: none;
-  will-change: opacity, transform;
-}
-.stage-intro .bg-head { margin-bottom: 1.2rem; }
-.stage-intro .bg-body { max-width: 520px; margin-bottom: 1.2rem; }
-.stage-intro .bg-tags { margin-bottom: 1.4rem; }
-
-.stage-foot {
-  position: absolute; left: 0; right: 0; bottom: 26px; z-index: 3;
-  text-align: center; padding: 0 24px;
-  font-family: var(--mono); font-size: 0.78rem; font-weight: 500;
-  letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-muted);
-  transition: color 0.4s ease;
-}
-.stage.is-dark .stage-foot { color: rgba(255, 255, 255, 0.5); }
-
-/* Nav flips to light while the green ground is up */
+/* Nav flips to light while a green block is behind the bar */
 .top.on-dark {
   background: transparent; border-bottom-color: transparent;
   backdrop-filter: none; -webkit-backdrop-filter: none;
@@ -258,32 +251,12 @@ a { color: var(--sage); }
 .top.on-dark .topnav a:hover,
 .top.on-dark .topnav a.active { color: var(--gold); }
 
-/* No JS / reduced motion: unpin and show everything stacked */
-@media (prefers-reduced-motion: reduce) {
-  .stage { height: auto; }
-  .stage-pin { position: static; height: auto; flex-direction: column; padding: 60px 0; }
-  .stage-bg { display: none; }
-  .stage-intro { position: static; opacity: 1; pointer-events: auto; padding-top: 48px; }
-  .stage-intro .bg-head, .stage-intro .bg-body { color: var(--ink); }
-  .stage-intro .bg-tags { color: var(--sage); }
-  .stage-intro .bg-solid { color: var(--sage); }
-  .stage-intro .bg-italic { color: var(--green); }
-  .stage-foot { position: static; margin-top: 32px; }
-}
-html:not(.js) .stage { height: auto; }
-html:not(.js) .stage-pin { position: static; height: auto; flex-direction: column; padding: 60px 0; }
-html:not(.js) .stage-bg { display: none; }
-html:not(.js) .stage-intro { position: static; opacity: 1; pointer-events: auto; padding-top: 40px; }
-html:not(.js) .stage-foot { position: static; margin-top: 28px; }
-/* Without the green ground these would be gold/white on cream — unreadable. */
-html:not(.js) .stage-intro .bg-head,
-html:not(.js) .stage-intro .bg-body { color: var(--ink); }
-html:not(.js) .stage-intro .bg-solid { color: var(--sage); }
-html:not(.js) .stage-intro .bg-italic { color: var(--green); }
-html:not(.js) .stage-intro .bg-tags { color: var(--sage); }
+/* (The stage's reduced-motion / no-JS unpinning rules lived here. The hero is
+   a plain non-pinned section now, so it needs no special-casing: it reads the
+   same with JS off, with WebGL off, and with reduced motion on.) */
 
-/* Proof strip continues the green out of the stage */
-.blockproof { padding-top: 72px; }
+/* The green block opens the pitch straight after the hero */
+.blockproof { padding-top: 96px; }
 
 /* ============ GREEN COLOR BLOCKS ============ */
 .blockgreen {
@@ -553,14 +526,17 @@ a.bf-value:hover { color: var(--sage); }
 
 /* Small screens */
 @media (max-width: 720px) {
-  /* Shorter pin so the scene doesn't overstay on a phone */
-  .stage { height: 300vh; }
-  /* stays full-bleed on phones too — see the desktop rule */
-  .stage-mark { height: min(46vh, 340px); }
-  .stage-foot { letter-spacing: 0.1em; bottom: 18px; }
-  .stage-intro { align-items: center; }
-  .stage-intro .bg-body { font-size: 0.98rem; }
-  .stage-intro .bg-tags { font-size: 0.72rem; line-height: 1.9; }
+  .hero { min-height: 78vh; min-height: 78svh; }
+  .hero-mark { height: min(42vh, 320px); }
+  .hero-foot { letter-spacing: 0.1em; bottom: 16px; }
+  .hero-cue { bottom: 52px; }
+  /* The divider is pure ornament — first thing to go on a phone */
+  .fx-pines { display: none; }
+  .fx-camp { height: 140px; margin-top: 24px; }
+  .fx-trophy { height: 96px; }
+  .blockproof .bg-body { font-size: 0.98rem; }
+  .blockproof .bg-tags { font-size: 0.72rem; line-height: 1.9; }
+  .blockproof .bg-cta { margin-bottom: 44px; }
   .top .top-row { padding-left: 18px; padding-right: 18px; }
   .blockgreen { padding: 64px 0; }
   .blocklight { padding: 60px 0; }

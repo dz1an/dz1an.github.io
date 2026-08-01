@@ -21,8 +21,9 @@
   <link rel="stylesheet" href="css/home.css">
 
   <!-- 3D hero tree (lazy; SVG poster shows until loaded) -->
-  <!-- The stage scene lazy-loads three.js itself (js/home.js) so it never
-       blocks first paint; model-viewer is gone. -->
+  <!-- The 3D accents (hero vista, trophy, camp, pine divider) all render on one
+       shared canvas created by js/home.js, which lazy-loads three.js and the
+       baked models after first paint. Nothing here blocks the page. -->
 
   <!-- OpenGraph / Twitter -->
   <meta property="og:title" content="John Kent Evangelista — Custom Business Systems">
@@ -90,60 +91,59 @@
 
   <main id="main">
 
-    <!-- STAGE — pinned scroll scene: cream floods to green, the title dissolves,
-         the pine grows and slides aside, the intro arrives. One continuous shot. -->
-    <section class="stage" id="stage">
-      <div class="stage-pin">
-        <div class="stage-bg" aria-hidden="true"></div>
+    <!-- HERO — one calm screen: a forest vista at eye level behind the title.
+         The page scrolls normally; there is no pinned scene and no camera
+         flight. The 3D continues in small anchored accents further down. -->
+    <section class="hero" id="hero">
+      <!-- 3D anchor: the shared #fxCanvas paints the vista into this rect.
+           The SVG mark is what shows until (or instead of) WebGL. -->
+      <div class="hero-vista fx" data-fx="vista" id="heroVista" aria-hidden="true">
+        <img class="hero-mark" src="images/mark-pine.svg" alt="" decoding="async">
+      </div>
 
-        <!-- The brand stand of pines. A real Three.js scene the scroll flies
-             into; the SVG mark below is what shows if WebGL never arrives. -->
-        <div class="stage-tree" id="stageTree" aria-hidden="true">
-          <canvas id="stageCanvas"></canvas>
-          <img class="stage-mark" src="images/mark-pine.svg" alt="" decoding="async">
-        </div>
-
-        <h1 class="stage-title" id="stageTitle">
+      <div class="wrap hero-inner">
+        <h1 class="hero-title">
           <span class="h-solid">Build</span>
           <span class="h-italic">your</span><br>
           <span class="h-outline">system.</span>
         </h1>
-
-        <div class="stage-intro" id="stageIntro">
-          <div class="wrap">
-            <h2 class="bg-head"><span class="bg-solid">Systems people</span><br><span class="bg-italic">actually use.</span></h2>
-            <p class="bg-body">I'm John Kent Evangelista, a software developer. I build the systems behind real operations — records, sales, training, resident services — turning the slow, manual parts of the work into software that runs them. You don't need to know tech; just tell me what's slowing you down.</p>
-            <p class="bg-tags">
-              <span>Business systems</span> //
-              <span>Barangay &amp; LGU</span> //
-              <span>Learning platforms</span> //
-              <span>Websites &amp; portals</span> //
-              <span>Automation &amp; AI</span>
-            </p>
-            <div class="bg-cta">
-              <a class="btn btn-gold" href="#contact">Start a conversation</a>
-            </div>
-          </div>
-        </div>
-
-        <p class="stage-foot" id="stageFoot">Zamboanga City &nbsp;//&nbsp; works anywhere in the Philippines</p>
       </div>
+
+      <p class="hero-foot">Zamboanga City &nbsp;//&nbsp; works anywhere in the Philippines</p>
+      <div class="hero-cue" aria-hidden="true"><span></span></div>
     </section>
 
-    <!-- Green continues seamlessly out of the stage — proof + the person -->
+    <!-- The green block opens the pitch, then backs it with proof + the person -->
     <section class="blockgreen blockproof">
-      <div class="wrap bg-grid">
-        <div>
-          <div class="bg-stats">
-            <div><strong>10+</strong><span>projects built &amp; shipped</span></div>
-            <div><strong>636+</strong><span>businesses indexed on ZamGo</span></div>
-            <div><strong>1st</strong><span>2025 Productivity Olympics, with the VINTAZK team</span></div>
-          </div>
+      <div class="wrap">
+        <h2 class="bg-head reveal"><span class="bg-solid">Systems people</span><br><span class="bg-italic">actually use.</span></h2>
+        <p class="bg-body reveal">I'm John Kent Evangelista, a software developer. I build the systems behind real operations — records, sales, training, resident services — turning the slow, manual parts of the work into software that runs them. You don't need to know tech; just tell me what's slowing you down.</p>
+        <p class="bg-tags reveal">
+          <span>Business systems</span> //
+          <span>Barangay &amp; LGU</span> //
+          <span>Learning platforms</span> //
+          <span>Websites &amp; portals</span> //
+          <span>Automation &amp; AI</span>
+        </p>
+        <div class="bg-cta reveal">
+          <a class="btn btn-gold" href="#contact">Start a conversation</a>
         </div>
-        <figure class="bg-photo-wrap">
-          <img class="bg-photo" src="images/profile.png" alt="John Kent Evangelista" width="741" height="685" loading="lazy">
-          <figcaption class="bg-photo-cap">// kent — the person you'll actually talk to</figcaption>
-        </figure>
+
+        <div class="bg-grid">
+          <div>
+            <div class="bg-stats">
+              <div><strong>10+</strong><span>projects built &amp; shipped</span></div>
+              <div><strong>636+</strong><span>businesses indexed on ZamGo</span></div>
+              <div><strong>1st</strong><span>2025 Productivity Olympics, with the VINTAZK team</span></div>
+              <!-- the actual trophy, turning slowly beside the award stat -->
+              <div class="fx fx-trophy" data-fx="trophy" aria-hidden="true"></div>
+            </div>
+          </div>
+          <figure class="bg-photo-wrap">
+            <img class="bg-photo" src="images/profile.png" alt="John Kent Evangelista" width="741" height="685" loading="lazy">
+            <figcaption class="bg-photo-cap">// kent — the person you'll actually talk to</figcaption>
+          </figure>
+        </div>
       </div>
     </section>
 
@@ -208,6 +208,10 @@
         </div>
       </div>
     </section>
+
+    <!-- A stand of pines between the work and the background — a breath, and
+         the only ornament between two dense sections. Desktop only. -->
+    <div class="fx fx-pines" data-fx="pines" aria-hidden="true"></div>
 
     <!-- EXPERIENCE & EDUCATION — plain language, no git cosplay -->
     <section class="blocklight blockfaq" id="background">
@@ -306,6 +310,10 @@
           <a href="https://www.instagram.com/dziannn/" target="_blank" rel="noopener noreferrer">Instagram</a> ·
           <a href="https://github.com/kent-vintazk" target="_blank" rel="noopener noreferrer">GitHub</a>
         </p>
+
+        <!-- Camp at the end of the trail: tent, fire, a log to sit on. The
+             invitation to talk, made literal. -->
+        <div class="fx fx-camp" data-fx="camp" aria-hidden="true"></div>
       </div>
     </section>
 

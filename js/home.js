@@ -152,47 +152,47 @@
   }
 
   // ============================================================
-  // STAGE SCENE — a real stand of pines the scroll flies into.
+  // fx3d — the page's 3D accents, all on ONE shared canvas.
   //
-  // Replaces the old <model-viewer> pine. The whole hero is one continuous
-  // camera move: the stand sits centred under the title, slides aside as the
-  // intro copy arrives, then the camera dollies through the outer trees and
-  // into the hero pine. Everything is a real camera move, never a CSS scale,
-  // so it stays sharp at any size.
+  // Instead of one big hero stunt, small scenes are anchored to placeholder
+  // elements scattered down the page: the hero vista, the trophy beside the
+  // award stat, a stand of pines between sections, the camp at contact.
   //
-  // Geometry is the same baked Kenney set the playground uses (models/forest.js
-  // — sage vertex colours, no textures). Three.js and that data load lazily
-  // AFTER first paint so the landing page is never blocked by them.
+  // Architecture: one fixed transparent full-viewport canvas, one
+  // WebGLRenderer, one scene per accent, drawn with setViewport/setScissor
+  // into each placeholder's rect (three.js "multiple elements" pattern). One
+  // GL context, one DPR policy, geometry uploaded once and shared.
+  //
+  // The canvas sits ABOVE section backgrounds but BELOW section content, so an
+  // accent paints onto its block and never covers text.
+  //
+  // Accents are declared in HTML (`data-fx="vista"`), so services.html — which
+  // loads this same file but has no placeholders — never fetches three.js at
+  // all. Geometry is the baked Kenney set (models/forest.js + models/props.js,
+  // sage vertex colours, no textures), lazy-loaded after first paint.
   // ============================================================
-  var stage3d = (function () {
+  var fx3d = (function () {
     var THREE_URL = "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js";
-    var renderer, scene, camera, island, heroPine, fog, groundMat, raf = null;
-    // The page floods from cream to brand green behind the canvas; the fog and
-    // floor follow it so the wood is part of the page, not pasted on top.
-    var CREAM = { r: 0.949, g: 0.949, b: 0.918 };
-    var GREEN = { r: 0.184, g: 0.286, b: 0.231 };
-    var ready = false, progress = 0, mx = 0, my = 0, cmx = 0, cmy = 0, t0 = 0;
-    var canvas = document.getElementById("stageCanvas");
-    var wrap = document.getElementById("stageTree");
+    var renderer = null, canvas = null, accents = [], ready = false, raf = null, t0 = 0;
+    var mx = 0, my = 0;                       // raw pointer, vista parallax only
     var isSmall = window.innerWidth < 720;
+    var GEOMS = {};                           // decode each model once
+    var propMat = null;
 
     function loadScript(src, done) {
       var s = document.createElement("script");
       // NOTE: onload must NOT be wired straight to done — the browser passes a
       // load Event as the first argument, and done() treats a truthy first
       // argument as an error. That silently failed every boot and left the
-      // static fallback mark on screen with no scene and no scroll transition.
+      // static fallback mark on screen with no scene at all.
       s.onload = function () { done(); };
       s.onerror = function () { done(new Error("load failed: " + src)); };
       s.src = src;
       document.body.appendChild(s);
     }
 
-    // (The radial ground-fade texture that used to live here is gone: the
-    //  floor now dissolves with scene fog instead of an alpha disc, which is
-    //  what removed the visible "island on a page" edge.)
-
-    function geom(def) {
+    function geom(def, key) {
+      if (key && GEOMS[key]) return GEOMS[key];
       function bytes(s) {
         var bin = atob(s), u = new Uint8Array(bin.length);
         for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
@@ -205,16 +205,21 @@
       for (var i2 = 0; i2 < cu.length; i2++) cf[i2] = cu[i2] / 255;
       g.setAttribute("color", new THREE.BufferAttribute(cf, 3));
       g.setIndex(new THREE.BufferAttribute(new Uint16Array(bytes(def.i)), 1));
+      if (key) GEOMS[key] = g;
       return g;
     }
 
-    // One InstancedMesh per model. t lifts the baked (night-tuned) colours into
-    // daylight — this page is cream and sage, not a dark wood.
-    var propMat = null;
-    function instance(def, list) {
-      if (!def || !list.length) return null;
+    function mat() {
       if (!propMat) propMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85 });
-      var im = new THREE.InstancedMesh(geom(def), propMat, list.length);
+      return propMat;
+    }
+    function mesh(def, key) { return new THREE.Mesh(geom(def, key), mat()); }
+
+    // One InstancedMesh per model: {x,y,z, ry, s, t}. t is a brightness tint —
+    // the models are baked for the playground's night, so daylight needs a lift.
+    function instance(def, list, parent, key) {
+      if (!def || !list.length) return null;
+      var im = new THREE.InstancedMesh(geom(def, key), mat(), list.length);
       var d = new THREE.Object3D(), col = new THREE.Color();
       for (var k = 0; k < list.length; k++) {
         var it = list[k];
@@ -229,269 +234,388 @@
       im.instanceMatrix.needsUpdate = true;
       if (im.instanceColor) im.instanceColor.needsUpdate = true;
       im.frustumCulled = false;
-      island.add(im);
+      parent.add(im);
       return im;
     }
 
-    function build() {
-      var F = window.DZ_FOREST;
-      if (!F || !canvas) return false;
-
-      scene = new THREE.Scene();
-      camera = new THREE.PerspectiveCamera(38, 1, 0.1, 200);
-      renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: !isSmall });
-      renderer.setClearColor(0x000000, 0);
-      renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 0.95;
-
-      // Deliberately restrained light. Cranked up, the baked (night-tuned)
-      // foliage blows out to a flat mint green and the whole thing reads as a
-      // generic asset-pack field — this keeps it in the brand's sage range.
+    // Deliberately restrained daylight. Cranked up, the baked foliage blows out
+    // to a flat mint and the whole thing reads as a stock asset field.
+    function daylight(scene) {
       scene.add(new THREE.AmbientLight(0xDDE4D2, 1.0));
       scene.add(new THREE.HemisphereLight(0xF4F6EC, 0x5A6B4E, 0.75));
       var key = new THREE.DirectionalLight(0xFFF6E2, 1.45);
       key.position.set(-9, 13, 7);
       scene.add(key);
+    }
 
-      // Depth fog is what makes this a wood rather than a field of models:
-      // distance dissolves into the page itself. Its colour is re-tinted every
-      // frame to match whatever the page is doing (cream -> brand green).
-      fog = new THREE.Fog(0xF2F2EA, 12, 46);
-      scene.fog = fog;
+    function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
 
-      island = new THREE.Group();
-      scene.add(island);
+    var seed = 7;
+    function rnd() { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; }
 
-      // The forest floor. Same colour family as the fog so it never reads as a
-      // separate slab — it just gives the trunks something to stand on.
-      groundMat = new THREE.MeshStandardMaterial({ color: 0x8C9C7A, roughness: 1 });
-      var ground = new THREE.Mesh(new THREE.PlaneGeometry(300, 300), groundMat);
+    function pineOf(F) { return F.pineRound || F.treeHigh; }
+    function pineH(F) { return F.pineRound ? 1.25 : 2.28; }
+
+    // ---- HERO VISTA — a wood receding into the page ----------------------
+    function buildVista(el) {
+      var F = window.DZ_FOREST;
+      var scene = new THREE.Scene();
+      var camera = new THREE.PerspectiveCamera(38, 1, 0.1, 200);
+      daylight(scene);
+      // Fog is what makes this a wood rather than a field of models: distance
+      // dissolves into the page's own cream.
+      scene.fog = new THREE.Fog(0xF2F2EA, 12, 46);
+
+      var ground = new THREE.Mesh(
+        new THREE.PlaneGeometry(300, 300),
+        new THREE.MeshStandardMaterial({ color: 0x8C9C7A, roughness: 1 })
+      );
       ground.rotation.x = -Math.PI / 2;
       ground.position.y = -0.01;
-      island.add(ground);
+      scene.add(ground);
 
-      // Hero pine — the brand tree, dead centre, the thing we fly into.
-      // This is the Nature Kit rounded pine (models/pine.glb, baked into
-      // forest.js as pineRound): the same tree as the //dzian mark.
-      var PINE = F.pineRound || F.treeHigh;
-      var PINE_H = F.pineRound ? 1.25 : 2.28;   // model height, for scaling
-      heroPine = new THREE.Mesh(geom(PINE), new THREE.MeshStandardMaterial({
-        vertexColors: true, roughness: 0.85
-      }));
-      heroPine.scale.setScalar(6.2 / PINE_H);
-      island.add(heroPine);
+      var PINE = pineOf(F), PH = pineH(F);
+      var hero = mesh(PINE, "pine");
+      hero.scale.setScalar(6.2 / PH);
+      scene.add(hero);
 
-      // Composed, not scattered. Even rings of identical trees are exactly
-      // what made this read as a stock asset field, so these are hand-placed:
-      // a few close ones framing the edges, the rest falling away behind the
-      // hero into the fog. x, z, height.
+      // Hand-placed, not ringed — even rings of identical trees are exactly
+      // what made an earlier pass read as a stock asset field.
       var STAND = [
-        [-6.4,   1.8, 4.6], [ 7.1,   3.2, 5.1], [-9.8,  -3.4, 4.2],
-        [ 10.4, -5.6, 4.8], [-4.2,  -8.2, 3.8], [ 4.6,  -9.8, 3.5],
-        [-14.5, -9.0, 4.0], [ 15.2, -12.0, 3.9], [-2.6, -16.0, 3.2],
-        [ 8.8, -18.5, 3.0], [-11.0, -20.0, 3.1], [ 18.0, -23.0, 3.3],
-        [-19.5, -26.0, 3.0], [ 5.0, -28.0, 2.8], [-6.0, -33.0, 2.7],
-        [ 13.0, -35.0, 2.9], [-24.0, -38.0, 2.8], [ 2.0, -42.0, 2.6]
+        [-6.4, 1.8, 4.6], [7.1, 3.2, 5.1], [-9.8, -3.4, 4.2],
+        [10.4, -5.6, 4.8], [-4.2, -8.2, 3.8], [4.6, -9.8, 3.5],
+        [-14.5, -9.0, 4.0], [15.2, -12.0, 3.9], [-2.6, -16.0, 3.2],
+        [8.8, -18.5, 3.0], [-11.0, -20.0, 3.1], [18.0, -23.0, 3.3],
+        [-19.5, -26.0, 3.0], [5.0, -28.0, 2.8], [-6.0, -33.0, 2.7],
+        [13.0, -35.0, 2.9], [-24.0, -38.0, 2.8], [2.0, -42.0, 2.6]
       ];
-      var seed = 7;
-      function rnd() { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; }
-
       var pines = [];
       for (var i = 0; i < STAND.length; i++) {
-        var p3 = STAND[i];
-        if (isSmall && i % 3 === 2) continue;          // thin out on phones
-        var depth = Math.min(1, Math.abs(p3[1]) / 42);  // farther = paler
+        var s3 = STAND[i];
+        if (isSmall && i % 3 === 2) continue;
+        var depth = Math.min(1, Math.abs(s3[1]) / 42);
         pines.push({
-          x: p3[0], z: p3[1], ry: rnd() * 6.283,
-          s: (p3[2] + rnd() * 0.4) / PINE_H,
+          x: s3[0], z: s3[1], ry: rnd() * 6.283,
+          s: (s3[2] + rnd() * 0.4) / PH,
           t: 0.92 - depth * 0.18 + rnd() * 0.1
         });
       }
-      instance(PINE, pines);
-
-      // A handful of rocks at the hero's feet for scale. No grass patches —
-      // dark tufts dotted over a pale floor were the "swamp" read.
+      instance(PINE, pines, scene, "pine");
+      // No grass tufts: dark blobs dotted over a pale floor read as a swamp.
       instance(F.stones, [
         { x: -2.9, z: 1.6, ry: 0.6, s: 0.85, t: 1.05 },
         { x: 3.4, z: -1.2, ry: 2.4, s: 0.62, t: 1.0 },
         { x: -5.6, z: -4.4, ry: 4.1, s: 0.7, t: 0.95 }
-      ]);
+      ], scene, "stones");
+      instance(F.plant, [
+        { x: -4.4, z: 2.6, ry: 1.1, s: 1.6, t: 0.95 },
+        { x: 5.2, z: 1.2, ry: 3.3, s: 1.4, t: 0.9 }
+      ], scene, "plant");
 
-      onResize();
-      ready = true;
-      wrap.classList.add("has-3d");
-      canvas.classList.add("is-ready");
-      return true;
+      var cmx = 0, cmy = 0;
+      return {
+        el: el, scene: scene, camera: camera, lw: 0, lh: 0,
+        update: function (t, r) {
+          // Eased pointer parallax lives here so it stops when the loop sleeps
+          cmx += (mx - cmx) * 0.05;
+          cmy += (my - cmy) * 0.05;
+          var p = clamp01(-r.top / (r.height || 1));   // 0 at rest, 1 as it exits
+          var dist = 17 + p * 2;
+          var orbit = -0.42 + t * 0.008;
+          camera.position.set(
+            Math.sin(orbit) * dist + cmx * 0.9,
+            3.0 + p * 0.6 + cmy * 0.4,
+            Math.cos(orbit) * dist
+          );
+          camera.lookAt(0, 3.2, 0);
+        }
+      };
     }
 
-    function onResize() {
-      if (!renderer || !wrap) return;
-      var w = wrap.clientWidth || window.innerWidth;
-      var h = wrap.clientHeight || window.innerHeight;
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, isSmall ? 1.5 : 1.8));
-      renderer.setSize(w, h, false);
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
+    // ---- TROPHY — the award, turning beside the stat ---------------------
+    function buildTrophy(el) {
+      var F = window.DZ_FOREST;
+      var scene = new THREE.Scene();
+      var camera = new THREE.PerspectiveCamera(30, 1, 0.1, 40);
+      camera.position.set(0, 0.9, 2.6);
+      camera.lookAt(0, 0.55, 0);
+      scene.add(new THREE.AmbientLight(0xDDE4D2, 0.9));
+      var key = new THREE.DirectionalLight(0xFFF6E2, 1.3);
+      key.position.set(2, 3, 2);
+      scene.add(key);
+
+      var cup = mesh(F.trophy, "trophy");
+      cup.scale.setScalar(1.1 / 0.48);        // model is 0.48 tall
+      scene.add(cup);
+
+      return {
+        el: el, scene: scene, camera: camera, lw: 0, lh: 0,
+        update: function (t) {
+          cup.rotation.y = 0.6 + t * 0.35;
+          cup.position.y = Math.sin(t * 0.9) * 0.02;
+        }
+      };
     }
 
-    function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
-    function seg(p, a, b) { return clamp01((p - a) / (b - a)); }
-    function ease(x) { return x * x * (3 - 2 * x); }
+    // ---- CAMP — tent, fire, a log to sit on. The invitation, made literal --
+    function buildCamp(el) {
+      var F = window.DZ_FOREST, P = window.DZ_PROPS;
+      var scene = new THREE.Scene();
+      var camera = new THREE.PerspectiveCamera(32, 1, 0.1, 60);
+      camera.lookAt(0, 0.7, 0);
+      daylight(scene);
+      // Extra lift: the camp props are baked for the playground's night, and
+      // against the green block they otherwise sink into it.
+      scene.add(new THREE.AmbientLight(0xE6EFE2, 0.55));
+      // Green fog so the camp melts into the contact block behind it
+      scene.fog = new THREE.Fog(0x344E41, 6, 18);
 
-    // The camera move IS the hero. Three beats, matching the copy:
-    //   1. the stand sits centred under the title
-    //   2. it swings aside as the intro arrives
-    //   3. the camera drives through the outer trees into the hero pine
+      var ground = new THREE.Mesh(
+        new THREE.PlaneGeometry(40, 40),
+        new THREE.MeshStandardMaterial({ color: 0x3E5A4B, roughness: 1 })
+      );
+      ground.rotation.x = -Math.PI / 2;
+      ground.position.y = -0.01;
+      scene.add(ground);
+
+      // This anchor is a WIDE band (roughly 6:1), so the camp is spread across
+      // it rather than clustered in the middle — props bunched at centre read
+      // as a few models floating in dead space.
+      if (P) {
+        var tent = mesh(P.tent, "tent");
+        tent.position.set(-3.5, 0, -0.3);
+        tent.rotation.y = 0.6;                 // mouth toward the fire
+        scene.add(tent);
+        var fire = mesh(P.fire, "fire");
+        fire.position.set(-0.1, 0, 0.35);
+        scene.add(fire);
+        var log1 = mesh(P.log, "log");
+        log1.position.set(1.2, 0, 0.5);
+        log1.rotation.y = -0.9;
+        scene.add(log1);
+        var log2 = mesh(P.log, "log");
+        log2.position.set(-1.6, 0, 1.0);
+        log2.rotation.y = 0.4;
+        log2.scale.setScalar(0.85);
+        scene.add(log2);
+      }
+      if (F) {
+        // A couple of pines make it a clearing instead of props on a plane,
+        // and balance the tent's weight on the left.
+        instance(pineOf(F), [
+          { x: 4.6, z: -1.8, ry: 0.7, s: 2.6 / pineH(F), t: 0.9 },
+          { x: 6.4, z: -3.4, ry: 2.9, s: 2.0 / pineH(F), t: 0.8 },
+          { x: -6.2, z: -2.6, ry: 4.4, s: 2.2 / pineH(F), t: 0.85 }
+        ], scene, "pine");
+        instance(F.stones, [
+          { x: -1.0, z: 1.4, ry: 1.2, s: 0.5, t: 0.9 },
+          { x: 2.7, z: 0.1, ry: 3.4, s: 0.42, t: 0.85 },
+          { x: -4.9, z: 1.2, ry: 0.4, s: 0.36, t: 0.8 }
+        ], scene, "stones");
+      }
+
+      // Warm glow over the fire — no embers, this is a daylight page
+      var glow = new THREE.PointLight(0xFFB871, 0.9, 6);
+      glow.position.set(-0.1, 0.7, 0.35);
+      scene.add(glow);
+
+      return {
+        el: el, scene: scene, camera: camera, lw: 0, lh: 0,
+        update: function (t, r, vh) {
+          glow.intensity = 0.9 * (1 + 0.12 * Math.sin(t * 6.5) + 0.06 * Math.sin(t * 13));
+          var seen = clamp01((vh - r.top) / (vh + (r.height || 1)));
+          camera.position.set(0, 1.45 + seen * 0.25, 5.0);
+          camera.lookAt(0, 0.75, 0);
+        }
+      };
+    }
+
+    // ---- PINE DIVIDER — a breath between two dense sections --------------
+    function buildPines(el) {
+      var F = window.DZ_FOREST;
+      var scene = new THREE.Scene();
+      var camera = new THREE.PerspectiveCamera(26, 1, 0.1, 60);
+      camera.lookAt(0, 2.0, 0);
+      daylight(scene);
+      scene.fog = new THREE.Fog(0xF2F2EA, 8, 22);
+
+      var ground = new THREE.Mesh(
+        new THREE.PlaneGeometry(120, 120),
+        new THREE.MeshStandardMaterial({ color: 0x8C9C7A, roughness: 1 })
+      );
+      ground.rotation.x = -Math.PI / 2;
+      ground.position.y = -0.01;
+      scene.add(ground);
+
+      // A treeline across the full width of the band — this anchor is ~7:1, so
+      // a handful of trees near the centre would just float in dead space.
+      var PINE = pineOf(F), PH = pineH(F);
+      var LINE = [
+        [-13.0, -3.0, 3.0], [-10.2, -0.5, 3.6], [-7.4, -4.5, 2.7],
+        [-4.6, -1.2, 3.3], [-1.6, -5.0, 2.5], [1.4, -1.8, 3.5],
+        [4.2, -4.2, 2.8], [7.0, -0.8, 3.4], [10.0, -3.6, 2.9], [12.8, -1.0, 3.2]
+      ];
+      var line = [];
+      for (var i = 0; i < LINE.length; i++) {
+        var d3 = LINE[i];
+        line.push({
+          x: d3[0], z: d3[1], ry: rnd() * 6.283,
+          s: d3[2] / PH, t: 0.98 - Math.min(1, Math.abs(d3[1]) / 6) * 0.16
+        });
+      }
+      instance(PINE, line, scene, "pine");
+      instance(F.stones, [
+        { x: -8.6, z: 1.0, ry: 0.9, s: 0.55, t: 1.0 },
+        { x: 2.8, z: 1.2, ry: 2.7, s: 0.48, t: 0.95 },
+        { x: 9.0, z: 0.6, ry: 4.6, s: 0.5, t: 0.92 }
+      ], scene, "stones");
+
+      return {
+        el: el, scene: scene, camera: camera, lw: 0, lh: 0,
+        update: function (t, r, vh) {
+          var seen = clamp01((vh - r.top) / (vh + (r.height || 1)));
+          camera.position.set((seen - 0.5) * 0.8, 2.2, 9);
+          camera.lookAt(0, 2.0, 0);
+        }
+      };
+    }
+
+    var BUILD = { vista: buildVista, trophy: buildTrophy, camp: buildCamp, pines: buildPines };
+
     function frame(time) {
       raf = null;
       if (!ready) return;
       if (!t0) t0 = time;
-      var t = (time - t0) / 1000;
-      var p = progress;
+      var t = reduceMotion ? 0 : (time - t0) / 1000;
+      var vh = window.innerHeight, any = false;
 
-      var a = ease(seg(p, 0.0, 0.34));    // settle in
-      var b = ease(seg(p, 0.28, 0.56));   // swing aside
-      var c = ease(seg(p, 0.62, 1.0));    // fly in
+      renderer.setScissorTest(false);
+      renderer.clear();
+      renderer.setScissorTest(true);
 
-      // Fog + floor track the page flood, so the horizon always dissolves into
-      // whatever colour the page is behind the canvas.
-      var flood = ease(seg(p, 0.02, 0.30));
-      var fr = CREAM.r + (GREEN.r - CREAM.r) * flood;
-      var fg = CREAM.g + (GREEN.g - CREAM.g) * flood;
-      var fb = CREAM.b + (GREEN.b - CREAM.b) * flood;
-      fog.color.setRGB(fr, fg, fb);
-      groundMat.color.setRGB(fr * 0.72, fg * 0.78, fb * 0.66);
-      // Pull the fog in as we push through the trees
-      fog.near = 12 - c * 9;
-      fog.far = 46 - c * 26;
-
-      // Eye level, not a diorama seen from above — a high camera looking down
-      // on evenly spaced trees is what read as a model railway.
-      var dist = 19 - a * 3.5 - c * 14.3;             // 19 -> 15.5 -> 1.2
-      var height = 3.1 - a * 0.5 + c * 0.6;
-      var orbit = -0.42 + a * 0.28 + b * 0.42 + c * 0.5 + t * 0.012; // always drifting
-      camera.position.set(
-        Math.sin(orbit) * dist + cmx * (0.9 - c * 0.7),
-        height + cmy * 0.4,
-        Math.cos(orbit) * dist
-      );
-      // Aim up the trunk as we close in, so the pine fills the frame
-      camera.lookAt(0, 2.4 + c * 2.2, 0);
-
-      // The stand slides right while the copy takes the left
-      island.position.x = b * 4.6 - c * 3.2;
-
-      renderer.render(scene, camera);
-      if (!reduceMotion) raf = requestAnimationFrame(frame);
+      for (var i = 0; i < accents.length; i++) {
+        var a = accents[i], r = a.el.getBoundingClientRect();
+        if (!r.width || !r.height || r.bottom < 0 || r.top > vh) continue;  // off-screen
+        any = true;
+        a.update(t, r, vh);
+        if (r.width !== a.lw || r.height !== a.lh) {
+          a.lw = r.width; a.lh = r.height;
+          a.camera.aspect = r.width / r.height;
+          a.camera.updateProjectionMatrix();
+        }
+        // three multiplies viewport/scissor by pixelRatio internally, so these
+        // are CSS pixels. y is measured from the BOTTOM of the canvas.
+        var y = vh - r.bottom;
+        renderer.setViewport(r.left, y, r.width, r.height);
+        renderer.setScissor(r.left, y, r.width, r.height);
+        renderer.render(a.scene, a.camera);
+      }
+      // Sleep when nothing is on screen; scroll/resize wakes us again. Under
+      // reduced motion we never self-chain: one frame per wake keeps the
+      // accents glued to their anchors without animating anything.
+      if (any && !reduceMotion) raf = requestAnimationFrame(frame);
     }
 
-    function tick() { if (ready && raf === null) raf = requestAnimationFrame(frame); }
+    function wake() { if (ready && raf === null) raf = requestAnimationFrame(frame); }
+
+    function onResize() {
+      if (!renderer) return;
+      isSmall = window.innerWidth < 720;
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, isSmall ? 1.5 : 1.8));
+      renderer.setSize(window.innerWidth, window.innerHeight, false);
+      wake();
+    }
 
     return {
-      setProgress: function (p) { progress = p; if (reduceMotion) tick(); },
-      setPointer: function (x, y) { mx = x; my = y; },
-      resize: function () { onResize(); tick(); },
-      // Lazy boot: three.js + the baked models in parallel, after first paint
       boot: function () {
-        if (!canvas || !wrap) return;
-        var pending = 2, failed = false;
+        var slots = document.querySelectorAll("[data-fx]");
+        if (!slots.length) return;             // services.html: nothing to do
+        var pending = 3, failed = false;
         function settle(err) {
           if (err) failed = true;
           if (--pending > 0) return;
-          if (failed || typeof THREE === "undefined") return; // SVG mark stays
+          if (failed || typeof THREE === "undefined" ||
+              !window.DZ_FOREST || !window.DZ_PROPS) return;  // fallbacks stay
           try {
-            if (build()) {
-              // Cursor parallax, eased
-              if (!reduceMotion) {
-                document.addEventListener("mousemove", function (e) {
-                  stage3d.setPointer((e.clientX / window.innerWidth - 0.5) * 2,
-                                     (e.clientY / window.innerHeight - 0.5) * 2);
-                }, { passive: true });
-                (function ease3d() {
-                  cmx += (mx - cmx) * 0.05; cmy += (my - cmy) * 0.05;
-                  requestAnimationFrame(ease3d);
-                })();
-              }
-              tick();
+            canvas = document.createElement("canvas");
+            canvas.id = "fxCanvas";
+            renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: !isSmall });
+            renderer.setClearColor(0x000000, 0);
+            renderer.autoClear = false;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 0.95;
+
+            for (var i = 0; i < slots.length; i++) {
+              var kind = slots[i].getAttribute("data-fx");
+              if (BUILD[kind]) accents.push(BUILD[kind](slots[i]));
+              else if (window.console) console.warn("unknown fx accent:", kind);
             }
+            if (!accents.length) return;
+
+            onResize();
+            document.body.appendChild(canvas);
+            ready = true;
+
+            var vista = document.getElementById("heroVista");
+            if (vista) vista.classList.add("has-3d");   // fades the SVG mark out
+
+            window.addEventListener("scroll", wake, { passive: true });
+            window.addEventListener("resize", onResize, { passive: true });
+            canvas.addEventListener("webglcontextlost", function (e) { e.preventDefault(); });
+            canvas.addEventListener("webglcontextrestored", function () { wake(); });
+            if (!reduceMotion) {
+              document.addEventListener("mousemove", function (e) {
+                mx = (e.clientX / window.innerWidth - 0.5) * 2;
+                my = (e.clientY / window.innerHeight - 0.5) * 2;
+              }, { passive: true });
+            }
+            wake();
           } catch (e) {
-            // Keep the SVG mark, but never fail silently — a blank hero with
-            // no console trace is the worst possible failure mode here.
-            if (window.console) console.warn("stage scene unavailable:", e && e.message);
+            // Never fail silently — a blank hero with no console trace is the
+            // worst possible failure mode here.
+            if (canvas && canvas.parentNode) canvas.parentNode.removeChild(canvas);
+            renderer = null; ready = false;
+            if (window.console) console.warn("fx scenes unavailable:", e && e.message);
           }
         }
         loadScript(THREE_URL, settle);
         loadScript("models/forest.js", settle);
+        loadScript("models/props.js", settle);
       }
     };
   })();
 
-  // ---- STAGE: one pinned scroll scene (hero title -> brand ground -> intro) ----
-  var stage = document.getElementById("stage");
-  if (stage && !reduceMotion) {
-    var sBg = stage.querySelector(".stage-bg");
-    var sTitle = document.getElementById("stageTitle");
-    var sIntro = document.getElementById("stageIntro");
+  // ---- Nav flips to light while a green block is behind the bar ----
+  // Replaces the old stage-progress gating. The probe is the line just under
+  // the header, so this stays correct no matter how the page is composed (and
+  // it keeps working when the announcement bar is dismissed and the bar moves).
+  (function () {
     var topBar = document.querySelector(".top");
-    var stTicking = false, wasDark = false;
-
-    function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
-    function seg(p, a, b) { return clamp01((p - a) / (b - a)); }
-    function ease(t) { return t * t * (3 - 2 * t); } // smoothstep
-
-    function updateStage() {
-      stTicking = false;
-      var r = stage.getBoundingClientRect();
-      var total = r.height - window.innerHeight;
-      if (total <= 0) return;
-      var p = clamp01(-r.top / total);
-
-      // Act 1 — the brand ground floods in; the title dissolves ALL THE WAY out
-      var a = ease(seg(p, 0.02, 0.30));
-      sBg.style.opacity = a.toFixed(3);
-      var titleFade = 1 - ease(seg(p, 0.02, 0.26));
-      sTitle.style.opacity = titleFade.toFixed(3);
-      sTitle.style.transform = "scale(" + (1 - a * 0.06).toFixed(3) + ")";
-      sTitle.style.visibility = titleFade < 0.01 ? "hidden" : "visible";
-
-      // Act 2 — the pine slides right and the intro arrives beside it
-      var b = ease(seg(p, 0.28, 0.52));
-      sIntro.style.opacity = b.toFixed(3);
-      sIntro.style.transform = "translateY(" + ((1 - b) * 26).toFixed(1) + "px)";
-      sIntro.style.pointerEvents = b > 0.6 ? "auto" : "none";
-
-      // Act 3 — the camera itself flies into the stand. The wrapper is NOT
-      // scaled: the dolly happens inside the WebGL scene so it stays sharp.
-      stage3d.setProgress(p);
-
-      // Copy steps aside for the final push so the pine owns the last beat
-      sIntro.style.opacity = (b * (1 - ease(seg(p, 0.86, 1.0)) * 0.85)).toFixed(3);
-
-      // Chrome flips to light ONLY while the green ground is actually behind
-      // the bar. p clamps at 1 past the stage, so without the r.bottom test the
-      // nav would stay white over the cream sections below and vanish.
-      var dark = a > 0.55 && r.bottom > 100;
-      if (dark !== wasDark) {
-        wasDark = dark;
-        stage.classList.toggle("is-dark", dark);
-        if (topBar) topBar.classList.toggle("on-dark", dark);
+    var greens = document.querySelectorAll(".blockgreen");
+    if (!topBar || !greens.length) return;
+    var ticking = false, wasDark = false;
+    function check() {
+      ticking = false;
+      var y = topBar.getBoundingClientRect().bottom - 1;
+      var dark = false;
+      for (var i = 0; i < greens.length; i++) {
+        var r = greens[i].getBoundingClientRect();
+        if (r.top <= y && r.bottom >= y) { dark = true; break; }
       }
+      if (dark !== wasDark) { wasDark = dark; topBar.classList.toggle("on-dark", dark); }
     }
-
     window.addEventListener("scroll", function () {
-      if (!stTicking) { stTicking = true; requestAnimationFrame(updateStage); }
+      if (!ticking) { ticking = true; requestAnimationFrame(check); }
     }, { passive: true });
-    window.addEventListener("resize", updateStage);
-    updateStage();
-  }
+    window.addEventListener("resize", check);
+    check();
+  })();
 
-  // Boot the WebGL stand once the page has painted — never before, so the
-  // landing content is never waiting on three.js. Under reduced motion it
-  // still builds, renders one composed frame, and never starts a loop.
-  if (stage) {
-    if (document.readyState === "complete") stage3d.boot();
-    else window.addEventListener("load", function () { stage3d.boot(); });
-    window.addEventListener("resize", function () { stage3d.resize(); }, { passive: true });
+  // Boot the accents once the page has painted — never before, so the landing
+  // content never waits on three.js. Pages without [data-fx] load nothing.
+  if (document.querySelector("[data-fx]")) {
+    if (document.readyState === "complete") fx3d.boot();
+    else window.addEventListener("load", function () { fx3d.boot(); });
   }
 
   // ---- Triangle cursor (desktop only) ----
