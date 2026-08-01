@@ -228,14 +228,18 @@
     if (!canvas || typeof THREE === "undefined") return false;
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0x0C1210);
-    scene.fog = new THREE.Fog(0x0C1210, isMobile ? 25 : 18, isMobile ? 100 : 75);
+    scene.fog = new THREE.Fog(0x0C1210, isMobile ? 28 : 22, isMobile ? 115 : 92);
     clock = new THREE.Clock();
     camera = new THREE.PerspectiveCamera(isMobile ? 65 : 55, window.innerWidth / window.innerHeight, 0.1, 200);
     camera.position.set(0, 8, 44);
     if (!renderer) {
       renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: false, powerPreference: "high-performance" });
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 1.8;
+      // Viewers reported the wood was too dark to read. Exposure is the right
+      // lever for that: it scales the whole image before tone mapping, so the
+      // campfire stays exactly as dominant relative to everything else. Raising
+      // ambient instead is what once flattened this scene into mint daylight.
+      renderer.toneMappingExposure = 2.25;
       renderer.shadowMap.enabled = false;
     }
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -252,7 +256,7 @@
     // Phones skip the five project-lantern PointLights for performance, so they
     // lose light the desktop has and the wood goes muddy. Give the ambient back
     // just that much — this is compensation, not a brighter look.
-    scene.add(new THREE.AmbientLight(0x2A4E3A, isMobile ? 1.45 : 1.05));
+    scene.add(new THREE.AmbientLight(0x33573F, isMobile ? 1.6 : 1.3));
     var moon = new THREE.DirectionalLight(0xAABBCC, 1.0);
     moon.position.set(-20, 30, 10);
     scene.add(moon); scene._moon = moon;
@@ -326,7 +330,7 @@
 
     // Base terrain
     var terrain = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({
-      color: 0x1A2E1C, roughness: 0.95, flatShading: true
+      color: 0x243D28, roughness: 0.95, flatShading: true
     }));
     terrain.rotation.x = -Math.PI / 2;
     scene.add(terrain);
@@ -341,7 +345,7 @@
     }
     coverGeo.computeVertexNormals();
     var cover = new THREE.Mesh(coverGeo, new THREE.MeshStandardMaterial({
-      color: 0x1E3320, roughness: 1.0, transparent: true, opacity: 0.6
+      color: 0x2B4632, roughness: 1.0, transparent: true, opacity: 0.6
     }));
     cover.rotation.x = -Math.PI / 2;
     scene.add(cover);
@@ -1476,7 +1480,7 @@
     //  there is nothing left to ramp.)
     // Moon rises through the walk — stays soft on purpose so the campfire and
     // lamps remain the brightest things in frame
-    if (scene._moon) scene._moon.intensity = (isMobile ? 0.62 : 0.45) + scrollProgress * 0.4;
+    if (scene._moon) scene._moon.intensity = (isMobile ? 0.78 : 0.66) + scrollProgress * 0.4;
 
     // Campfire — flickering light + rising embers
     // Campfire visible while near the campsite (scroll 0.15 to 0.50), then fades but never fully
