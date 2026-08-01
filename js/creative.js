@@ -434,75 +434,105 @@
       return true;
     }
 
-    // --- 1. ENTRANCE PATHWAY (z: 42 to z: 14) — dense rows both sides ---
-    // Inner row (close to path)
-    for (var pz = 42; pz >= 14; pz -= 2.5) {
-      treePositions.push({ x: -4 - Math.random() * 1.5, z: pz + (Math.random() - 0.5), type: "pine", size: "tall" });
-      treePositions.push({ x: 4 + Math.random() * 1.5, z: pz - 1 + (Math.random() - 0.5), type: "pine", size: "tall" });
+    // === ORGANIC PLACEMENT =================================================
+    // Rows, rings and grids are what made this read as planted rather than
+    // grown, so trees are seeded in CLUMPS with spacing rejection instead.
+    // Every position still has to clear the same corridors via treeOk().
+    var placed = [];
+    function fits(x, z, minD) {
+      for (var i = 0; i < placed.length; i++) {
+        var dx = placed[i][0] - x, dz = placed[i][1] - z;
+        if (dx * dx + dz * dz < minD * minD) return false;
+      }
+      return true;
     }
-    // Middle row
-    for (var pz = 41; pz >= 14; pz -= 3) {
-      treePositions.push({ x: -7 - Math.random() * 2, z: pz + (Math.random() - 0.5), type: "round", size: "tall" });
-      treePositions.push({ x: 7 + Math.random() * 2, z: pz + (Math.random() - 0.5), type: "round", size: "tall" });
+    function addTree(x, z, size, type, minD) {
+      if (Math.abs(x) > 56 || Math.abs(z) > 58) return false;
+      if (!treeOk(x, z)) return false;
+      if (!fits(x, z, minD)) return false;
+      placed.push([x, z]);
+      treePositions.push({ x: x, z: z, type: type, size: size });
+      return true;
     }
-    // Outer row (deep forest backdrop)
-    for (var pz = 42; pz >= 14; pz -= 4) {
-      treePositions.push({ x: -11 - Math.random() * 3, z: pz + (Math.random() - 0.5) * 2, type: "pine", size: "med" });
-      treePositions.push({ x: 11 + Math.random() * 3, z: pz + (Math.random() - 0.5) * 2, type: "pine", size: "med" });
-    }
-
-    // --- 2. CAMP CLEARING ring (tight ring, evenly spaced) ---
-    for (var ca = 0; ca < Math.PI * 2; ca += 0.25) {
-      var cr = 14.5 + Math.random() * 2;
-      var cx = Math.cos(ca) * cr;
-      var cz = Math.sin(ca) * cr;
-      if (!treeOk(cx, cz)) continue;
-      treePositions.push({ x: cx + (Math.random() - 0.5) * 1.5, z: cz + (Math.random() - 0.5) * 1.5, type: Math.random() > 0.5 ? "pine" : "round", size: "tall" });
-    }
-    // Second ring (slightly further out)
-    for (var ca = 0.15; ca < Math.PI * 2; ca += 0.35) {
-      var cr = 18 + Math.random() * 3;
-      var cx = Math.cos(ca) * cr;
-      var cz = Math.sin(ca) * cr;
-      if (!treeOk(cx, cz)) continue;
-      treePositions.push({ x: cx + (Math.random() - 0.5), z: cz + (Math.random() - 0.5), type: Math.random() > 0.4 ? "pine" : "round", size: "med" });
-    }
-
-    // --- 3. GROVE FLANKING — dense walls both sides of lantern path ---
-    // Left wall (2 deep)
-    for (var gz = -8; gz >= -30; gz -= 2.5) {
-      treePositions.push({ x: -6 - Math.random() * 1.5, z: gz + (Math.random() - 0.5), type: "pine", size: "tall" });
-      treePositions.push({ x: -9 - Math.random() * 2, z: gz + 1 + (Math.random() - 0.5), type: "round", size: "med" });
-    }
-    // Right wall (2 deep)
-    for (var gz = -9; gz >= -30; gz -= 2.5) {
-      treePositions.push({ x: 6 + Math.random() * 1.5, z: gz + (Math.random() - 0.5), type: "pine", size: "tall" });
-      treePositions.push({ x: 9 + Math.random() * 2, z: gz + 1 + (Math.random() - 0.5), type: "round", size: "med" });
+    // Scatter trees around a centre, biased toward it, with a few saplings
+    // tucked under the bigger ones.
+    function clump(cx, cz, radius, count, tallBias, minD) {
+      var left = count, guard = count * 8;
+      while (left > 0 && guard-- > 0) {
+        var ang = Math.random() * Math.PI * 2;
+        var r = radius * Math.pow(Math.random(), 0.62);   // denser toward the middle
+        var x = cx + Math.cos(ang) * r, z = cz + Math.sin(ang) * r;
+        var tall = Math.random() < tallBias;
+        var type = Math.random() > 0.34 ? "pine" : "round";
+        if (addTree(x, z, tall ? "tall" : "med", type, minD || 2.4)) {
+          left--;
+          // understory: a small one at the foot of a big one reads as growth
+          if (tall && Math.random() > 0.55) {
+            addTree(x + (Math.random() - 0.5) * 3.4, z + (Math.random() - 0.5) * 3.4,
+                    "small", Math.random() > 0.5 ? "pine" : "round", 1.5);
+          }
+        }
+      }
     }
 
-    // --- 4. MEADOW ring (denser, tighter spacing) ---
-    for (var ma = 0; ma < Math.PI * 2; ma += 0.3) {
-      var mr = 9 + Math.random() * 3;
-      var mmx = -3 + Math.cos(ma) * mr;
-      var mmz = -36 + Math.sin(ma) * mr;
-      // Gap north (entry) and south (depth)
-      if (mmz > -29 && Math.abs(mmx + 3) < 4) continue;
-      if (mmz < -45 && Math.abs(mmx + 3) < 3) continue;
-      treePositions.push({ x: mmx + (Math.random() - 0.5), z: mmz + (Math.random() - 0.5), type: "round", size: "tall" });
+    // Clumping packs trees tighter than the old rows did, so the density is
+    // scaled back to land near the previous tree count — with shadows on, every
+    // tree is now paid for twice (colour pass + shadow pass).
+    var dense = isMobile ? 0.42 : 0.68;
+
+    // 1. Along the entrance walk — clumps down BOTH flanks at uneven intervals,
+    //    so the corridor is edged by stands rather than hedgerows.
+    var entZ = [41, 36.5, 33, 28, 24.5, 20, 16];
+    for (var e = 0; e < entZ.length; e++) {
+      var jz = entZ[e] + (Math.random() - 0.5) * 3;
+      clump(-6.5 - Math.random() * 4, jz, 3.6, Math.round((4 + Math.random() * 3) * dense), 0.62);
+      clump(6.5 + Math.random() * 4, jz + (Math.random() - 0.5) * 4, 3.6, Math.round((4 + Math.random() * 3) * dense), 0.62);
+      if (e % 2 === 0) {
+        clump(-13 - Math.random() * 5, jz, 4.5, Math.round((3 + Math.random() * 3) * dense), 0.4);
+        clump(13 + Math.random() * 5, jz, 4.5, Math.round((3 + Math.random() * 3) * dense), 0.4);
+      }
     }
 
-    // --- 5. DEEP WOODS — fill all gaps, evenly distributed ---
-    // Use a grid with jitter instead of pure random (prevents clumping)
-    var deepSpacing = isMobile ? 14 : 10;
-    for (var dgx = -50; dgx <= 50; dgx += deepSpacing) {
-      for (var dgz = -55; dgz <= 50; dgz += deepSpacing) {
-        var dx = dgx + (Math.random() - 0.5) * deepSpacing * 0.8;
-        var dz = dgz + (Math.random() - 0.5) * deepSpacing * 0.8;
-        if (Math.abs(dx) > 55 || Math.abs(dz) > 55) continue;
-        var dc = Math.sqrt(dx * dx + dz * dz);
-        if (dc < 20) continue; // skip inner zones
-        if (!treeOk(dx, dz)) continue;
-        treePositions.push({ x: dx, z: dz, type: Math.random() > 0.3 ? "pine" : (Math.random() > 0.5 ? "round" : "slim"), size: Math.random() > 0.5 ? "tall" : "med" });
+    // 2. Around the camp clearing — irregular angles and radii, never a ring
+    var campAng = [0.2, 0.75, 1.35, 2.0, 2.55, 3.05, 3.7, 4.25, 4.9, 5.45, 5.95];
+    for (var c2 = 0; c2 < campAng.length; c2++) {
+      var aa = campAng[c2] + (Math.random() - 0.5) * 0.3;
+      var rr = 16.5 + Math.random() * 5.5;
+      clump(Math.cos(aa) * rr, Math.sin(aa) * rr, 4.2, Math.round((4 + Math.random() * 4) * dense), 0.55);
+    }
+
+    // 3. The lantern grove — stands either side, depth varied so the walls breathe
+    var groveZ = [-9, -13.5, -17, -21.5, -25, -29];
+    for (var g2 = 0; g2 < groveZ.length; g2++) {
+      var gz2 = groveZ[g2] + (Math.random() - 0.5) * 2.5;
+      clump(-7.5 - Math.random() * 3.5, gz2, 3.4, Math.round((4 + Math.random() * 3) * dense), 0.68);
+      clump(7.5 + Math.random() * 3.5, gz2 + (Math.random() - 0.5) * 3, 3.4, Math.round((4 + Math.random() * 3) * dense), 0.68);
+      if (g2 % 2 === 1) {
+        clump(-14 - Math.random() * 4, gz2, 4.5, Math.round((3 + Math.random() * 2) * dense), 0.45);
+        clump(14 + Math.random() * 4, gz2, 4.5, Math.round((3 + Math.random() * 2) * dense), 0.45);
+      }
+    }
+
+    // 4. Meadow rim — broken, with gaps north (the way in) and south (depth)
+    var meadAng = [0.35, 0.95, 1.5, 2.15, 2.7, 3.35, 3.9, 4.55, 5.1, 5.7];
+    for (var m2 = 0; m2 < meadAng.length; m2++) {
+      var ma2 = meadAng[m2] + (Math.random() - 0.5) * 0.25;
+      var mr2 = 11.5 + Math.random() * 4;
+      var mx2 = -3 + Math.cos(ma2) * mr2, mz2 = -36 + Math.sin(ma2) * mr2;
+      if (mz2 > -29 && Math.abs(mx2 + 3) < 4) continue;
+      clump(mx2, mz2, 3.8, Math.round((3 + Math.random() * 3) * dense), 0.5);
+    }
+
+    // 5. Deep woods — clumps on a jittered coarse lattice, with real clearings
+    //    between them instead of an even fill
+    var step = isMobile ? 17 : 13;
+    for (var dgx = -50; dgx <= 50; dgx += step) {
+      for (var dgz = -54; dgz <= 48; dgz += step) {
+        if (Math.random() > 0.78) continue;                  // leave glades
+        var cx2 = dgx + (Math.random() - 0.5) * step * 0.9;
+        var cz2 = dgz + (Math.random() - 0.5) * step * 0.9;
+        if (cx2 * cx2 + cz2 * cz2 < 400) continue;           // stay out of the middle
+        clump(cx2, cz2, 5.5, Math.round((4 + Math.random() * 5) * dense), 0.5, 2.8);
       }
     }
 
@@ -528,7 +558,9 @@
       var tp = treePositions[i];
       var x = tp.x, z = tp.z, gY = getGroundY(x, z);
       var isTall = tp.size === "tall";
-      var height = tp.far ? (5 + Math.random() * 8) : isTall ? (6 + Math.random() * 4) : (3 + Math.random() * 4);
+      var height = tp.far ? (5 + Math.random() * 8)
+        : tp.size === 'small' ? (1.7 + Math.random() * 1.5)
+        : isTall ? (6.5 + Math.random() * 4.5) : (3.2 + Math.random() * 3.2);
       var isNear = !tp.far && Math.sqrt(x * x + z * z) < 22;
       var tint = tp.far ? 0.35 + Math.random() * 0.2 : 0.8 + Math.random() * 0.35;
       var item = { x: x, y: gY, z: z, ry: Math.random() * Math.PI * 2, t: tint };
