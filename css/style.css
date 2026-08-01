@@ -753,10 +753,14 @@
 
 /* === Responsive === */
 @media (max-width: 768px) {
-  .chapter-content h2 { font-size: 1.8rem; }
-  .chapter-content p { font-size: 0.88rem; }
+  /* The card was eating ~40% of a phone screen and hiding the scene it is
+     supposed to be narrating. Tighter type and padding claw most of that back. */
+  .chapter-content h2 { font-size: 1.5rem; line-height: 1.12; }
+  .chapter-content p { font-size: 0.84rem; line-height: 1.55; margin-top: 0.6rem; }
   .chapter-left, .chapter-right { margin: 0; }
-  .chapter-content { max-width: 100%; padding: 20px; margin: 0 16px; }
+  .chapter-content { max-width: 100%; padding: 16px 18px; margin: 0 14px; }
+  .chapter-label { font-size: 0.58rem; padding: 4px 10px; }
+  .chapter-scroll-cue { font-size: 0.72rem; margin-top: 0.7rem; }
 
   /* Bottom-anchored, but clear of the HUD hint text and the social buttons
      that sit along the bottom edge */
@@ -822,11 +826,17 @@
   }
 
   .creative-hud-top {
-    padding: 8px 14px;
-    gap: 10px;
+    padding: 7px 12px;
+    gap: 8px;
+    max-width: calc(100vw - 24px);
   }
-  .creative-hud-brand { font-size: 0.85rem; }
-  .creative-hud-back { font-size: 0.75rem; padding: 8px 14px; min-height: 40px; }
+  .creative-hud-brand { font-size: 0.85rem; white-space: nowrap; }
+  /* nowrap is the fix for "Code Mode" breaking onto two lines and making the
+     pill twice as tall as it should be */
+  .creative-hud-back {
+    font-size: 0.72rem; padding: 7px 12px; min-height: 38px;
+    white-space: nowrap; flex-shrink: 0;
+  }
   /* Keep the hint on phones — tap-to-plant works on touch now, so hiding the
      only instruction for it made the signature interaction undiscoverable.
      Compact and centred above the bottom edge instead. */
@@ -852,14 +862,18 @@
 }
 
 @media (max-width: 400px) {
-  .chapter-content h2 { font-size: 1.5rem; }
-  .chapter-content p { font-size: 0.82rem; max-width: 100%; }
-  .chapter-content { padding: 16px; }
-  .chapter-label { font-size: 0.6rem; }
+  .chapter-content h2 { font-size: 1.34rem; }
+  .chapter-content p { font-size: 0.8rem; max-width: 100%; }
+  .chapter-content { padding: 14px 15px; margin: 0 12px; }
+  .chapter-label { font-size: 0.56rem; }
+  /* Least room of all — pull the card closer to the chrome below it */
+  .creative-chapter { padding-bottom: 118px; }
+  .creative-hud-stats { bottom: 68px; font-size: 0.64rem; }
+  .creative-hud-social a { width: 40px; height: 40px; font-size: 0.92rem; }
 
-  .creative-hud-top { padding: 6px 12px; gap: 8px; }
-  .creative-hud-brand { font-size: 0.78rem; }
-  .creative-hud-back { font-size: 0.7rem; }
+  .creative-hud-top { padding: 6px 10px; gap: 7px; }
+  .creative-hud-brand { font-size: 0.76rem; }
+  .creative-hud-back { font-size: 0.68rem; padding: 6px 10px; min-height: 34px; }
 }
 
 /* ========================================

@@ -249,7 +249,10 @@
     // daylight and erased the night entirely. The brightness has to come from
     // the campfire, the lanterns and the path lamps, so the trail reads as a
     // lit thread through dark trees. Keep these values low.
-    scene.add(new THREE.AmbientLight(0x2A4E3A, 1.05));
+    // Phones skip the five project-lantern PointLights for performance, so they
+    // lose light the desktop has and the wood goes muddy. Give the ambient back
+    // just that much — this is compensation, not a brighter look.
+    scene.add(new THREE.AmbientLight(0x2A4E3A, isMobile ? 1.45 : 1.05));
     var moon = new THREE.DirectionalLight(0xAABBCC, 1.0);
     moon.position.set(-20, 30, 10);
     scene.add(moon); scene._moon = moon;
@@ -1473,7 +1476,7 @@
     //  there is nothing left to ramp.)
     // Moon rises through the walk — stays soft on purpose so the campfire and
     // lamps remain the brightest things in frame
-    if (scene._moon) scene._moon.intensity = 0.45 + scrollProgress * 0.4;
+    if (scene._moon) scene._moon.intensity = (isMobile ? 0.62 : 0.45) + scrollProgress * 0.4;
 
     // Campfire — flickering light + rising embers
     // Campfire visible while near the campsite (scroll 0.15 to 0.50), then fades but never fully
