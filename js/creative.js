@@ -70,7 +70,9 @@
 
   var TREE_COUNT = isMobile ? 30 : 52;
   var AMBIENT_FF_COUNT = isMobile ? 5 : 7;
-  var PATH_LAMP_COUNT = isMobile ? 5 : 8;
+  // Every path lamp carries a real PointLight now, so this IS the lamp light
+  // count. Budget: 3 campfire + 5 project lanterns + these = 15 desktop.
+  var PATH_LAMP_COUNT = isMobile ? 5 : 7;
   var lastTouchSpawn = 0;
 
   // === Palette ===
@@ -187,6 +189,26 @@
     return sp;
   }
 
+  // Soft radial falloff texture, built once and shared by every glow halo and
+  // ground pool. Hard-edged additive discs read as flat grey ellipses; a real
+  // falloff reads as light.
+  var glowTex = null;
+  function getGlowTexture() {
+    if (glowTex) return glowTex;
+    var c = document.createElement("canvas");
+    c.width = c.height = 64;
+    var ctx = c.getContext("2d");
+    var g = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+    g.addColorStop(0, "rgba(255,255,255,1)");
+    g.addColorStop(0.35, "rgba(255,255,255,0.42)");
+    g.addColorStop(0.7, "rgba(255,255,255,0.10)");
+    g.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.fillStyle = g; ctx.fillRect(0, 0, 64, 64);
+    glowTex = new THREE.CanvasTexture(c);
+    glowTex.minFilter = THREE.LinearFilter;
+    return glowTex;
+  }
+
   // Label visibility by real 3D distance: fade OUT when the camera is nearly on
   // top of a label (stops giant blurry text filling the frame) and beyond ~30
   // units (stops every zone's text stacking into one crowded view).
@@ -220,16 +242,22 @@
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.15));
     raycaster = new THREE.Raycaster(); mouseVec = new THREE.Vector2();
 
-    // Lighting — moonlit forest with visible depth
-    scene.add(new THREE.AmbientLight(0x2A4E3A, 1.2));
+    // Lighting — a DARK wood lit by its own sources.
+    //
+    // Deliberately low global light. Raising ambient/hemisphere to brighten the
+    // scene was tried and reverted: it flattened the forest into uniform mint
+    // daylight and erased the night entirely. The brightness has to come from
+    // the campfire, the lanterns and the path lamps, so the trail reads as a
+    // lit thread through dark trees. Keep these values low.
+    scene.add(new THREE.AmbientLight(0x2A4E3A, 1.05));
     var moon = new THREE.DirectionalLight(0xAABBCC, 1.0);
     moon.position.set(-20, 30, 10);
     scene.add(moon); scene._moon = moon;
 
-    var f1 = new THREE.PointLight(0x5C7650, 0.4, 40); f1.position.set(5, 6, 10);
-    var f2 = new THREE.PointLight(0xA3B18A, 0.3, 35); f2.position.set(-8, 4, -10);
-    var f3 = new THREE.PointLight(0x344E41, 0.2, 30); f3.position.set(0, 8, -20);
-    scene.add(f1, f2, f3); scene._fills = [f1, f2, f3];
+    // (The three weak fill PointLights that used to sit here were removed —
+    //  they cost the same per-pixel as a lamp light while adding almost no
+    //  visible light. That budget now pays for real lights on the path lamps.)
+    scene._fills = [];
 
     buildTerrain(); createDirtPath();
     plantForest();
@@ -625,23 +653,46 @@
       scene.add(seat2);
     }
 
-    // Fire light — main warm flicker (bright, close range)
-    var fireLight = new THREE.PointLight(0xFF8C33, 3.5, 20);
+    // Fire light — main warm flicker (bright, wide reach). Intensity is
+    // driven every frame in animate(); range is set here.
+    var fireLight = new THREE.PointLight(0xFF8C33, 5.2, 30);
     fireLight.position.set(0, gY + 0.8, 0.5);
     scene.add(fireLight);
     scene._fireLight = fireLight;
 
     // Secondary fill — low angle, warm red tone
-    var fireFill = new THREE.PointLight(0xE86420, 1.2, 12);
+    var fireFill = new THREE.PointLight(0xE86420, 2.0, 16);
     fireFill.position.set(0, gY + 0.3, 0.5);
     scene.add(fireFill);
     scene._fireFill = fireFill;
 
     // Wide ambient bounce — simulates light reflecting off ground/tent
-    var fireBounce = new THREE.PointLight(0xCC7733, 1.0, 25);
+    var fireBounce = new THREE.PointLight(0xCC7733, 1.6, 34);
     fireBounce.position.set(0, gY + 2.5, 0);
     scene.add(fireBounce);
     scene._fireBounce = fireBounce;
+
+    // Flame glow + the pool it throws on the clearing floor — additive, no
+    // extra lights. This is what makes the camp read as the brightest place
+    // on the walk when you arrive.
+    var fireGlow = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: getGlowTexture(), color: 0xFFA23C, transparent: true, opacity: 0.85,
+      blending: THREE.AdditiveBlending, depthWrite: false
+    }));
+    fireGlow.position.set(0, gY + 0.55, 0.5);
+    fireGlow.scale.setScalar(2.4);
+    scene.add(fireGlow);
+    scene._fireGlow = fireGlow;
+
+    var firePool = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({
+      map: getGlowTexture(), color: 0xD9853A, transparent: true, opacity: 0.5,
+      blending: THREE.AdditiveBlending, depthWrite: false
+    }));
+    firePool.position.set(0, gY + 0.05, 0.5);
+    firePool.rotation.x = -Math.PI / 2;
+    firePool.scale.setScalar(11);
+    scene.add(firePool);
+    scene._firePool = firePool;
 
     // (fireUp canopy-glow light removed — every PointLight multiplies the
     // per-pixel shading cost; the bounce light covers this look well enough)
@@ -879,10 +930,20 @@
       globe.position.set(p.x, globeY, p.z);
       scene.add(globe);
 
-      // Warm point light
-      var light = new THREE.PointLight(proj.color, 0.8, 12);
+      // Warm point light (intensity is driven per-frame in animate())
+      var light = new THREE.PointLight(proj.color, 1.6, 17);
       light.position.set(p.x, globeY, p.z);
       scene.add(light);
+
+      // Soft additive halo so the lantern reads as a bright source, not just a
+      // lit globe. Free — no extra light. It tracks the globe's sway below.
+      var lanternHalo = new THREE.Sprite(new THREE.SpriteMaterial({
+        map: getGlowTexture(), color: proj.color, transparent: true, opacity: 0.6,
+        blending: THREE.AdditiveBlending, depthWrite: false
+      }));
+      lanternHalo.position.set(p.x, globeY, p.z);
+      lanternHalo.scale.setScalar(2.2);
+      scene.add(lanternHalo);
 
       // Label
       var label = makeLabel(proj.name, {
@@ -893,7 +954,7 @@
       scene.add(label);
 
       lanterns.push({
-        mesh: globe, light: light, label: label,
+        mesh: globe, light: light, label: label, halo: lanternHalo,
         baseY: globeY, x: p.x, z: p.z, chapter: p.chapter
       });
     });
@@ -961,32 +1022,52 @@
       { x: -1, z: -39, y: 2 }      // Meadow far
     ];
 
+    // Shared materials + geometry — never allocate these inside the loop
+    var postMat = new THREE.MeshStandardMaterial({ color: 0x3B2314, roughness: 0.9 });
+    var glowMat = new THREE.MeshBasicMaterial({ color: 0xFFF0C4, transparent: true, opacity: 0.95 });
+    // Soft additive spill — a halo around the bulb and a pool on the trail.
+    // Free (no lights) and it is most of what makes the path read as lit.
+    var haloMat = new THREE.SpriteMaterial({
+      map: getGlowTexture(), color: 0xFFD98A, transparent: true, opacity: 0.55,
+      blending: THREE.AdditiveBlending, depthWrite: false
+    });
+    var poolMat = new THREE.MeshBasicMaterial({
+      map: getGlowTexture(), color: 0xE0B96A, transparent: true, opacity: 0.42,
+      blending: THREE.AdditiveBlending, depthWrite: false
+    });
+    var postGeo = new THREE.CylinderGeometry(0.03, 0.04, 2, 4);
+    var glowGeo = new THREE.SphereGeometry(0.13, 8, 8);
+    var poolGeo = new THREE.PlaneGeometry(1, 1);
+
     lampPositions.slice(0, PATH_LAMP_COUNT).forEach(function (lp, li) {
       var gY = getGroundY(lp.x, lp.z);
 
-      // Lamp post (thin cylinder)
-      var post = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.03, 0.04, 2, 4),
-        new THREE.MeshStandardMaterial({ color: 0x3B2314, roughness: 0.9 })
-      );
+      var post = new THREE.Mesh(postGeo, postMat);
       post.position.set(lp.x, gY + 1, lp.z);
       scene.add(post);
 
-      // Lamp glow (small sphere)
-      var glow = new THREE.Mesh(
-        new THREE.SphereGeometry(0.12, 8, 8),
-        new THREE.MeshBasicMaterial({ color: 0xE8C87A, transparent: true, opacity: 0.8 })
-      );
+      var glow = new THREE.Mesh(glowGeo, glowMat);
       glow.position.set(lp.x, gY + 2.2, lp.z);
       scene.add(glow);
 
-      // Real light on every OTHER lamp only (glow spheres carry the visual);
-      // halves the lamp light count — a big per-pixel shading saving
-      if (li % 2 === 0) {
-        var light = new THREE.PointLight(0xE8C87A, 1.0, 14);
-        light.position.set(lp.x, gY + 2.5, lp.z);
-        scene.add(light);
-      }
+      var halo = new THREE.Sprite(haloMat);
+      halo.position.set(lp.x, gY + 2.2, lp.z);
+      halo.scale.setScalar(2.6);
+      scene.add(halo);
+
+      // Warm pool of light thrown on the trail under each lamp
+      var pool = new THREE.Mesh(poolGeo, poolMat);
+      pool.position.set(lp.x, gY + 0.04, lp.z);
+      pool.rotation.x = -Math.PI / 2;
+      pool.scale.setScalar(5.5 + Math.random() * 1.5);
+      scene.add(pool);
+
+      // Every lamp is a real light now. The three weak ambient fills were
+      // removed to pay for these — same per-pixel cost, far better result,
+      // and the light lands where the walk actually goes.
+      var light = new THREE.PointLight(0xF0C878, 2.4, 20);
+      light.position.set(lp.x, gY + 2.4, lp.z);
+      scene.add(light);
     });
   }
 
@@ -1351,24 +1432,38 @@
       fills[1].intensity = 0.3 + vb + (scrollProgress > 0.38 && scrollProgress < 0.65 ? 0.3 : 0);
       fills[2].intensity = 0.2 + vb + (scrollProgress > 0.6 && scrollProgress < 0.8 ? 0.3 : 0);
     }
-    if (scene._moon) scene._moon.intensity = 0.4 + scrollProgress * 0.4;
+    // Moon rises through the walk — stays soft on purpose so the campfire and
+    // lamps remain the brightest things in frame
+    if (scene._moon) scene._moon.intensity = 0.45 + scrollProgress * 0.4;
 
     // Campfire — flickering light + rising embers
     // Campfire visible while near the campsite (scroll 0.15 to 0.50), then fades but never fully
     // Campfire: ramp up as you approach, full during camp chapters, gentle fade but never off
     var cAmp = scrollProgress < 0.20 ? Math.min(1, scrollProgress / 0.10) : (scrollProgress < 0.42 ? 1.0 : Math.max(0.15, 1 - (scrollProgress - 0.42) * 0.8));
+    // These intensities are the fire's real output — they OVERWRITE whatever
+    // the PointLights were constructed with, so tune the campfire here.
     if (scene._fireLight) {
-      var flicker = 2.5 + sinT8 * 0.6 + Math.sin(t * 13) * 0.3 + Math.sin(t * 21) * 0.15;
+      var flicker = 5.2 + sinT8 * 1.1 + Math.sin(t * 13) * 0.5 + Math.sin(t * 21) * 0.25;
       scene._fireLight.intensity = flicker * cAmp;
       var colorShift = sinT3 * 0.5 + 0.5;
       scene._fireLight.color.setRGB(1.0, 0.45 + colorShift * 0.15, 0.15 + colorShift * 0.1);
     }
     if (scene._fireFill) {
-      scene._fireFill.intensity = (0.9 + sinT6 * 0.3) * cAmp;
+      scene._fireFill.intensity = (2.0 + sinT6 * 0.5) * cAmp;
       scene._fireFill.color.setRGB(0.9, 0.35 + sinT2 * 0.1, 0.1);
     }
     if (scene._fireBounce) {
-      scene._fireBounce.intensity = (0.7 + sinT4 * 0.2) * cAmp;
+      scene._fireBounce.intensity = (1.6 + sinT4 * 0.35) * cAmp;
+    }
+    // The unlit fire glow + floor pool breathe with the same flicker, so the
+    // free spill and the real light stay in sync
+    if (scene._fireGlow) {
+      var fg = (0.7 + sinT8 * 0.13 + Math.sin(t * 13) * 0.06) * cAmp;
+      scene._fireGlow.material.opacity = fg;
+      scene._fireGlow.scale.setScalar(2.4 + sinT8 * 0.22);
+    }
+    if (scene._firePool) {
+      scene._firePool.material.opacity = (0.42 + sinT6 * 0.07) * cAmp;
     }
     if (scene._fireUp) {
       scene._fireUp.intensity = (0.4 + sinT5 * 0.15) * cAmp;
@@ -1442,13 +1537,16 @@
       lan.mesh.position.x = lan.x + sway;
       lan.light.position.set(lan.mesh.position.x, lan.baseY + bobY, lan.z);
       lan.label.position.set(lan.mesh.position.x, lan.baseY + bobY + 0.8, lan.z);
+      if (lan.halo) lan.halo.position.set(lan.mesh.position.x, lan.baseY + bobY, lan.z);
 
       // Proximity: how close is scrollProgress to this lantern's chapter?
       var dist = Math.abs(scrollProgress - (lan.chapter || 0.5));
       var near = Math.max(0, 1 - dist * 8);
 
       var revealNear = Math.max(near, canopyReveal);
-      var tG = lerp(0.15, 1.2, revealNear), tL = lerp(0.3, 1.8, revealNear);
+      // Lantern output — like the campfire, this overwrites the constructed
+      // intensity, so brightness for the project lanterns is tuned here
+      var tG = lerp(0.35, 1.8, revealNear), tL = lerp(1.1, 3.2, revealNear);
       var tO = lerp(0.0, 0.95, revealNear) * distVis(lan.label.position), tS = lerp(0.8, 1.3, revealNear);
       lan.mesh.material.emissiveIntensity += (tG - lan.mesh.material.emissiveIntensity) * 0.03;
       lan.light.intensity += (tL - lan.light.intensity) * 0.03;
