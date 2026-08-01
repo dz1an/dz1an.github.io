@@ -217,15 +217,7 @@ const forest = {
   grass:     bake('patch-grass', 'ground', mf),
   trophy:    bake('trophy', 'gold', ar),
   // Nature Kit rounded pine — the brand tree (main.html hero + the //dzian mark)
-  pineRound: bakeByMaterial(path.join(__dirname, '../../models/pine.glb')),
-  // The journal at the camp — Kenney Furniture Kit 'books', recoloured from
-  // its carpet/metal palette to leather, paper and a gold clasp.
-  journal:   bakeByMaterial(path.join(__dirname, 'forest/books.glb'), function (c) {
-    const L = (c[0] + c[1] + c[2]) / 3;
-    if (L > 205) return [232, 230, 220];   // pages
-    if (L > 120) return [232, 200, 122];   // clasp / ribbon, firefly gold
-    return [59, 42, 26];                   // leather cover
-  })
+  pineRound: bakeByMaterial(path.join(__dirname, '../../models/pine.glb'))
 };
 
 const out = '// Forest set — CC0 models by Kenney (kenney.nl): Mini Forest + Starter Kit\n' +

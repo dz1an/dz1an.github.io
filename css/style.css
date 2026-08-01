@@ -5530,74 +5530,34 @@ body.loaded #preloader {
   #preloader.pl-done .pl-ff { opacity: 0.7; }
 }
 
-/* ===== The journal at the camp =========================================
-   Opened by clicking the book by the fire (creative.js openJournal). Styled
-   as paper against the night rather than as a modal chrome box. */
-.journal-panel {
-  position: fixed; inset: 0; z-index: 10000;
-  display: flex; align-items: center; justify-content: center;
-  padding: 24px;
-  background: rgba(6, 10, 8, 0.72);
-  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
-  opacity: 0; pointer-events: none;
-  transition: opacity 0.35s ease;
+/* Journal entries inside the ch-3 card: what was slow -> what it does now.
+   Deliberately compact — the chapter cards sit over the scene and must not
+   grow into a wall of text, least of all on a phone. */
+.jlist { list-style: none; margin: 0.9rem 0 0; padding: 0; }
+.jlist li {
+  display: grid; grid-template-columns: 1fr; gap: 1px;
+  padding: 7px 0;
+  border-top: 1px solid rgba(163, 177, 138, 0.14);
 }
-.journal-panel.open { opacity: 1; pointer-events: auto; }
+.jlist li:first-child { border-top: none; padding-top: 2px; }
+.jlist b {
+  font-size: 0.78rem; font-weight: 700; letter-spacing: 0.01em;
+  color: #DAD7CD;
+}
+.jlist span {
+  font-size: 0.73rem; font-style: italic;
+  color: rgba(218, 215, 205, 0.42);
+}
+.jlist em {
+  font-size: 0.75rem; font-style: normal;
+  color: var(--color-accent, #A3B18A);
+}
+.jlist li:last-child em { color: rgba(232, 200, 122, 0.75); }  /* the unfinished one */
 
-.journal-book {
-  position: relative;
-  width: min(620px, 100%); max-height: 82vh; overflow-y: auto;
-  padding: 30px 32px 26px;
-  background: #EFEADC;                      /* paper, not a dark card */
-  color: #2A2620;
-  border-radius: 4px;
-  border-left: 6px solid #3B2A1A;           /* the spine */
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
-  transform: translateY(14px) scale(0.985);
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.journal-panel.open .journal-book { transform: none; }
-
-.journal-x {
-  position: absolute; top: 12px; right: 12px;
-  width: 36px; height: 36px; border-radius: 50%;
-  border: none; background: rgba(59, 42, 26, 0.09);
-  color: #3B2A1A; cursor: pointer; font-size: 0.95rem;
-}
-.journal-x:hover { background: rgba(59, 42, 26, 0.18); }
-
-.journal-kicker {
-  font-family: 'SF Mono', 'Fira Code', monospace;
-  font-size: 0.66rem; letter-spacing: 0.16em; text-transform: uppercase;
-  color: #8A7A5E;
-}
-.journal-book h3 {
-  margin: 6px 0 2px; font-size: 1.9rem; font-weight: 700; letter-spacing: -0.02em;
-  color: #2A2620;
-}
-.journal-lede { margin: 0 0 18px; font-size: 0.9rem; color: #6B6357; }
-
-.journal-entry {
-  padding: 13px 0 12px;
-  border-top: 1px solid rgba(59, 42, 26, 0.16);
-}
-.journal-entry h4 {
-  margin: 0 0 4px; font-size: 1rem; font-weight: 700; letter-spacing: 0.01em;
-  color: #2A2620;
-}
-.journal-entry p { margin: 0; font-size: 0.88rem; line-height: 1.5; }
-.j-was { color: #857B6B; font-style: italic; }
-.j-now { color: #3F4A38; margin-top: 3px !important; }
-.j-now a { color: #5C7650; font-weight: 600; text-decoration: none; border-bottom: 1px solid rgba(92,118,80,0.4); }
-.j-now a:hover { color: #3A5A40; }
-/* The one that isn't finished yet */
-.journal-entry-open .j-now { color: #8A7A5E; }
-
-@media (max-width: 600px) {
-  .journal-book { padding: 24px 20px 20px; max-height: 86vh; }
-  .journal-book h3 { font-size: 1.5rem; }
-  .journal-entry p { font-size: 0.84rem; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .journal-panel, .journal-book { transition: none; }
+@media (max-width: 768px) {
+  .jlist { margin-top: 0.7rem; }
+  .jlist li { padding: 5px 0; }
+  .jlist b { font-size: 0.74rem; }
+  .jlist span { font-size: 0.69rem; }
+  .jlist em { font-size: 0.71rem; }
 }
