@@ -165,7 +165,19 @@ const town = {
   stall:     bake('stall-red', png),
   lantern:   bake('lantern', png),
   windmill:  bake('windmill', png),
-  rock:      bake('rock-large', png)
+  rock:      bake('rock-large', png),
+  // second batch — the pieces that turn scattered houses into a settlement
+  road:      bake('road', png),
+  roadBend:  bake('road-bend', png),
+  fence:     bake('fence', png),
+  fenceGate: bake('fence-gate', png),
+  hedge:     bake('hedge', png),
+  cart:      bake('cart', png),
+  wallWood:  bake('wall-wood', png),
+  wallRound: bake('wall-window-round', png),
+  chimney:   bake('chimney', png),
+  bench:     bake('stall-bench', png),
+  banner:    bake('banner-green', png)
 };
 
 const out = '// Town set — CC0 Fantasy Town Kit by Kenney (kenney.nl), atlas-sampled and\n' +

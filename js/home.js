@@ -358,23 +358,59 @@
         }
       }
 
-      cottage(-7, -1, 2, 2, 2, "x1");
-      cottage(-4, 2, 2, 2, 1, "z0");
-      cottage(3, -2, 2, 2, 2, "z0");
-      cottage(6, 1, 1, 2, 1, "x1");
-      cottage(0, -5, 2, 2, 1, "z0");
-      if (!isSmall) { cottage(-9, 3, 2, 1, 1, "z0"); cottage(9, -4, 2, 2, 1, "x1"); }
-      // Mill: a tower with the blades mounted on its +X face
-      cottage(-9, -3, 1, 1, 3);
-      put("windmill", -8.45, 2.15, -3, 0);
+      // Paving: a plaza with a street running out toward the viewer. This is
+      // what turns scattered houses into a place.
+      for (var rx = -4; rx <= 5; rx++) for (var rz = -1; rz <= 3; rz++) put("road", rx, 0, rz, 0);
+      for (var sz = 4; sz <= 11; sz++) { put("road", 1, 0, sz, 0); put("road", 2, 0, sz, 0); }
 
-      put("fountain", 0.5, 0, 1.5, 0.3);
-      put("stall", -2.2, 0, 0.4, 0.8);
-      put("stall", 2.6, 0, 2.4, -1.1);
-      put("lantern", -1.4, 0, 2.6, 0);
-      put("lantern", 2.0, 0, -0.6, 0);
-      var TREES = [[-10.5, -0.5, 1], [8.5, -3.5, 1], [-6.0, 4.5, 0], [9.0, 3.0, 0],
-                   [1.5, -7.5, 1], [-2.5, -7.0, 0], [12.0, 0.5, 1], [-13.0, 1.5, 0]];
+      // Buildings around the square — varied footprint and height
+      cottage(-8, -1, 2, 2, 2, "x1");
+      cottage(-7, 4, 2, 2, 1, "z0");
+      cottage(3, -3, 2, 2, 2, "z0");
+      cottage(7, 0, 1, 2, 1, "x1");
+      cottage(-1, -6, 3, 2, 1, "z0");
+      cottage(-4, -3, 2, 2, 2, "x1");
+      cottage(6, 5, 2, 2, 2, "z0");
+      if (!isSmall) {
+        cottage(-10, 2, 2, 1, 1, "z0");
+        cottage(9, -4, 2, 2, 1, "x1");
+        cottage(-9, -6, 2, 2, 1, "x1");
+        cottage(4, 8, 2, 2, 1, "z0");
+        cottage(-6, 8, 2, 2, 1, "x1");
+      }
+      // Mill: a tower with the blades mounted on its +X face
+      cottage(-11, -3, 1, 1, 3);
+      put("windmill", -10.45, 2.15, -3, 0);
+
+      var CHIM = [[-8, -1, 2], [3, -3, 2], [-4, -3, 2], [6, 5, 2], [-1, -6, 1]];
+      for (var ci = 0; ci < CHIM.length; ci++) {
+        put("chimney", CHIM[ci][0] + 0.35, CHIM[ci][2] + 0.35, CHIM[ci][1], 0);
+      }
+
+      // The square itself
+      put("fountain", 1.0, 0, 1.5, 0.3);
+      put("stall", -2.4, 0, 0.6, 0.9);
+      put("stall", 4.2, 0, 2.6, -1.2);
+      put("bench", -0.6, 0, 3.4, 0.2);
+      put("bench", 3.2, 0, -0.4, PI);
+      put("cart", -3.2, 0, 2.8, 0.6);
+      put("cart", 5.6, 0, 6.5, -0.4);
+      put("lantern", -1.4, 0, 2.8, 0);
+      put("lantern", 4.4, 0, -0.6, 0);
+      put("lantern", 0.4, 0, 7.5, 0);
+      put("banner", 2.95, 1.1, -2, 0);
+      put("banner", -3.05, 1.1, -2, PI);
+
+      // Fences and hedges give the plots edges
+      for (var fx = -4; fx <= -1; fx++) put("fence", fx, 0, 6, HALF);
+      put("fenceGate", 0, 0, 6, HALF);
+      for (var fz = 7; fz <= 9; fz++) put("fence", -4, 0, fz, PI);
+      for (var hx = 6; hx <= 9; hx++) put("hedge", hx, 0, 3, HALF);
+      for (var hz = 4; hz <= 6; hz++) put("hedge", 9, 0, hz, 0);
+
+      var TREES = [[-12.5, -0.5, 1], [10.5, -3.5, 1], [-8.0, 7.5, 0], [11.0, 3.0, 0],
+                   [1.5, -9.0, 1], [-3.0, -9.0, 0], [13.0, 1.0, 1], [-13.5, 4.0, 0],
+                   [8.0, 9.5, 1], [-9.5, 10.0, 0], [12.0, 7.0, 0]];
       for (var t = 0; t < TREES.length; t++) {
         put(TREES[t][2] ? "treeHigh" : "tree", TREES[t][0], 0, TREES[t][1], t * 1.7);
       }
