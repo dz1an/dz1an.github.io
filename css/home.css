@@ -162,13 +162,15 @@ a { color: var(--sage); }
   .h-outline { color: var(--sage-light); }
 }
 
-/* The pine — a large canvas so the camera can dolly right into it without
-   clipping at the element edge (the model's on-screen size is driven by
-   camera-orbit radius, not by CSS scale, so it stays sharp when it fills). */
+/* The pine fills the whole pinned viewport. This MUST be full-bleed: the
+   camera dollies in until the tree is larger than the frame, and if the
+   element is smaller than the screen the model gets sliced off at the element
+   edge — a hard rectangular cut down the side and bottom of the pine.
+   Its on-screen size comes from the camera-orbit radius, never a CSS scale,
+   so it stays sharp instead of being an upscaled raster. */
 .stage-tree {
   position: absolute; z-index: 1;
-  left: 50%; top: 50%; transform: translate(-50%, -50%);
-  width: min(96vw, 1100px); height: 92vh;
+  inset: 0; width: 100%; height: 100%;
   pointer-events: none; will-change: transform;
 }
 .stage-tree model-viewer {
@@ -505,7 +507,8 @@ a.bf-value:hover { color: var(--sage); }
 @media (max-width: 720px) {
   /* Shorter pin so the scene doesn't overstay on a phone */
   .stage { height: 300vh; }
-  .stage-tree { width: 100vw; height: 70vh; }
+  /* stays full-bleed on phones too — a shorter box would clip the pine
+     exactly the same way at the end of the dolly */
   .stage-foot { letter-spacing: 0.1em; bottom: 18px; }
   .stage-intro { align-items: center; }
   .stage-intro .bg-body { font-size: 0.98rem; }

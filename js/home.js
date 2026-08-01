@@ -187,15 +187,27 @@
       sIntro.style.transform = "translateY(" + ((1 - b) * 26).toFixed(1) + "px)";
       sIntro.style.pointerEvents = b > 0.6 ? "auto" : "none";
 
-      // Act 3 — hold, then fly the camera into the pine until it fills the frame
+      // Act 3 — hold, then fly the camera into the pine until it fills the frame.
+      // The wrapper only ever SLIDES. It is never CSS-scaled: scaling blows up
+      // an already-rendered raster (soft edges) and pushes the model past the
+      // element bounds, which is what put a hard vertical cut down the pine at
+      // the end of the scroll. All growth comes from the camera dolly below.
       var c = ease(seg(p, 0.66, 1.0));
-      var shiftX = b * 22 - c * 10;                 // settles right, drifts back in as it grows
-      var scale = 1 + a * 0.18 + c * 0.35;
-      sTree.style.transform =
-        "translate(calc(-50% + " + shiftX.toFixed(2) + "vw), -50%) scale(" + scale.toFixed(3) + ")";
-      // Real 3D dolly (stays sharp at any size) + continuous turn
-      var radius = 118 - c * 88;                    // 118% -> 30%
-      if (sMv) sMv.cameraOrbit = (15 + p * 300).toFixed(1) + "deg " + (82 - c * 12).toFixed(1) + "deg " + radius.toFixed(1) + "%";
+      var shiftX = b * 16 - c * 16;                 // settles right, returns to centre as it grows
+      sTree.style.transform = "translateX(" + shiftX.toFixed(2) + "vw)";
+
+      // Real 3D dolly — stays sharp at any size. The turn is a gentle quarter
+      // rotation rather than the old ~full spin, so the approach reads as
+      // walking up to the tree instead of the tree twirling.
+      var radius = 118 - c * 92;                    // 118% -> 26%
+      var theta = 15 + a * 18 + c * 52;             // ~85deg total, eased per act
+      var phi = 82 - c * 10;                        // lifts slightly as we close in
+      if (sMv) sMv.cameraOrbit = theta.toFixed(1) + "deg " + phi.toFixed(1) + "deg " + radius.toFixed(1) + "%";
+
+      // Dissolve on the last stretch so the canopy hands off to the green
+      // section instead of a full-frame tree being swept away when the pin
+      // releases — that hard sweep is the "cut" at the end of the scroll.
+      sTree.style.opacity = (1 - ease(seg(p, 0.90, 1.0)) * 0.9).toFixed(3);
 
       // Copy steps aside for the final push so the pine owns the last beat
       sIntro.style.opacity = (b * (1 - ease(seg(p, 0.86, 1.0)) * 0.85)).toFixed(3);
