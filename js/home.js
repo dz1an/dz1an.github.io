@@ -360,8 +360,22 @@
 
       // Paving: a plaza with a street running out toward the viewer. This is
       // what turns scattered houses into a place.
-      for (var rx = -4; rx <= 5; rx++) for (var rz = -1; rz <= 3; rz++) put("road", rx, 0, rz, 0);
-      for (var sz = 4; sz <= 11; sz++) { put("road", 1, 0, sz, 0); put("road", 2, 0, sz, 0); }
+      function pave(x0, x1, z0, z1) {
+        for (var px = x0; px <= x1; px++) for (var pz = z0; pz <= z1; pz++) put("road", px, 0, pz, 0);
+      }
+      pave(-4, 5, -1, 3);                    // the plaza
+      pave(1, 2, 4, 11);                     // the street out toward the viewer
+      // Lanes to every plot — without these the buildings read as dropped on
+      // bare ground rather than standing on a street
+      pave(-8, -5, 0, 0);
+      pave(-5, -5, 4, 8);
+      pave(-4, 5, -2, -2);
+      pave(6, 9, -2, -2);
+      pave(6, 8, 1, 1);
+      pave(3, 6, 5, 5);
+      pave(0, 0, -5, -2);
+      pave(-10, -8, 2, 2);
+      pave(-11, -9, -2, -2);
 
       // Buildings around the square — varied footprint and height
       cottage(-8, -1, 2, 2, 2, "x1");
