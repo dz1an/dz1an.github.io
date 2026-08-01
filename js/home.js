@@ -199,15 +199,13 @@
       // Real 3D dolly — stays sharp at any size. The turn is a gentle quarter
       // rotation rather than the old ~full spin, so the approach reads as
       // walking up to the tree instead of the tree twirling.
-      var radius = 118 - c * 92;                    // 118% -> 26%
+      var radius = 118 - c * 88;                    // 118% -> 30% (as it always was)
       var theta = 15 + a * 18 + c * 52;             // ~85deg total, eased per act
       var phi = 82 - c * 10;                        // lifts slightly as we close in
       if (sMv) sMv.cameraOrbit = theta.toFixed(1) + "deg " + phi.toFixed(1) + "deg " + radius.toFixed(1) + "%";
-
-      // Dissolve on the last stretch so the canopy hands off to the green
-      // section instead of a full-frame tree being swept away when the pin
-      // releases — that hard sweep is the "cut" at the end of the scroll.
-      sTree.style.opacity = (1 - ease(seg(p, 0.90, 1.0)) * 0.9).toFixed(3);
+      // NOTE: do NOT fade the pine out at the end. The copy is already dimming
+      // to 15% here, so fading the tree too leaves the last frame as two ghosts
+      // on empty green. The pine owns this beat at full strength.
 
       // Copy steps aside for the final push so the pine owns the last beat
       sIntro.style.opacity = (b * (1 - ease(seg(p, 0.86, 1.0)) * 0.85)).toFixed(3);
