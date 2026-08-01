@@ -171,6 +171,59 @@ a { color: var(--sage); }
   width: min(96vw, 1100px); height: 92vh;
   pointer-events: none; will-change: transform;
 }
+
+/* ---- Film grain -----------------------------------------------------
+   A single fixed SVG-noise layer over the whole page. It is what stops the
+   big flat cream and green fields from looking like plastic. Very low
+   opacity, never animated, pointer-events off. */
+.grain {
+  position: fixed; inset: -50%;
+  width: 200%; height: 200%;
+  pointer-events: none; z-index: 9998;
+  opacity: 0.32; mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.42'/%3E%3C/svg%3E");
+}
+@media (prefers-reduced-motion: reduce) { .grain { opacity: 0.18; } }
+
+/* ---- Masked line reveals --------------------------------------------
+   Each line sits in an overflow-hidden band and rises into place. Applied to
+   section headings via JS (it splits the text into .rl-line wrappers), so
+   markup stays clean and it degrades to plain text without JS. */
+.rl-line { display: block; overflow: hidden; }
+.rl-line > span {
+  display: block;
+  transform: translateY(105%);
+  transition: transform 0.95s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.rl-in .rl-line > span { transform: translateY(0); }
+.rl-line:nth-child(2) > span { transition-delay: 0.08s; }
+.rl-line:nth-child(3) > span { transition-delay: 0.16s; }
+.rl-line:nth-child(4) > span { transition-delay: 0.24s; }
+@media (prefers-reduced-motion: reduce) {
+  .rl-line > span { transform: none; transition: none; }
+}
+
+/* Magnetic buttons lean toward the cursor; the transform is set inline by JS
+   and eased back out on leave. */
+.btn.is-magnetic { transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, color 0.2s ease; }
+
+/* The WebGL stand of pines. Never CSS-scaled — the dolly is a real camera
+   move, so the geometry stays sharp at any size. */
+#stageCanvas {
+  display: block; width: 100%; height: 100%;
+  opacity: 0; transition: opacity 0.9s ease;
+}
+#stageCanvas.is-ready { opacity: 1; }
+
+/* Fallback mark — visible until WebGL takes over, and the permanent state if
+   it never does (no WebGL, reduced data, script blocked). */
+.stage-mark {
+  position: absolute; inset: 0; margin: auto;
+  width: min(42vw, 320px); height: auto;
+  fill: var(--sage, #5C7650);
+  opacity: 0.9; transition: opacity 0.6s ease;
+}
+.stage-tree.has-3d .stage-mark { opacity: 0; }
 .stage-tree model-viewer {
   width: 100%; height: 100%;
   background: transparent; --poster-color: transparent;

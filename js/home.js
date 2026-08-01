@@ -151,14 +151,263 @@
     });
   }
 
+  // ============================================================
+  // STAGE SCENE — a real stand of pines the scroll flies into.
+  //
+  // Replaces the old <model-viewer> pine. The whole hero is one continuous
+  // camera move: the stand sits centred under the title, slides aside as the
+  // intro copy arrives, then the camera dollies through the outer trees and
+  // into the hero pine. Everything is a real camera move, never a CSS scale,
+  // so it stays sharp at any size.
+  //
+  // Geometry is the same baked Kenney set the playground uses (models/forest.js
+  // — sage vertex colours, no textures). Three.js and that data load lazily
+  // AFTER first paint so the landing page is never blocked by them.
+  // ============================================================
+  var stage3d = (function () {
+    var THREE_URL = "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js";
+    var renderer, scene, camera, island, heroPine, raf = null;
+    var ready = false, progress = 0, mx = 0, my = 0, cmx = 0, cmy = 0, t0 = 0;
+    var canvas = document.getElementById("stageCanvas");
+    var wrap = document.getElementById("stageTree");
+    var isSmall = window.innerWidth < 720;
+
+    function loadScript(src, done) {
+      var s = document.createElement("script");
+      s.src = src; s.onload = done; s.onerror = function () { done(new Error("load failed")); };
+      document.body.appendChild(s);
+    }
+
+    // Soft-edged ground: a radial alpha fade so the disc melts into whatever
+    // the page background happens to be (cream at the top of the scroll, green
+    // once the brand ground floods in).
+    function groundTexture() {
+      var c = document.createElement("canvas");
+      c.width = c.height = 128;
+      var ctx = c.getContext("2d");
+      var g = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+      g.addColorStop(0, "rgba(255,255,255,1)");
+      g.addColorStop(0.55, "rgba(255,255,255,0.85)");
+      g.addColorStop(1, "rgba(255,255,255,0)");
+      ctx.fillStyle = g; ctx.fillRect(0, 0, 128, 128);
+      return new THREE.CanvasTexture(c);
+    }
+
+    function geom(def) {
+      function bytes(s) {
+        var bin = atob(s), u = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+        return u.buffer;
+      }
+      var g = new THREE.BufferGeometry();
+      g.setAttribute("position", new THREE.BufferAttribute(new Float32Array(bytes(def.p)), 3));
+      g.setAttribute("normal", new THREE.BufferAttribute(new Float32Array(bytes(def.n)), 3));
+      var cu = new Uint8Array(bytes(def.c)), cf = new Float32Array(cu.length);
+      for (var i2 = 0; i2 < cu.length; i2++) cf[i2] = cu[i2] / 255;
+      g.setAttribute("color", new THREE.BufferAttribute(cf, 3));
+      g.setIndex(new THREE.BufferAttribute(new Uint16Array(bytes(def.i)), 1));
+      return g;
+    }
+
+    // One InstancedMesh per model. t lifts the baked (night-tuned) colours into
+    // daylight — this page is cream and sage, not a dark wood.
+    var propMat = null;
+    function instance(def, list) {
+      if (!def || !list.length) return null;
+      if (!propMat) propMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85 });
+      var im = new THREE.InstancedMesh(geom(def), propMat, list.length);
+      var d = new THREE.Object3D(), col = new THREE.Color();
+      for (var k = 0; k < list.length; k++) {
+        var it = list[k];
+        d.position.set(it.x, it.y || 0, it.z);
+        d.rotation.set(0, it.ry || 0, 0);
+        d.scale.setScalar(it.s || 1);
+        d.updateMatrix();
+        im.setMatrixAt(k, d.matrix);
+        col.setScalar(it.t === undefined ? 1 : it.t);
+        im.setColorAt(k, col);
+      }
+      im.instanceMatrix.needsUpdate = true;
+      if (im.instanceColor) im.instanceColor.needsUpdate = true;
+      im.frustumCulled = false;
+      island.add(im);
+      return im;
+    }
+
+    function build() {
+      var F = window.DZ_FOREST;
+      if (!F || !canvas) return false;
+
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(38, 1, 0.1, 200);
+      renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: !isSmall });
+      renderer.setClearColor(0x000000, 0);
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.25;
+
+      // Bright, warm daylight — the opposite of the playground's night
+      scene.add(new THREE.AmbientLight(0xE9EEDF, 2.1));
+      scene.add(new THREE.HemisphereLight(0xFFFFFF, 0x6E7F5E, 1.5));
+      var key = new THREE.DirectionalLight(0xFFF4DC, 2.6);
+      key.position.set(-8, 14, 9);
+      scene.add(key);
+      var rim = new THREE.DirectionalLight(0xCFE0CB, 0.9);
+      rim.position.set(10, 6, -8);
+      scene.add(rim);
+
+      island = new THREE.Group();
+      scene.add(island);
+
+      // Ground the stand sits on
+      var ground = new THREE.Mesh(
+        new THREE.PlaneGeometry(1, 1),
+        new THREE.MeshBasicMaterial({
+          map: groundTexture(), color: 0x9DB08A,
+          transparent: true, opacity: 0.5, depthWrite: false
+        })
+      );
+      ground.rotation.x = -Math.PI / 2;
+      ground.scale.setScalar(30);
+      ground.position.y = -0.02;
+      island.add(ground);
+
+      // Hero pine — the brand mark, dead centre, the thing we fly into
+      heroPine = new THREE.Mesh(geom(F.treeHigh), new THREE.MeshStandardMaterial({
+        vertexColors: true, roughness: 0.85
+      }));
+      heroPine.scale.setScalar(4.4 / 2.28);
+      island.add(heroPine);
+
+      // A stand around it, thinning outward, with a gap kept clear at the
+      // front so the hero pine is never crowded
+      var pines = [], rocks = [], tufts = [];
+      var rings = isSmall ? [{ n: 6, r: 5.2, s: 2.6 }, { n: 8, r: 8.6, s: 2.1 }]
+                          : [{ n: 7, r: 5.0, s: 2.9 }, { n: 10, r: 8.4, s: 2.3 }, { n: 11, r: 12.4, s: 1.8 }];
+      var seed = 0;
+      function rnd() { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; }
+      rings.forEach(function (ring, ri) {
+        for (var i = 0; i < ring.n; i++) {
+          var a = (i / ring.n) * Math.PI * 2 + ri * 0.6 + rnd() * 0.25;
+          if (Math.abs(Math.sin(a)) < 0.28 && Math.cos(a) > 0) continue; // keep the front open
+          var r = ring.r + rnd() * 1.6;
+          var h = ring.s + rnd() * 1.1;
+          pines.push({
+            x: Math.cos(a) * r, z: Math.sin(a) * r, ry: rnd() * 6.283,
+            s: h / 2.28, t: 0.85 + rnd() * 0.4 - ri * 0.06
+          });
+          if (rnd() > 0.55) rocks.push({ x: Math.cos(a) * (r - 1.5), z: Math.sin(a) * (r - 1.5), ry: rnd() * 6.283, s: 0.5 + rnd() * 0.6, t: 1.15 + rnd() * 0.3 });
+          tufts.push({ x: Math.cos(a + 0.3) * (r - 2.2), z: Math.sin(a + 0.3) * (r - 2.2), ry: rnd() * 6.283, s: 1.1 + rnd() * 1.2, t: 1.0 + rnd() * 0.35 });
+        }
+      });
+      instance(F.treeHigh, pines);
+      instance(F.stones, rocks);
+      instance(F.plant, tufts);
+      instance(F.grass, tufts.map(function (g2) {
+        return { x: g2.x * 0.82, z: g2.z * 0.82, ry: g2.ry * 1.7, s: g2.s * 1.5, t: 0.9 };
+      }));
+
+      onResize();
+      ready = true;
+      wrap.classList.add("has-3d");
+      canvas.classList.add("is-ready");
+      return true;
+    }
+
+    function onResize() {
+      if (!renderer || !wrap) return;
+      var w = wrap.clientWidth || window.innerWidth;
+      var h = wrap.clientHeight || window.innerHeight;
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, isSmall ? 1.5 : 1.8));
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
+
+    function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
+    function seg(p, a, b) { return clamp01((p - a) / (b - a)); }
+    function ease(x) { return x * x * (3 - 2 * x); }
+
+    // The camera move IS the hero. Three beats, matching the copy:
+    //   1. the stand sits centred under the title
+    //   2. it swings aside as the intro arrives
+    //   3. the camera drives through the outer trees into the hero pine
+    function frame(time) {
+      raf = null;
+      if (!ready) return;
+      if (!t0) t0 = time;
+      var t = (time - t0) / 1000;
+      var p = progress;
+
+      var a = ease(seg(p, 0.0, 0.34));    // settle in
+      var b = ease(seg(p, 0.28, 0.56));   // swing aside
+      var c = ease(seg(p, 0.62, 1.0));    // fly in
+
+      var dist = 26 - a * 5 - c * 20.2;               // 26 -> 21 -> 0.8
+      var height = 7.5 - a * 1.6 - c * 3.6;
+      var orbit = -0.5 + a * 0.35 + b * 0.5 + c * 0.55 + t * 0.014; // always drifting
+      camera.position.set(
+        Math.sin(orbit) * dist + cmx * (1.2 - c),
+        height + cmy * 0.7,
+        Math.cos(orbit) * dist
+      );
+      // Aim up the trunk as we close in, so the pine fills the frame
+      camera.lookAt(0, 1.6 + c * 1.5, 0);
+
+      // The stand slides right while the copy takes the left
+      island.position.x = b * 4.6 - c * 3.2;
+      island.rotation.y = t * 0.03;
+
+      renderer.render(scene, camera);
+      if (!reduceMotion) raf = requestAnimationFrame(frame);
+    }
+
+    function tick() { if (ready && raf === null) raf = requestAnimationFrame(frame); }
+
+    return {
+      setProgress: function (p) { progress = p; if (reduceMotion) tick(); },
+      setPointer: function (x, y) { mx = x; my = y; },
+      resize: function () { onResize(); tick(); },
+      // Lazy boot: three.js + the baked models in parallel, after first paint
+      boot: function () {
+        if (!canvas || !wrap) return;
+        var pending = 2, failed = false;
+        function settle(err) {
+          if (err) failed = true;
+          if (--pending > 0) return;
+          if (failed || typeof THREE === "undefined") return; // SVG mark stays
+          try {
+            if (build()) {
+              // Cursor parallax, eased
+              if (!reduceMotion) {
+                document.addEventListener("mousemove", function (e) {
+                  stage3d.setPointer((e.clientX / window.innerWidth - 0.5) * 2,
+                                     (e.clientY / window.innerHeight - 0.5) * 2);
+                }, { passive: true });
+                (function ease3d() {
+                  cmx += (mx - cmx) * 0.05; cmy += (my - cmy) * 0.05;
+                  requestAnimationFrame(ease3d);
+                })();
+              }
+              tick();
+            }
+          } catch (e) {
+            // Keep the SVG mark, but never fail silently — a blank hero with
+            // no console trace is the worst possible failure mode here.
+            if (window.console) console.warn("stage scene unavailable:", e && e.message);
+          }
+        }
+        loadScript(THREE_URL, settle);
+        loadScript("models/forest.js", settle);
+      }
+    };
+  })();
+
   // ---- STAGE: one pinned scroll scene (hero title -> brand ground -> intro) ----
   var stage = document.getElementById("stage");
   if (stage && !reduceMotion) {
     var sBg = stage.querySelector(".stage-bg");
     var sTitle = document.getElementById("stageTitle");
     var sIntro = document.getElementById("stageIntro");
-    var sTree = document.getElementById("stageTree");
-    var sMv = stage.querySelector("model-viewer");
     var topBar = document.querySelector(".top");
     var stTicking = false, wasDark = false;
 
@@ -187,15 +436,9 @@
       sIntro.style.transform = "translateY(" + ((1 - b) * 26).toFixed(1) + "px)";
       sIntro.style.pointerEvents = b > 0.6 ? "auto" : "none";
 
-      // Act 3 — hold, then fly the camera into the pine until it fills the frame
-      var c = ease(seg(p, 0.66, 1.0));
-      var shiftX = b * 22 - c * 10;                 // settles right, drifts back in as it grows
-      var scale = 1 + a * 0.18 + c * 0.35;
-      sTree.style.transform =
-        "translate(calc(-50% + " + shiftX.toFixed(2) + "vw), -50%) scale(" + scale.toFixed(3) + ")";
-      // Real 3D dolly (stays sharp at any size) + continuous turn
-      var radius = 118 - c * 88;                    // 118% -> 30%
-      if (sMv) sMv.cameraOrbit = (15 + p * 300).toFixed(1) + "deg " + (82 - c * 12).toFixed(1) + "deg " + radius.toFixed(1) + "%";
+      // Act 3 — the camera itself flies into the stand. The wrapper is NOT
+      // scaled: the dolly happens inside the WebGL scene so it stays sharp.
+      stage3d.setProgress(p);
 
       // Copy steps aside for the final push so the pine owns the last beat
       sIntro.style.opacity = (b * (1 - ease(seg(p, 0.86, 1.0)) * 0.85)).toFixed(3);
@@ -216,6 +459,15 @@
     }, { passive: true });
     window.addEventListener("resize", updateStage);
     updateStage();
+  }
+
+  // Boot the WebGL stand once the page has painted — never before, so the
+  // landing content is never waiting on three.js. Under reduced motion it
+  // still builds, renders one composed frame, and never starts a loop.
+  if (stage) {
+    if (document.readyState === "complete") stage3d.boot();
+    else window.addEventListener("load", function () { stage3d.boot(); });
+    window.addEventListener("resize", function () { stage3d.resize(); }, { passive: true });
   }
 
   // ---- Triangle cursor (desktop only) ----
@@ -247,6 +499,91 @@
       requestAnimationFrame(loop);
     })();
   }
+
+  // ---- Masked line reveals on headings ----
+  // Splits a heading into per-line bands that rise into place when scrolled to.
+  // Done in JS so the HTML stays plain text (and reads fine with JS disabled).
+  (function () {
+    if (reduceMotion || !("IntersectionObserver" in window)) return;
+    var heads = document.querySelectorAll(".bg-head, .light-head");
+    if (!heads.length) return;
+
+    function split(el) {
+      // Only split simple headings — anything with links or nested markup we
+      // leave alone rather than risk destroying it.
+      var kids = el.childNodes, parts = [], ok = true;
+      for (var i = 0; i < kids.length; i++) {
+        var n = kids[i];
+        if (n.nodeType === 3) { if (n.textContent.trim()) parts.push({ html: n.textContent }); }
+        else if (n.nodeType === 1 && n.tagName === "BR") { /* line break */ }
+        else if (n.nodeType === 1 && /^(SPAN|EM|STRONG|I|B)$/.test(n.tagName) && !n.querySelector("a")) {
+          parts.push({ html: n.outerHTML });
+        } else { ok = false; break; }
+      }
+      if (!ok || !parts.length) return false;
+      var html = "";
+      for (var j = 0; j < parts.length; j++) {
+        html += '<span class="rl-line"><span>' + parts[j].html + "</span></span>";
+      }
+      el.innerHTML = html;
+      return true;
+    }
+
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) { en.target.classList.add("rl-in"); io.unobserve(en.target); }
+      });
+    }, { threshold: 0.25 });
+
+    Array.prototype.forEach.call(heads, function (h) {
+      if (split(h)) io.observe(h);
+    });
+  })();
+
+  // ---- Stat counters ----
+  // Counts up to the number already in the markup, keeping any +/st suffix.
+  (function () {
+    var stats = document.querySelectorAll(".bg-stats strong, .pnum");
+    if (!stats.length || reduceMotion || !("IntersectionObserver" in window)) return;
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (!en.isIntersecting) return;
+        io.unobserve(en.target);
+        var el = en.target, raw = el.textContent.trim();
+        var m = raw.match(/^(\d[\d,]*)(.*)$/);
+        if (!m) return;
+        var target = parseInt(m[1].replace(/,/g, ""), 10), suffix = m[2] || "";
+        if (!target || target > 100000) return;
+        var start = 0, dur = 1100, t0 = 0;
+        function step(ts) {
+          if (!t0) t0 = ts;
+          var k = Math.min(1, (ts - t0) / dur);
+          var eased = 1 - Math.pow(1 - k, 3);
+          el.textContent = Math.round(start + (target - start) * eased).toLocaleString() + suffix;
+          if (k < 1) requestAnimationFrame(step);
+        }
+        el.textContent = "0" + suffix;
+        requestAnimationFrame(step);
+      });
+    }, { threshold: 0.6 });
+    Array.prototype.forEach.call(stats, function (s) { io.observe(s); });
+  })();
+
+  // ---- Magnetic buttons (fine pointers only) ----
+  (function () {
+    if (reduceMotion || !window.matchMedia || !window.matchMedia("(pointer: fine)").matches) return;
+    var btns = document.querySelectorAll(".btn");
+    Array.prototype.forEach.call(btns, function (b) {
+      b.classList.add("is-magnetic");
+      b.addEventListener("mousemove", function (e) {
+        var r = b.getBoundingClientRect();
+        var dx = (e.clientX - (r.left + r.width / 2)) / r.width;
+        var dy = (e.clientY - (r.top + r.height / 2)) / r.height;
+        b.style.transform = "translate(" + (dx * 14).toFixed(1) + "px," + (dy * 10).toFixed(1) + "px)";
+      });
+      b.addEventListener("mouseleave", function () { b.style.transform = ""; });
+    });
+  })();
 
   // ---- Service worker ----
   if ("serviceWorker" in navigator) {
