@@ -165,11 +165,14 @@ a { color: var(--sage); }
 /* The pine — a large canvas so the camera can dolly right into it without
    clipping at the element edge (the model's on-screen size is driven by
    camera-orbit radius, not by CSS scale, so it stays sharp when it fills). */
+/* Full-bleed: the scene is the whole pinned viewport, so there is no canvas
+   edge or ground rim in frame — you are standing in it, not looking at a
+   panel of it. */
 .stage-tree {
   position: absolute; z-index: 1;
-  left: 50%; top: 50%; transform: translate(-50%, -50%);
-  width: min(96vw, 1100px); height: 92vh;
-  pointer-events: none; will-change: transform;
+  inset: 0; transform: none;
+  width: 100%; height: 100%;
+  pointer-events: none;
 }
 
 /* ---- Film grain -----------------------------------------------------
@@ -219,16 +222,10 @@ a { color: var(--sage); }
    it never does (no WebGL, reduced data, script blocked). */
 .stage-mark {
   position: absolute; inset: 0; margin: auto;
-  width: min(42vw, 320px); height: auto;
-  fill: var(--sage, #5C7650);
-  opacity: 0.9; transition: opacity 0.6s ease;
+  width: auto; height: min(62vh, 520px);
+  opacity: 0.92; transition: opacity 0.6s ease;
 }
 .stage-tree.has-3d .stage-mark { opacity: 0; }
-.stage-tree model-viewer {
-  width: 100%; height: 100%;
-  background: transparent; --poster-color: transparent;
-  --progress-bar-color: transparent; --progress-bar-height: 0px;
-}
 
 /* Intro copy — arrives as the ground turns green */
 .stage-intro {
@@ -558,7 +555,8 @@ a.bf-value:hover { color: var(--sage); }
 @media (max-width: 720px) {
   /* Shorter pin so the scene doesn't overstay on a phone */
   .stage { height: 300vh; }
-  .stage-tree { width: 100vw; height: 70vh; }
+  /* stays full-bleed on phones too — see the desktop rule */
+  .stage-mark { height: min(46vh, 340px); }
   .stage-foot { letter-spacing: 0.1em; bottom: 18px; }
   .stage-intro { align-items: center; }
   .stage-intro .bg-body { font-size: 0.98rem; }

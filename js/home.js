@@ -174,7 +174,13 @@
 
     function loadScript(src, done) {
       var s = document.createElement("script");
-      s.src = src; s.onload = done; s.onerror = function () { done(new Error("load failed")); };
+      // NOTE: onload must NOT be wired straight to done — the browser passes a
+      // load Event as the first argument, and done() treats a truthy first
+      // argument as an error. That silently failed every boot and left the
+      // static fallback mark on screen with no scene and no scroll transition.
+      s.onload = function () { done(); };
+      s.onerror = function () { done(new Error("load failed: " + src)); };
+      s.src = src;
       document.body.appendChild(s);
     }
 
@@ -267,22 +273,28 @@
         })
       );
       ground.rotation.x = -Math.PI / 2;
-      ground.scale.setScalar(30);
-      ground.position.y = -0.02;
+      ground.scale.setScalar(58);   // wide enough that its faded rim is always
+      ground.position.y = -0.02;    // outside a full-bleed frame
       island.add(ground);
 
-      // Hero pine — the brand mark, dead centre, the thing we fly into
-      heroPine = new THREE.Mesh(geom(F.treeHigh), new THREE.MeshStandardMaterial({
+      // Hero pine — the brand tree, dead centre, the thing we fly into.
+      // This is the Nature Kit rounded pine (models/pine.glb, baked into
+      // forest.js as pineRound): the same tree as the //dzian mark.
+      var PINE = F.pineRound || F.treeHigh;
+      var PINE_H = F.pineRound ? 1.25 : 2.28;   // model height, for scaling
+      heroPine = new THREE.Mesh(geom(PINE), new THREE.MeshStandardMaterial({
         vertexColors: true, roughness: 0.85
       }));
-      heroPine.scale.setScalar(4.4 / 2.28);
+      heroPine.scale.setScalar(4.4 / PINE_H);
       island.add(heroPine);
 
       // A stand around it, thinning outward, with a gap kept clear at the
       // front so the hero pine is never crowded
       var pines = [], rocks = [], tufts = [];
-      var rings = isSmall ? [{ n: 6, r: 5.2, s: 2.6 }, { n: 8, r: 8.6, s: 2.1 }]
-                          : [{ n: 7, r: 5.0, s: 2.9 }, { n: 10, r: 8.4, s: 2.3 }, { n: 11, r: 12.4, s: 1.8 }];
+      // Full-bleed needs depth on every side, so the stand runs further out
+      var rings = isSmall ? [{ n: 6, r: 5.2, s: 3.0 }, { n: 9, r: 9.0, s: 2.4 }, { n: 10, r: 14, s: 2.0 }]
+                          : [{ n: 7, r: 5.0, s: 3.2 }, { n: 11, r: 8.6, s: 2.7 },
+                             { n: 13, r: 13.0, s: 2.2 }, { n: 15, r: 19.0, s: 1.9 }];
       var seed = 0;
       function rnd() { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; }
       rings.forEach(function (ring, ri) {
@@ -293,13 +305,13 @@
           var h = ring.s + rnd() * 1.1;
           pines.push({
             x: Math.cos(a) * r, z: Math.sin(a) * r, ry: rnd() * 6.283,
-            s: h / 2.28, t: 0.85 + rnd() * 0.4 - ri * 0.06
+            s: h / PINE_H, t: 0.9 + rnd() * 0.4 - ri * 0.05
           });
           if (rnd() > 0.55) rocks.push({ x: Math.cos(a) * (r - 1.5), z: Math.sin(a) * (r - 1.5), ry: rnd() * 6.283, s: 0.5 + rnd() * 0.6, t: 1.15 + rnd() * 0.3 });
           tufts.push({ x: Math.cos(a + 0.3) * (r - 2.2), z: Math.sin(a + 0.3) * (r - 2.2), ry: rnd() * 6.283, s: 1.1 + rnd() * 1.2, t: 1.0 + rnd() * 0.35 });
         }
       });
-      instance(F.treeHigh, pines);
+      instance(PINE, pines);
       instance(F.stones, rocks);
       instance(F.plant, tufts);
       instance(F.grass, tufts.map(function (g2) {

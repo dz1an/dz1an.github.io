@@ -18,6 +18,7 @@ var CORE_ASSETS = [
   "/vendor/typed/typed.min.js",
   "/vendor/font-awesome/css/all.min.css",
   "/images/profile.png",
+  "/images/mark-pine.svg",
   "/favicon.svg"
 ];
 

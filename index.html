@@ -273,24 +273,11 @@
   <div id="preloader" aria-hidden="true">
     <div class="pine-loader">
       <div class="pl-mark">
-        <svg class="pl-pine pl-pine-base" viewBox="0 0 220 300" xmlns="http://www.w3.org/2000/svg">
-          <polygon points="110,22 58,96 84,96 110,54"/>
-          <polygon points="110,22 162,96 136,96 110,54"/>
-          <polygon points="106,84 38,180 71,180 106,126"/>
-          <polygon points="106,84 174,180 141,180 106,126"/>
-          <polygon points="112,156 18,272 57,272 112,206"/>
-          <polygon points="112,156 206,272 167,272 112,206"/>
-          <polygon points="100,268 124,266 121,298 104,300"/>
-        </svg>
-        <svg class="pl-pine pl-pine-fill" id="plFill" viewBox="0 0 220 300" xmlns="http://www.w3.org/2000/svg">
-          <polygon points="110,22 58,96 84,96 110,54" fill="#6E8A5E"/>
-          <polygon points="110,22 162,96 136,96 110,54" fill="#55704B"/>
-          <polygon points="106,84 38,180 71,180 106,126" fill="#4A6B51"/>
-          <polygon points="106,84 174,180 141,180 106,126" fill="#3A5A40"/>
-          <polygon points="112,156 18,272 57,272 112,206" fill="#3E5C4B"/>
-          <polygon points="112,156 206,272 167,272 112,206" fill="#344E41"/>
-          <polygon points="100,268 124,266 121,298 104,300" fill="#3B2A1A"/>
-        </svg>
+        <!-- The Kenney pine itself, baked to flat SVG facets by
+             tools/bake-props/bake-mark.js — same model as the forest, so the
+             loader mark and the world are literally the same tree. -->
+        <img class="pl-pine pl-pine-base" src="images/mark-pine.svg" alt="" decoding="async">
+        <img class="pl-pine pl-pine-fill" id="plFill" src="images/mark-pine.svg" alt="" decoding="async">
         <span class="pl-ff pl-ff1"></span>
         <span class="pl-ff pl-ff2"></span>
       </div>

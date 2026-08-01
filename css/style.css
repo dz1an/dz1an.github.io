@@ -5462,9 +5462,13 @@ body.loaded #preloader {
 }
 .pl-mark { position: relative; width: clamp(110px, 18vw, 170px); }
 .pl-pine { width: 100%; height: auto; display: block; }
-.pl-pine-base polygon { fill: #1C2A20; }
+/* Base copy sits nearly black; the lit copy is revealed bottom-up over it, so
+   the pine fills with colour as the page loads. Both are the same asset —
+   the real Kenney pine baked to flat SVG facets. */
+.pl-pine-base { filter: brightness(0.34) saturate(0.6); }
 .pl-pine-fill {
   position: absolute; inset: 0;
+  filter: brightness(1.5) saturate(1.15);
   clip-path: inset(100% 0 0 0); /* JS reveals bottom-up as load progresses */
 }
 .pl-brand {

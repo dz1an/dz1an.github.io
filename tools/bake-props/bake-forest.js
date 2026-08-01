@@ -145,6 +145,64 @@ function bake(file, kind, png) {
   };
 }
 
+// The Nature Kit pine (models/pine.glb) carries flat material colours rather
+// than an atlas, so it gets its own path: vertex colour = the material's
+// baseColorFactor, which glTF already stores linear — exactly our format.
+function bakeByMaterial(absFile) {
+  const b = fs.readFileSync(absFile);
+  const jlen = b.readUInt32LE(12);
+  const j = JSON.parse(b.toString('utf8', 20, 20 + jlen));
+  const off = 20 + jlen, bin = b.slice(off + 8, off + 8 + b.readUInt32LE(off));
+  const bv = i => { const v = j.bufferViews[i]; return bin.slice(v.byteOffset || 0, (v.byteOffset || 0) + v.byteLength); };
+  const acc = i => {
+    const a = j.accessors[i], d = bv(a.bufferView), o = a.byteOffset || 0;
+    const T = { 5120: Int8Array, 5121: Uint8Array, 5122: Int16Array, 5123: Uint16Array, 5125: Uint32Array, 5126: Float32Array }[a.componentType];
+    const comps = { SCALAR: 1, VEC2: 2, VEC3: 3, VEC4: 4 }[a.type];
+    return new T(d.buffer.slice(d.byteOffset + o, d.byteOffset + o + a.count * comps * T.BYTES_PER_ELEMENT));
+  };
+
+  const P = [], N = [], C = [], I = [];
+  let vOff = 0;
+  (j.nodes || []).forEach(node => {
+    if (node.mesh === undefined) return;
+    const m = composeTRS(node);
+    j.meshes[node.mesh].primitives.forEach(p => {
+      const pos = acc(p.attributes.POSITION), nor = acc(p.attributes.NORMAL);
+      const idx = p.indices !== undefined ? acc(p.indices) : null;
+      const mat = (j.materials || [])[p.material] || {};
+      const f = (mat.pbrMetallicRoughness && mat.pbrMetallicRoughness.baseColorFactor) || [0.5, 0.5, 0.5, 1];
+      const rgb = [0, 1, 2].map(k => Math.max(0, Math.min(255, Math.round(f[k] * 255))));
+      const count = pos.length / 3;
+      for (let k = 0; k < count; k++) {
+        const wp = xfp(m, pos[k * 3], pos[k * 3 + 1], pos[k * 3 + 2]);
+        const wn = xfn(m, nor[k * 3], nor[k * 3 + 1], nor[k * 3 + 2]);
+        P.push(wp[0], wp[1], wp[2]); N.push(wn[0], wn[1], wn[2]);
+        C.push(rgb[0], rgb[1], rgb[2]);
+      }
+      if (idx) for (let k = 0; k < idx.length; k++) I.push(idx[k] + vOff);
+      else for (let k = 0; k < count; k++) I.push(k + vOff);
+      vOff += count;
+    });
+  });
+
+  let minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9, minZ = 1e9, maxZ = -1e9;
+  for (let k = 0; k < P.length; k += 3) {
+    minX = Math.min(minX, P[k]); maxX = Math.max(maxX, P[k]);
+    minY = Math.min(minY, P[k + 1]); maxY = Math.max(maxY, P[k + 1]);
+    minZ = Math.min(minZ, P[k + 2]); maxZ = Math.max(maxZ, P[k + 2]);
+  }
+  const cx = (minX + maxX) / 2, cz = (minZ + maxZ) / 2;
+  for (let k = 0; k < P.length; k += 3) { P[k] -= cx; P[k + 1] -= minY; P[k + 2] -= cz; }
+  console.log(path.basename(absFile).padEnd(16), 'verts:', String(vOff).padEnd(5), 'tris:', String(I.length / 3).padEnd(5),
+    'size:', (maxX - minX).toFixed(2) + ' x ' + (maxY - minY).toFixed(2) + ' x ' + (maxZ - minZ).toFixed(2));
+
+  const b64 = ta => Buffer.from(ta.buffer, ta.byteOffset, ta.byteLength).toString('base64');
+  return {
+    p: b64(new Float32Array(P)), n: b64(new Float32Array(N)),
+    c: b64(new Uint8Array(C)), i: b64(new Uint16Array(I))
+  };
+}
+
 const mf = decodePNG(fs.readFileSync(path.join(__dirname, 'forest/colormap-miniforest.png')));
 const ar = decodePNG(fs.readFileSync(path.join(__dirname, 'forest/colormap-arena.png')));
 
@@ -156,7 +214,9 @@ const forest = {
   stones:    bake('stones', 'stone', mf),
   plant:     bake('plant', 'plant', mf),
   grass:     bake('patch-grass', 'ground', mf),
-  trophy:    bake('trophy', 'gold', ar)
+  trophy:    bake('trophy', 'gold', ar),
+  // Nature Kit rounded pine — the brand tree (main.html hero + the //dzian mark)
+  pineRound: bakeByMaterial(path.join(__dirname, '../../models/pine.glb'))
 };
 
 const out = '// Forest set — CC0 models by Kenney (kenney.nl): Mini Forest + Starter Kit\n' +
