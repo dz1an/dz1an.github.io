@@ -1,5 +1,5 @@
-// ============================================
-// Creative Mode — //dzian Forest
+﻿// ============================================
+// Creative Mode â€” //dzian Forest
 // A scroll-driven walk through a procedural forest
 // Projects are lanterns. Tech are fireflies.
 // ============================================
@@ -26,7 +26,7 @@
   var trees = [];
   var lanterns = [];
   var fireflies = [];
-  var wayLabels = []; // static waypoint labels — faded by camera distance in animate()
+  var wayLabels = []; // static waypoint labels â€” faded by camera distance in animate()
   var trails = [];
   var spawned = [];
   var scrollEl = null;
@@ -57,7 +57,7 @@
       var data = JSON.parse(localStorage.getItem("plantedTrees") || "[]");
       data.forEach(function(d, i) { spawnTree(d.x, d.z, false, i * 0.15); });
       if (data.length > 0 && scene._brandLabel) {
-        // Show "welcome back" — temporarily change brand label
+        // Show "welcome back" â€” temporarily change brand label
         scene._brandLabel.material.map.dispose();
         var wb = makeLabel("welcome back", { fontSize: 18, fontWeight: "400", color: "rgba(163,177,138,0.5)", scale: 1.0, opacity: 0.4 });
         wb.position.copy(scene._brandSub.position);
@@ -76,7 +76,7 @@
   var lastTouchSpawn = 0;
 
   // === Palette ===
-  // (Trunk/canopy color pools removed — all forest color is baked into the
+  // (Trunk/canopy color pools removed â€” all forest color is baked into the
   //  Kenney model vertex colors in models/forest.js, varied by instance tint.)
 
   var PROJECTS = [
@@ -92,47 +92,47 @@
     "OpenCV","PostgreSQL","Git","Xcode","Claude Code","n8n"
   ];
 
-  // Camera path — designed per chapter, 3D content opposite text cards
+  // Camera path â€” designed per chapter, 3D content opposite text cards
   var CAMERA_PATH = [
-    // Ch0: "The Road Ahead" (LEFT card) — trees on RIGHT
+    // Ch0: "The Road Ahead" (LEFT card) â€” trees on RIGHT
     { at: 0.00, pos: [0, 8, 44],      look: [2, 0, 20] },
     { at: 0.05, pos: [0, 6, 36],      look: [2, 0.5, 16] },
-    // Ch1: "Where the Path Began" (RIGHT card) — forest depth on LEFT
+    // Ch1: "Where the Path Began" (RIGHT card) â€” forest depth on LEFT
     { at: 0.10, pos: [1, 4.5, 26],    look: [-2, 0.5, 10] },
     { at: 0.16, pos: [1, 3.5, 18],    look: [-1, 0.5, 4] },
-    // Ch2: "The Resting Place" (LEFT card) — camp on RIGHT
+    // Ch2: "The Resting Place" (LEFT card) â€” camp on RIGHT
     { at: 0.22, pos: [3, 2.5, 10],    look: [1, 0.5, 0] },
     { at: 0.28, pos: [3, 2, 6],       look: [0, 0.6, 0] },
-    // Ch3: "The Journal" (RIGHT card) — settle in at the campfire, camp on LEFT.
+    // Ch3: "The Journal" (RIGHT card) â€” settle in at the campfire, camp on LEFT.
     // (This used to push into a laptop model that no longer exists; it now
     //  frames the fire + tent, which is what "the journal" chapter is about.)
     { at: 0.33,  pos: [2.9, 1.9, 4.6], look: [0.2, 0.6, 0.1] },
     { at: 0.345, pos: [2.4, 1.5, 3.4], look: [0.1, 0.5, 0.2] },
     { at: 0.36,  pos: [2.1, 1.4, 2.8], look: [0.0, 0.5, 0.1] },
     { at: 0.38,  pos: [1.4, 2.3, 1.4], look: [0, 0.6, -4] },
-    // Ch4: "First Waypoints" (LEFT card) — lanterns on RIGHT
+    // Ch4: "First Waypoints" (LEFT card) â€” lanterns on RIGHT
     { at: 0.42, pos: [-2, 3, -4],     look: [0, 2.5, -12] },
     { at: 0.47, pos: [-1, 3.2, -8],   look: [0, 3, -12] },
     { at: 0.52, pos: [0, 3, -12],     look: [2, 2.8, -16] },
-    // Ch5: "More Light in the Dark" (RIGHT card) — lanterns on LEFT
+    // Ch5: "More Light in the Dark" (RIGHT card) â€” lanterns on LEFT
     { at: 0.57, pos: [2, 3.2, -17],   look: [-2, 3, -21] },
     { at: 0.62, pos: [2, 3, -22],     look: [-1, 2.8, -27] },
-    // Ch6: "What I Carry With Me" (LEFT card) — inside the firefly meadow
+    // Ch6: "What I Carry With Me" (LEFT card) â€” inside the firefly meadow
     { at: 0.67, pos: [3, 2.5, -34],   look: [-3, 2.5, -37] },
     { at: 0.72, pos: [2, 2.5, -37],   look: [-4, 2.5, -39] },
-    // Ch7: "A Mark Left Behind" (CENTER) — rise over the award cairn
+    // Ch7: "A Mark Left Behind" (CENTER) â€” rise over the award cairn
     { at: 0.77, pos: [-1, 6, -30],    look: [0, 1, -10] },
-    // Ch8: "Rising Above" (RIGHT card) — canopy on LEFT
+    // Ch8: "Rising Above" (RIGHT card) â€” canopy on LEFT
     { at: 0.83, pos: [-3, 8, -15],    look: [-2, 2, 0] },
     { at: 0.88, pos: [-2, 9, -5],     look: [0, 1, 0] },
-    // Ch9: "The Journey Continues" (CENTER) — settle back over camp
+    // Ch9: "The Journey Continues" (CENTER) â€” settle back over camp
     { at: 0.94, pos: [6, 8, 8],       look: [0, 0.5, 0] },
     { at: 1.00, pos: [12, 7, 5],      look: [0, 0.5, 0] }
   ];
 
   function lerp(a, b, t) { return a + (b - a) * t; }
 
-  // Mobile camera offset — higher and further back
+  // Mobile camera offset â€” higher and further back
   var MOB_Y = isMobile ? 3 : 0;
   var MOB_Z = isMobile ? 6 : 0;
 
@@ -145,7 +145,7 @@
     }
     var a = CAMERA_PATH[i], b = CAMERA_PATH[i + 1];
     var t = (p - a.at) / (b.at - a.at);
-    // Quintic smoothstep — much smoother than cubic
+    // Quintic smoothstep â€” much smoother than cubic
     t = t * t * t * (t * (t * 6 - 15) + 10);
     return {
       px: lerp(a.pos[0], b.pos[0], t),
@@ -242,7 +242,7 @@
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.15));
     raycaster = new THREE.Raycaster(); mouseVec = new THREE.Vector2();
 
-    // Lighting — a DARK wood lit by its own sources.
+    // Lighting â€” a DARK wood lit by its own sources.
     //
     // Deliberately low global light. Raising ambient/hemisphere to brighten the
     // scene was tried and reverted: it flattened the forest into uniform mint
@@ -254,7 +254,7 @@
     moon.position.set(-20, 30, 10);
     scene.add(moon); scene._moon = moon;
 
-    // (The three weak fill PointLights that used to sit here were removed —
+    // (The three weak fill PointLights that used to sit here were removed â€”
     //  they cost the same per-pixel as a lamp light while adding almost no
     //  visible light. That budget now pays for real lights on the path lamps.)
 
@@ -269,12 +269,12 @@
     createSky(); createSmoke(); createGroundDetails();
     createPathLamps(); createAmbientFireflies();
 
-    // Bind input listeners once — init() can run again after a full teardown.
+    // Bind input listeners once â€” init() can run again after a full teardown.
     //
     // These MUST live on the scroll container, not the canvas. .creative-scroll
     // is a full-viewport fixed overlay at z-index 1001 with pointer-events:auto
     // (it has to be hit-testable to scroll at all), so it sits above the canvas
-    // and swallows every pointer event — canvas-bound listeners never fired,
+    // and swallows every pointer event â€” canvas-bound listeners never fired,
     // which meant plant-a-tree was silently dead on every device.
     if (!listenersBound) {
       listenersBound = true;
@@ -283,7 +283,7 @@
       surface.addEventListener("mousedown", function () { isMouseDown = true; });
       surface.addEventListener("mouseup", function () { isMouseDown = false; });
       surface.addEventListener("click", onClick);
-      // Touch stays PASSIVE so the container keeps its native momentum scroll —
+      // Touch stays PASSIVE so the container keeps its native momentum scroll â€”
       // the journey is driven by scrolling, so stealing touchmove (the old
       // behaviour) made the walk unscrollable on phones. A tree is planted on a
       // deliberate tap instead: little movement, short duration.
@@ -303,7 +303,7 @@
   }
 
   // ======================== Terrain ========================
-  // Gentler noise — less extreme peaks so trees sit flush
+  // Gentler noise â€” less extreme peaks so trees sit flush
   function terrainHeight(x, z) {
     var h = noise2D(x, z) * 0.5;
     var d = Math.sqrt(x * x + z * z);
@@ -329,7 +329,7 @@
     scene.add(terrain);
     scene._terrain = terrain;
 
-    // Ground cover layer — slightly above terrain, hides gaps at tree bases
+    // Ground cover layer â€” slightly above terrain, hides gaps at tree bases
     var coverGeo = new THREE.PlaneGeometry(120, 120, 20, 20);
     var coverPos = coverGeo.attributes.position;
     for (var j = 0; j < coverPos.count; j++) {
@@ -349,14 +349,14 @@
     return terrainHeight(x, z);
   }
 
-  // Exclusion zones — keep trees away from lanterns, fireflies, and camera path
-  // ======================== Dirt Path — entrance to campsite ========================
+  // Exclusion zones â€” keep trees away from lanterns, fireflies, and camera path
+  // ======================== Dirt Path â€” entrance to campsite ========================
   function createDirtPath() {
     var pathMat = new THREE.MeshStandardMaterial({ color: 0x2A1F15, roughness: 0.95 });
     var FLAT = [-Math.PI / 2, 0, 0];
     var plan = [];
 
-    // Entrance to camp (z:42 to z:0) — gentle winding
+    // Entrance to camp (z:42 to z:0) â€” gentle winding
     for (var pz = 42; pz >= -2; pz -= 1.5) {
       var xWobble = Math.sin(pz * 0.15) * 1.2;
       var radius = 1.2 + Math.sin(pz * 0.3) * 0.3;
@@ -370,7 +370,7 @@
       plan.push({ p: [Math.cos(ca) * 4, 0.015, Math.sin(ca) * 4 + 2], r: FLAT, s: [cr, cr, 1] });
     }
 
-    // Camp through grove to meadow (z:-2 to z:-32) — zigzag matching lanterns
+    // Camp through grove to meadow (z:-2 to z:-32) â€” zigzag matching lanterns
     for (var gz = -2; gz >= -32; gz -= 1.5) {
       var gxWobble = Math.sin(gz * 0.2) * 2;
       var gradius = 1.0 + Math.sin(gz * 0.25) * 0.2;
@@ -407,7 +407,7 @@
       return true;
     }
 
-    // --- 1. ENTRANCE PATHWAY (z: 42 to z: 14) — dense rows both sides ---
+    // --- 1. ENTRANCE PATHWAY (z: 42 to z: 14) â€” dense rows both sides ---
     // Inner row (close to path)
     for (var pz = 42; pz >= 14; pz -= 2.5) {
       treePositions.push({ x: -4 - Math.random() * 1.5, z: pz + (Math.random() - 0.5), type: "pine", size: "tall" });
@@ -441,7 +441,7 @@
       treePositions.push({ x: cx + (Math.random() - 0.5), z: cz + (Math.random() - 0.5), type: Math.random() > 0.4 ? "pine" : "round", size: "med" });
     }
 
-    // --- 3. GROVE FLANKING — dense walls both sides of lantern path ---
+    // --- 3. GROVE FLANKING â€” dense walls both sides of lantern path ---
     // Left wall (2 deep)
     for (var gz = -8; gz >= -30; gz -= 2.5) {
       treePositions.push({ x: -6 - Math.random() * 1.5, z: gz + (Math.random() - 0.5), type: "pine", size: "tall" });
@@ -464,7 +464,7 @@
       treePositions.push({ x: mmx + (Math.random() - 0.5), z: mmz + (Math.random() - 0.5), type: "round", size: "tall" });
     }
 
-    // --- 5. DEEP WOODS — fill all gaps, evenly distributed ---
+    // --- 5. DEEP WOODS â€” fill all gaps, evenly distributed ---
     // Use a grid with jitter instead of pure random (prevents clumping)
     var deepSpacing = isMobile ? 14 : 10;
     for (var dgx = -50; dgx <= 50; dgx += deepSpacing) {
@@ -479,7 +479,7 @@
       }
     }
 
-    // --- 6. HORIZON RING (was billboard planes) — far silhouettes join the
+    // --- 6. HORIZON RING (was billboard planes) â€” far silhouettes join the
     // same instanced batches as the near forest, so they cost nothing extra ---
     var ringCount = isMobile ? 30 : 60;
     for (var ri = 0; ri < ringCount; ri++) {
@@ -585,12 +585,12 @@
     return im;
   }
 
-  // ======================== Clearing edge — rock outcrops + meadow cover ========================
+  // ======================== Clearing edge â€” rock outcrops + meadow cover ========================
   function createRuins() {
     var F = window.DZ_FOREST;
     if (!F) return; // degraded load: scene runs without outcrops/ground cover
 
-    // Rock outcrops ring the camp clearing. (These were stone "ruins" columns —
+    // Rock outcrops ring the camp clearing. (These were stone "ruins" columns â€”
     // upright grey slabs in a dark wood read as gravestones, which is not the
     // story. Natural outcrops give the clearing its edge without the graveyard.)
     var outcrops = [
@@ -605,7 +605,7 @@
       return { x: c.x, y: getGroundY(c.x, c.z) - 0.25, z: c.z, ry: c.ry, sy: c.s * 0.7, sxz: c.s, t: 0.5 + Math.random() * 0.2 };
     }));
 
-    // Meadow ground cover — modeled grass patches + plants (replaces the
+    // Meadow ground cover â€” modeled grass patches + plants (replaces the
     // glowing wildflower specks: dark sage, sits on the ground, reads as turf)
     var planGrass = [], planPlant = [];
     var gCount = isMobile ? 6 : 10, pCount = isMobile ? 6 : 12;
@@ -623,9 +623,9 @@
     buildInstancedProp(F.plant, planPlant);
   }
 
-  // ======================== Campsite — modeled tent, campfire, bedroll ========================
+  // ======================== Campsite â€” modeled tent, campfire, bedroll ========================
   // Camp props are real CC0 models (Kenney Survival Kit) pre-baked to sage
-  // vertex colors in models/props.js — no textures, one draw call each.
+  // vertex colors in models/props.js â€” no textures, one draw call each.
   function buildProp(def) {
     return new THREE.Mesh(propGeometry(def), new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9 }));
   }
@@ -634,7 +634,7 @@
     var gY = 0;
     var PROPS = window.DZ_PROPS;
 
-    // === Canvas tent — a real A-frame model, mouth turned toward the fire ===
+    // === Canvas tent â€” a real A-frame model, mouth turned toward the fire ===
     var shelterX = 2.5, shelterZ = -2.5;
     var sgY = getGroundY(shelterX, shelterZ);
     if (PROPS) {
@@ -644,14 +644,14 @@
       scene.add(tent);
     }
 
-    // Bedroll inside the tent, lying along its open axis — visible through the
+    // Bedroll inside the tent, lying along its open axis â€” visible through the
     // mouth from the fire side (the model is an open-ended A-frame)
     var sleepBag = new THREE.Mesh(new THREE.CapsuleGeometry(0.15, 0.8, 4, 8), new THREE.MeshStandardMaterial({ color: 0x4A3B2A, roughness: 0.8 }));
     sleepBag.position.set(shelterX - 0.3, sgY + 0.1, shelterZ + 0.35);
     sleepBag.rotation.set(0, 0.88, Math.PI / 2);
     scene.add(sleepBag);
 
-    // === Campfire — modeled stone fire pit with stacked logs ===
+    // === Campfire â€” modeled stone fire pit with stacked logs ===
     if (PROPS) {
       var firePit = buildProp(PROPS.fire);
       firePit.position.set(0, gY, 0.5);
@@ -670,48 +670,48 @@
       scene.add(seat2);
     }
 
-    // Fire light — main warm flicker (bright, wide reach). Intensity is
+    // Fire light â€” main warm flicker (bright, wide reach). Intensity is
     // driven every frame in animate(); range is set here.
     var fireLight = new THREE.PointLight(0xFF8C33, 5.2, 30);
     fireLight.position.set(0, gY + 0.8, 0.5);
     scene.add(fireLight);
     scene._fireLight = fireLight;
 
-    // Secondary fill — low angle, warm red tone
+    // Secondary fill â€” low angle, warm red tone
     var fireFill = new THREE.PointLight(0xE86420, 2.0, 16);
     fireFill.position.set(0, gY + 0.3, 0.5);
     scene.add(fireFill);
     scene._fireFill = fireFill;
 
-    // Wide ambient bounce — simulates light reflecting off ground/tent
+    // Wide ambient bounce â€” simulates light reflecting off ground/tent
     var fireBounce = new THREE.PointLight(0xCC7733, 1.6, 34);
     fireBounce.position.set(0, gY + 2.5, 0);
     scene.add(fireBounce);
     scene._fireBounce = fireBounce;
 
-    // Flame glow + the pool it throws on the clearing floor — additive, no
+    // Flame glow + the pool it throws on the clearing floor â€” additive, no
     // extra lights. This is what makes the camp read as the brightest place
     // on the walk when you arrive.
     var fireGlow = new THREE.Sprite(new THREE.SpriteMaterial({
       map: getGlowTexture(), color: 0xFFA23C, transparent: true, opacity: 0.85,
-      blending: THREE.AdditiveBlending, depthWrite: false
+      blending: THREE.AdditiveBlending, depthWrite: false, fog: false
     }));
     fireGlow.position.set(0, gY + 0.55, 0.5);
-    fireGlow.scale.setScalar(2.4);
+    fireGlow.scale.setScalar(2.0);
     scene.add(fireGlow);
     scene._fireGlow = fireGlow;
 
     var firePool = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({
-      map: getGlowTexture(), color: 0xD9853A, transparent: true, opacity: 0.5,
-      blending: THREE.AdditiveBlending, depthWrite: false
+      map: getGlowTexture(), color: 0xD9853A, transparent: true, opacity: 0.42,
+      blending: THREE.AdditiveBlending, depthWrite: false, fog: false
     }));
-    firePool.position.set(0, gY + 0.05, 0.5);
+    firePool.position.set(0, gY + 0.09, 0.5);
     firePool.rotation.x = -Math.PI / 2;
-    firePool.scale.setScalar(11);
+    firePool.scale.setScalar(6.5);
     scene.add(firePool);
     scene._firePool = firePool;
 
-    // (fireUp canopy-glow light removed — every PointLight multiplies the
+    // (fireUp canopy-glow light removed â€” every PointLight multiplies the
     // per-pixel shading cost; the bounce light covers this look well enough)
 
     // Fire particles (embers rising)
@@ -738,7 +738,7 @@
     scene._fireEmbers = fireEmbers;
 
     // === Brand label floats above the campsite ===
-    // Brand label — small, off to the side so it doesn't block the campsite
+    // Brand label â€” small, off to the side so it doesn't block the campsite
     var brand = makeLabel("//dzian", { fontSize: 22, fontWeight: "700", color: "#A3B18A", scale: 1.2, opacity: 0.5 });
     brand.position.set(-3, gY + 2.2, -2); scene.add(brand); scene._brandLabel = brand;
     var sub = makeLabel("Software Developer", { fontSize: 11, fontWeight: "400", color: "rgba(163,177,138,0.35)", scale: 1.0, opacity: 0.3 });
@@ -781,10 +781,10 @@
     return plane;
   }
 
-  // ======================== Project Lanterns — branch-hung, zigzag ========================
-  // ======================== Milestone waypoints — the journey's real markers ========================
+  // ======================== Project Lanterns â€” branch-hung, zigzag ========================
+  // ======================== Milestone waypoints â€” the journey's real markers ========================
   // Career milestones as physical trail markers (education, award, what's next).
-  // NO new PointLights here — labels/glows are unlit materials by design.
+  // NO new PointLights here â€” labels/glows are unlit materials by design.
   function createMilestones() {
     var woodMat = new THREE.MeshStandardMaterial({ color: 0x3B2A1A, roughness: 0.9 });
     var stoneMat = new THREE.MeshStandardMaterial({ color: 0x555566, roughness: 0.95, flatShading: true });
@@ -804,11 +804,11 @@
       wayLabels.push({ sp: label, base: 0.55 });
     }
 
-    // Where the path began — university, at the trail entrance
-    signpost(2.3, 38, "WMSU · 2020", "Where the path began", "BS Computer Science");
+    // Where the path began â€” university, at the trail entrance
+    signpost(2.3, 38, "WMSU Â· 2020", "Where the path began", "BS Computer Science");
 
 
-    // A mark left behind — stone cairn for the national award
+    // A mark left behind â€” stone cairn for the national award
     var cx = 2.6, cz = -30, cgY = getGroundY(cx, cz);
     for (var ci = 0; ci < 5; ci++) {
       var cs = 0.28 - ci * 0.045;
@@ -818,7 +818,7 @@
       stone.rotation.set(Math.random(), Math.random(), 0);
       scene.add(stone);
     }
-    // The award itself resting on the cairn — a real trophy model (Kenney
+    // The award itself resting on the cairn â€” a real trophy model (Kenney
     // Starter Kit Basic Scene) baked to firefly gold. Unlit like every other
     // milestone: the lantern light nearby is what catches it.
     var MF = window.DZ_FOREST;
@@ -832,13 +832,13 @@
 
     var awardLabel = makeLabel("2025 Productivity Olympics", {
       fontSize: 18, fontWeight: "700", color: "#FFD24A",
-      sub: "National Winner — with the VINTAZK team", scale: 1.15, opacity: 0.75
+      sub: "National Winner â€” with the VINTAZK team", scale: 1.15, opacity: 0.75
     });
     awardLabel.position.set(cx, cgY + 1.7, cz);
     scene.add(awardLabel);
     wayLabels.push({ sp: awardLabel, base: 0.75 });
 
-    // The next lantern — LUMI, not lit yet (in development)
+    // The next lantern â€” LUMI, not lit yet (in development)
     var lx = -2.2, lz = -31.5, lgY = getGroundY(lx, lz);
     var post2 = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.045, 1.5, 5), woodMat);
     post2.position.set(lx, lgY + 0.75, lz);
@@ -851,7 +851,7 @@
     scene.add(dim);
     var lumiLabel = makeLabel("LUMI", {
       fontSize: 16, color: "#E8C87A",
-      sub: "the next lantern — in development", scale: 0.95, opacity: 0.5
+      sub: "the next lantern â€” in development", scale: 0.95, opacity: 0.5
     });
     lumiLabel.position.set(lx, lgY + 2.05, lz);
     scene.add(lumiLabel);
@@ -862,18 +862,18 @@
     // Zigzag: lanterns alternate sides of the path
     // Odd index = left side (host tree at negative X), even = right side
     var positions = [
-      { x: -1, z: -10, hostX: -4, chapter: 0.47 },  // Vintech — left
-      { x:  2, z: -14, hostX:  5, chapter: 0.52 },   // ZamGo — right
-      { x: -2, z: -19, hostX: -5, chapter: 0.57 },   // Vintazk Uni — left
-      { x:  1, z: -23, hostX:  4, chapter: 0.60 },   // Barangay — right
-      { x: -1, z: -27, hostX: -4, chapter: 0.62 }    // SmartScore — left
+      { x: -1, z: -10, hostX: -4, chapter: 0.47 },  // Vintech â€” left
+      { x:  2, z: -14, hostX:  5, chapter: 0.52 },   // ZamGo â€” right
+      { x: -2, z: -19, hostX: -5, chapter: 0.57 },   // Vintazk Uni â€” left
+      { x:  1, z: -23, hostX:  4, chapter: 0.60 },   // Barangay â€” right
+      { x: -1, z: -27, hostX: -4, chapter: 0.62 }    // SmartScore â€” left
     ];
 
     var trunkMat = new THREE.MeshStandardMaterial({ color: 0x2D1B0E, roughness: 0.85, flatShading: true });
     var ropeMat = new THREE.MeshBasicMaterial({ color: 0x5C4033 });
     var frameMat = new THREE.MeshStandardMaterial({ color: 0x4A3520, roughness: 0.9 });
 
-    // Host trees — the same instanced Kenney pine as the rest of the forest
+    // Host trees â€” the same instanced Kenney pine as the rest of the forest
     var HF = window.DZ_FOREST;
     if (HF) {
       buildInstancedProp(HF.treeHigh, positions.map(function (p) {
@@ -959,14 +959,14 @@
       }
 
       // Soft additive halo so the lantern reads as a bright source, not just a
-      // lit globe. Free — no extra light. It tracks the globe's sway below.
+      // lit globe. Free â€” no extra light. It tracks the globe's sway below.
       var lanternHalo = new THREE.Sprite(new THREE.SpriteMaterial({
         map: getGlowTexture(), color: proj.color, transparent: true,
-        opacity: isMobile ? 0.78 : 0.6,
-        blending: THREE.AdditiveBlending, depthWrite: false
+        opacity: isMobile ? 0.72 : 0.55,
+        blending: THREE.AdditiveBlending, depthWrite: false, fog: false
       }));
       lanternHalo.position.set(p.x, globeY, p.z);
-      lanternHalo.scale.setScalar(2.2);
+      lanternHalo.scale.setScalar(1.6);
       scene.add(lanternHalo);
 
       // Label
@@ -988,24 +988,24 @@
   function createFireflies() {
     var ffColors = [0xFFE066, 0xFFD24A, 0xC8E07A, 0xA9C46C, 0xE8C87A];
     // Camera at ch6: pos (0, 3.2, -22) looking at (-6, 3, -28)
-    // Place fireflies IN FRONT of camera — between camera and lookAt point, spread to sides
+    // Place fireflies IN FRONT of camera â€” between camera and lookAt point, spread to sides
     // Two rows: close row and far row so they don't all stack
 
     // Fireflies in the meadow (center -3, -36) at eye level
     TECH.forEach(function (name, i) {
       var col = i % 4;
       var row = Math.floor(i / 4);
-      // Wide, deep spread — rows 5.5 apart so the far rows sit in the distance
+      // Wide, deep spread â€” rows 5.5 apart so the far rows sit in the distance
       // fade instead of stacking legibly on top of the near row
       var x = -8 + col * 4.2 + (Math.random() - 0.5) * 1.2;
       var z = -32 - row * 5.5 + (Math.random() - 0.5) * 1.5;
       var y = 2 + row * 1.0 + Math.random() * 1.8; // eye level, not above canopy
 
       var color = ffColors[i % ffColors.length];
-      var mesh = new THREE.Mesh(new THREE.SphereGeometry(0.08, 6, 6), new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.9 }));
+      var mesh = new THREE.Mesh(new THREE.SphereGeometry(0.08, 6, 6), new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.9, fog: false }));
       mesh.position.set(x, y, z); scene.add(mesh);
       var light = null;
-      // No per-firefly PointLights — the emissive-looking MeshBasic spheres
+      // No per-firefly PointLights â€” the emissive-looking MeshBasic spheres
       // read as glowing on their own, and lights here were pure GPU cost.
       var label = makeLabel(name, { fontSize: 20, fontWeight: "600", color: "#DAD7CD", scale: 1.4, opacity: 0.01 });
       label.position.set(x, y + 0.8, z); scene.add(label);
@@ -1030,7 +1030,7 @@
     scene.add(mist); scene._mist = mist;
   }
 
-  // ======================== Path Lamps — warm lights along the walk ========================
+  // ======================== Path Lamps â€” warm lights along the walk ========================
   function createPathLamps() {
     // Place lamps along the camera path to illuminate the journey
     var lampPositions = [
@@ -1046,18 +1046,21 @@
       { x: -1, z: -39, y: 2 }      // Meadow far
     ];
 
-    // Shared materials + geometry — never allocate these inside the loop
+    // Shared materials + geometry â€” never allocate these inside the loop
     var postMat = new THREE.MeshStandardMaterial({ color: 0x3B2314, roughness: 0.9 });
-    var glowMat = new THREE.MeshBasicMaterial({ color: 0xFFF0C4, transparent: true, opacity: 0.95 });
-    // Soft additive spill — a halo around the bulb and a pool on the trail.
+    // fog:false on every glow below. Fog mixes a fragment toward the fog colour,
+    // so a fogged additive glow turns into a flat grey disc floating in the
+    // mist instead of warm light â€” light sources must not be fogged.
+    var glowMat = new THREE.MeshBasicMaterial({ color: 0xFFF0C4, transparent: true, opacity: 0.95, fog: false });
+    // Soft additive spill â€” a halo around the bulb and a pool on the trail.
     // Free (no lights) and it is most of what makes the path read as lit.
     var haloMat = new THREE.SpriteMaterial({
-      map: getGlowTexture(), color: 0xFFD98A, transparent: true, opacity: 0.55,
-      blending: THREE.AdditiveBlending, depthWrite: false
+      map: getGlowTexture(), color: 0xFFD98A, transparent: true, opacity: 0.5,
+      blending: THREE.AdditiveBlending, depthWrite: false, fog: false
     });
     var poolMat = new THREE.MeshBasicMaterial({
-      map: getGlowTexture(), color: 0xE0B96A, transparent: true, opacity: 0.42,
-      blending: THREE.AdditiveBlending, depthWrite: false
+      map: getGlowTexture(), color: 0xE0B96A, transparent: true, opacity: 0.34,
+      blending: THREE.AdditiveBlending, depthWrite: false, fog: false
     });
     var postGeo = new THREE.CylinderGeometry(0.03, 0.04, 2, 4);
     var glowGeo = new THREE.SphereGeometry(0.13, 8, 8);
@@ -1076,18 +1079,19 @@
 
       var halo = new THREE.Sprite(haloMat);
       halo.position.set(lp.x, gY + 2.2, lp.z);
-      halo.scale.setScalar(2.6);
+      halo.scale.setScalar(1.7);
       scene.add(halo);
 
-      // Warm pool of light thrown on the trail under each lamp
+      // Warm pool of light thrown on the trail under each lamp. Kept modest â€”
+      // a wide flat disc cuts through the uneven ground and reads as a decal.
       var pool = new THREE.Mesh(poolGeo, poolMat);
-      pool.position.set(lp.x, gY + 0.04, lp.z);
+      pool.position.set(lp.x, gY + 0.12, lp.z);
       pool.rotation.x = -Math.PI / 2;
-      pool.scale.setScalar(5.5 + Math.random() * 1.5);
+      pool.scale.setScalar(3.4 + Math.random() * 0.6);
       scene.add(pool);
 
       // Every lamp is a real light now. The three weak ambient fills were
-      // removed to pay for these — same per-pixel cost, far better result,
+      // removed to pay for these â€” same per-pixel cost, far better result,
       // and the light lands where the walk actually goes.
       var light = new THREE.PointLight(0xF0C878, 2.4, 20);
       light.position.set(lp.x, gY + 2.4, lp.z);
@@ -1095,7 +1099,7 @@
     });
   }
 
-  // ======================== Ambient Fireflies — scattered throughout ========================
+  // ======================== Ambient Fireflies â€” scattered throughout ========================
   function createAmbientFireflies() {
     var ambientFFs = [];
     for (var i = 0; i < AMBIENT_FF_COUNT; i++) {
@@ -1106,12 +1110,12 @@
 
       var mesh = new THREE.Mesh(
         new THREE.SphereGeometry(0.05, 6, 6),
-        new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.7 })
+        new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.7, fog: false })
       );
       mesh.position.set(x, y, z);
       scene.add(mesh);
 
-      // No lights on ambient fireflies — spheres alone read as glow
+      // No lights on ambient fireflies â€” spheres alone read as glow
       var light = null;
 
       ambientFFs.push({
@@ -1127,9 +1131,9 @@
     scene._ambientFFs = ambientFFs;
   }
 
-  // ======================== Sky — Stars + Moon ========================
-  // ======================== Billboard Trees — 2D silhouettes on the horizon ========================
-  // (Billboard horizon trees removed — the far ring now rides in the same
+  // ======================== Sky â€” Stars + Moon ========================
+  // ======================== Billboard Trees â€” 2D silhouettes on the horizon ========================
+  // (Billboard horizon trees removed â€” the far ring now rides in the same
   //  instanced tree batches as the near forest; see plantForest.)
 
   function createSky() {
@@ -1137,14 +1141,14 @@
     //
     // A photographic panorama (Kenney CC0 Skyboxes "night") was tried here and
     // removed on purpose: scene.background is tone-mapped like everything else
-    // (ACES at exposure 1.8 — about a 3x linear gain), so at full strength it
+    // (ACES at exposure 1.8 â€” about a 3x linear gain), so at full strength it
     // rendered as a near-white haze behind the treeline, and darkened enough to
     // sit right it collapsed into swirling contour bands, because a near-black
     // sky has almost no 8-bit levels left to hold a gradient. Points and a flat
     // moon are smooth by construction, cost nothing, weigh 0 KB, and land
     // exactly on the palette. Don't reintroduce a photo sky here.
     //
-    // Everything below is unlit + fog:false — the sky sits far past the fog far
+    // Everything below is unlit + fog:false â€” the sky sits far past the fog far
     // plane (75), so fogged materials would vanish entirely.
     var starCount = isMobile ? 200 : 380;
     var sPos = new Float32Array(starCount * 3);
@@ -1152,7 +1156,7 @@
     var STAR_TINTS = [0xDAD7CD, 0xE8C87A, 0xA3B18A, 0xEDEAE0];
     var tint = new THREE.Color(), v = new THREE.Vector3();
     for (var i = 0; i < starCount; i++) {
-      do { // upper hemisphere only — no stars under the horizon
+      do { // upper hemisphere only â€” no stars under the horizon
         v.set(Math.random() * 2 - 1, Math.random() * 0.95 + 0.05, Math.random() * 2 - 1);
       } while (v.lengthSq() > 1 || v.lengthSq() < 0.04);
       v.normalize().multiplyScalar(110);
@@ -1164,9 +1168,12 @@
     var sGeo = new THREE.BufferGeometry();
     sGeo.setAttribute("position", new THREE.BufferAttribute(sPos, 3));
     sGeo.setAttribute("color", new THREE.BufferAttribute(sCol, 3));
+    // Textured so stars are soft round points â€” an untextured PointsMaterial
+    // draws hard white SQUARES, which is what they looked like up close.
     scene.add(new THREE.Points(sGeo, new THREE.PointsMaterial({
-      size: 0.85, sizeAttenuation: true, vertexColors: true,
-      transparent: true, opacity: 0.85, depthWrite: false, fog: false
+      size: 1.6, sizeAttenuation: true, vertexColors: true,
+      map: getGlowTexture(), blending: THREE.AdditiveBlending,
+      transparent: true, opacity: 0.9, depthWrite: false, fog: false
     })));
 
     // The moon sits in the direction the moon DirectionalLight comes from
@@ -1211,10 +1218,10 @@
     scene._smoke = smokeParticles;
   }
 
-  // ======================== Ground Details — rocks, bushes, fallen logs ========================
+  // ======================== Ground Details â€” rocks, bushes, fallen logs ========================
   function createGroundDetails() {
     // All modeled scatter (Mini Forest stones/rocks/plants + Survival Kit
-    // logs), one InstancedMesh per model — 5 draw calls for every ground prop
+    // logs), one InstancedMesh per model â€” 5 draw calls for every ground prop
     var F = window.DZ_FOREST, P = window.DZ_PROPS;
     if (!F) return;
 
@@ -1253,13 +1260,13 @@
   // ======================== Spawn ========================
   function spawnFirefly(x, y, z) {
     var color = [0xFFE066, 0xC8E07A, 0xA9C46C, 0xE8C87A][Math.floor(Math.random() * 4)];
-    var mesh = new THREE.Mesh(new THREE.SphereGeometry(0.06, 6, 6), new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.9 }));
+    var mesh = new THREE.Mesh(new THREE.SphereGeometry(0.06, 6, 6), new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.9, fog: false }));
     mesh.position.set(x, y, z);
     mesh.userData = { vx: (Math.random() - 0.5) * 0.04, vy: 0.02 + Math.random() * 0.03, vz: (Math.random() - 0.5) * 0.04, life: 1.0, decay: 0.003 + Math.random() * 0.003 };
     scene.add(mesh); spawned.push(mesh);
     if (spawned.length > MAX_SPAWNED) { var old = spawned.shift(); scene.remove(old); old.geometry.dispose(); old.material.dispose(); }
     for (var i = 0; i < 4; i++) {
-      var p = new THREE.Mesh(new THREE.SphereGeometry(0.03, 4, 4), new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.8 }));
+      var p = new THREE.Mesh(new THREE.SphereGeometry(0.03, 4, 4), new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.8, fog: false }));
       p.position.set(x, y, z);
       var a = Math.random() * Math.PI * 2, spd = 0.02 + Math.random() * 0.04;
       p.userData = { vx: Math.cos(a) * spd, vy: Math.sin(a) * spd + 0.01, vz: (Math.random() - 0.5) * spd, life: 1.0, decay: 0.03 + Math.random() * 0.02 };
@@ -1268,13 +1275,13 @@
     }
   }
 
-  // ======================== Plant a tree — the signature interaction ========
+  // ======================== Plant a tree â€” the signature interaction ========
   // Click the ground and a pine grows there. It persists: come back and your
   // tree is still standing. Planted pines are the same Kenney model as the
-  // forest (shared geometry + material — one allocation for all 12).
+  // forest (shared geometry + material â€” one allocation for all 12).
   var plantGeo = null, plantMat = null;
   function spawnTree(worldX, worldZ, instant, startDelay) {
-    // Keep the campsite clear and stay inside the world — r²=25 covers the
+    // Keep the campsite clear and stay inside the world â€” rÂ²=25 covers the
     // modeled tent's farthest corner (4.86 from origin) so no pine can grow
     // through the canvas; saved trees inside the band are dropped on restore
     if (worldX * worldX + worldZ * worldZ < 25) return null;
@@ -1307,7 +1314,7 @@
     });
     if (plantedTrees.length > MAX_TREES) {
       var old = plantedTrees.shift();
-      scene.remove(old.group); // geometry is shared (plantGeo) — never dispose per-tree
+      scene.remove(old.group); // geometry is shared (plantGeo) â€” never dispose per-tree
     }
     return g;
   }
@@ -1332,7 +1339,7 @@
         lastMouseSpawn = now;
       }
     }
-    // Cursor trail — small sage particles following mouse
+    // Cursor trail â€” small sage particles following mouse
     var now = Date.now();
     if (now - lastTrailTime > 50) { // throttle to 20 per second
       lastTrailTime = now;
@@ -1360,7 +1367,7 @@
       spawnFirefly(wp.x, 1.2, wp.z);
       spawnFirefly(wp.x + 0.3, 1.6, wp.z - 0.2);
     } else {
-      spawnFirefly(wp.x, wp.y, wp.z); // clicked the camp/sky — just sparkle
+      spawnFirefly(wp.x, wp.y, wp.z); // clicked the camp/sky â€” just sparkle
     }
     if (window.playSound) playSound("click");
   }
@@ -1412,7 +1419,7 @@
     var t = clock.getElapsedTime();
     var frame = Math.floor(t * 60) | 0;
 
-    // Adaptive quality — sample real fps; shed load in steps if it can't keep up
+    // Adaptive quality â€” sample real fps; shed load in steps if it can't keep up
     if (perfTier < 2) {
       perfFrames++;
       if (!perfStart) perfStart = t;
@@ -1428,7 +1435,7 @@
             renderer.setPixelRatio(0.85);
           }
         } else if (fps > 50) {
-          perfTier = 2; // comfortably fast — stop sampling
+          perfTier = 2; // comfortably fast â€” stop sampling
         }
       }
     }
@@ -1437,13 +1444,13 @@
     var sinT5 = Math.sin(t * 5), sinT6 = Math.sin(t * 6), sinT8 = Math.sin(t * 8);
     updateScroll(); updateAmbientAudio();
 
-    // Camera — smooth damped position + lookAt
+    // Camera â€” smooth damped position + lookAt
     var cam = getCameraState(scrollProgress);
     var damp = 0.025;
     camera.position.x += (cam.px + mouse.ndcX * 1.2 - camera.position.x) * damp;
     camera.position.y += (cam.py + mouse.ndcY * 0.8 - camera.position.y) * damp;
     camera.position.z += (cam.pz - camera.position.z) * damp;
-    // Damped lookAt — prevent snapping
+    // Damped lookAt â€” prevent snapping
     if (!scene._lookTarget) scene._lookTarget = { x: cam.lx, y: cam.ly, z: cam.lz };
     scene._lookTarget.x += (cam.lx - scene._lookTarget.x) * damp;
     scene._lookTarget.y += (cam.ly - scene._lookTarget.y) * damp;
@@ -1451,7 +1458,7 @@
     camera.lookAt(scene._lookTarget.x, scene._lookTarget.y, scene._lookTarget.z);
 
     // Fog
-    // Smoother fog — lerp toward target instead of snapping
+    // Smoother fog â€” lerp toward target instead of snapping
     var fogBase = isMobile ? 18 : 12;
     var fogMin = isMobile ? 10 : 6;
     var fogFarBase = isMobile ? 90 : 80;
@@ -1464,15 +1471,15 @@
     // (The per-chapter fill-light ramp lived here. The three fill PointLights
     //  it drove were removed in favour of real lights on the path lamps, so
     //  there is nothing left to ramp.)
-    // Moon rises through the walk — stays soft on purpose so the campfire and
+    // Moon rises through the walk â€” stays soft on purpose so the campfire and
     // lamps remain the brightest things in frame
     if (scene._moon) scene._moon.intensity = 0.45 + scrollProgress * 0.4;
 
-    // Campfire — flickering light + rising embers
+    // Campfire â€” flickering light + rising embers
     // Campfire visible while near the campsite (scroll 0.15 to 0.50), then fades but never fully
     // Campfire: ramp up as you approach, full during camp chapters, gentle fade but never off
     var cAmp = scrollProgress < 0.20 ? Math.min(1, scrollProgress / 0.10) : (scrollProgress < 0.42 ? 1.0 : Math.max(0.15, 1 - (scrollProgress - 0.42) * 0.8));
-    // These intensities are the fire's real output — they OVERWRITE whatever
+    // These intensities are the fire's real output â€” they OVERWRITE whatever
     // the PointLights were constructed with, so tune the campfire here.
     if (scene._fireLight) {
       var flicker = 5.2 + sinT8 * 1.1 + Math.sin(t * 13) * 0.5 + Math.sin(t * 21) * 0.25;
@@ -1492,7 +1499,7 @@
     if (scene._fireGlow) {
       var fg = (0.7 + sinT8 * 0.13 + Math.sin(t * 13) * 0.06) * cAmp;
       scene._fireGlow.material.opacity = fg;
-      scene._fireGlow.scale.setScalar(2.4 + sinT8 * 0.22);
+      scene._fireGlow.scale.setScalar(2.0 + sinT8 * 0.18);
     }
     if (scene._firePool) {
       scene._firePool.material.opacity = (0.42 + sinT6 * 0.07) * cAmp;
@@ -1500,7 +1507,7 @@
     if (scene._fireUp) {
       scene._fireUp.intensity = (0.4 + sinT5 * 0.15) * cAmp;
     }
-    // Fire embers — rise, drift, loop
+    // Fire embers â€” rise, drift, loop
     if (scene._fireEmbers) {
       for (var ei = 0; ei < scene._fireEmbers.length; ei++) {
         var em = scene._fireEmbers[ei], ed = em.userData;
@@ -1516,7 +1523,7 @@
     }
     // Forest mode: pillars/archway are static; no magic or characters to animate here.
 
-    // Brand label — fades when camera is close to campsite
+    // Brand label â€” fades when camera is close to campsite
     var brandFade = scrollProgress < 0.15 ? 1.0 : (scrollProgress < 0.40 ? Math.max(0, 1 - (scrollProgress - 0.15) * 4) : 0);
     if (scene._brandLabel) {
       scene._brandLabel.position.y = 2.2 + Math.sin(t * 0.4) * 0.06;
@@ -1538,10 +1545,10 @@
       }
     }
 
-    // (Canopy wind sway removed with the modeled forest — the instanced tree
+    // (Canopy wind sway removed with the modeled forest â€” the instanced tree
     //  batches stay static, saving the per-frame matrix re-upload entirely.)
 
-    // Canopy reveal — all lanterns flash when camera rises above (ch8)
+    // Canopy reveal â€” all lanterns flash when camera rises above (ch8)
     var canopyReveal = 0;
     if (scrollProgress > 0.82 && scrollProgress < 0.90) {
       canopyReveal = 1 - Math.abs(scrollProgress - 0.855) / 0.035;
@@ -1559,7 +1566,7 @@
     }
     if (scrollProgress < 0.82 || scrollProgress > 0.90) scene._canopyFlashed = false;
 
-    // Lanterns — globe sways gently, brightens when camera is near
+    // Lanterns â€” globe sways gently, brightens when camera is near
     for (var li = 0; li < lanterns.length; li++) {
       var lan = lanterns[li];
       // Gentle sway like a hanging lamp
@@ -1576,13 +1583,13 @@
       var near = Math.max(0, 1 - dist * 8);
 
       var revealNear = Math.max(near, canopyReveal);
-      // Lantern output — like the campfire, this overwrites the constructed
+      // Lantern output â€” like the campfire, this overwrites the constructed
       // intensity, so brightness for the project lanterns is tuned here
       var tG = lerp(0.35, 1.8, revealNear), tL = lerp(1.1, 3.2, revealNear);
       var tO = lerp(0.0, 0.95, revealNear) * distVis(lan.label.position), tS = lerp(0.8, 1.3, revealNear);
       lan.mesh.material.emissiveIntensity += (tG - lan.mesh.material.emissiveIntensity) * 0.03;
       if (lan.light) lan.light.intensity += (tL - lan.light.intensity) * 0.03;
-      // Fade out faster than in — a label you've walked past must not linger huge
+      // Fade out faster than in â€” a label you've walked past must not linger huge
       var oRate = tO < lan.label.material.opacity ? 0.09 : 0.025;
       lan.label.material.opacity += (tO - lan.label.material.opacity) * oRate;
       lan.mesh.scale.setScalar(lan.mesh.scale.x + (tS - lan.mesh.scale.x) * 0.03);
@@ -1590,13 +1597,13 @@
       if (lan.light) lan.light.intensity *= 0.95 + (sinT6 + Math.sin(li * 2) * 0.5) * 0.05;
     }
 
-    // Fireflies — glow strongest in ch6 zone (0.63-0.75)
+    // Fireflies â€” glow strongest in ch6 zone (0.63-0.75)
     var inTech = scrollProgress > 0.60 && scrollProgress < 0.80;
     var techProximity = inTech ? Math.min(1, 1 - Math.abs(scrollProgress - 0.70) * 4) : 0;
     for (var fi = 0; fi < fireflies.length; fi++) {
       var ff = fireflies[fi];
 
-      // Fireflies stay at their meadow positions — camera comes to them
+      // Fireflies stay at their meadow positions â€” camera comes to them
       var fx = ff.baseX + Math.sin(t * ff.speed + ff.phase) * ff.ampX;
       var fy = ff.baseY + Math.cos(t * ff.speed * 0.7 + ff.phase) * ff.ampY;
       var fz = ff.baseZ + Math.sin(t * ff.speed * 0.5 + ff.phase * 2) * ff.ampZ;
@@ -1605,7 +1612,7 @@
       if (ff.light) ff.light.position.set(fx, fy, fz);
       ff.label.position.set(fx, fy + 1.2, fz);
 
-      // Direct set from proximity — no slow lerp, responsive to scroll
+      // Direct set from proximity â€” no slow lerp, responsive to scroll
       var fO = lerp(0.05, 0.95, techProximity);
       var fL = lerp(0.02, 0.6, techProximity);
       var fLO = lerp(0.0, 0.9, techProximity) * distVis(ff.label.position);
@@ -1618,7 +1625,7 @@
       if (techProximity > 0.1) ff.mesh.material.opacity *= 0.85 + (sinT3 + Math.sin(fi * 2.5) * 0.5) * 0.15;
     }
 
-    // Waypoint labels (signposts, award cairn, LUMI) — pure distance fade so a
+    // Waypoint labels (signposts, award cairn, LUMI) â€” pure distance fade so a
     // marker you're standing on never fills the frame (every 2nd frame)
     if (frame % 2 === 0) {
       for (var wli = 0; wli < wayLabels.length; wli++) {
@@ -1642,10 +1649,10 @@
       }
     }
 
-    // (Star field removed — the sky panorama has its own stars, and animating
+    // (Star field removed â€” the sky panorama has its own stars, and animating
     //  them cost a per-frame material write for something nobody could see.)
 
-    // Smoke rises — wind drift + dispersal (every 2nd frame)
+    // Smoke rises â€” wind drift + dispersal (every 2nd frame)
     var windX = Math.sin(t * 0.3) * 0.4;
     var windZ = Math.cos(t * 0.2) * 0.2;
     if (scene._smoke && frame % 2 === 0) {
@@ -1676,10 +1683,10 @@
     // Mist (every 3rd frame)
     if (scene._mist && frame % 3 === 2) { scene._mist.rotation.y = t * 0.002; scene._mist.position.y = Math.sin(t * 0.1) * 0.2; }
 
-    // (Horizon billboards are pre-aimed at the world centre at build time —
+    // (Horizon billboards are pre-aimed at the world centre at build time â€”
     //  no per-frame re-facing loop needed.)
 
-    // Planted trees grow in — ease-out with a small overshoot, like a sprout
+    // Planted trees grow in â€” ease-out with a small overshoot, like a sprout
     for (var pti = 0; pti < plantedTrees.length; pti++) {
       var pt = plantedTrees[pti];
       if (pt.grow >= 1) continue;
@@ -1721,7 +1728,7 @@
       if (trd.life <= 0) { scene.remove(tr); tr.geometry.dispose(); tr.material.dispose(); trails.splice(ti, 1); }
     }
 
-    // (Chapter-crossing bursts and velocity-spawned fireflies removed — the
+    // (Chapter-crossing bursts and velocity-spawned fireflies removed â€” the
     //  ambient fireflies carry the atmosphere; particles now appear only when
     //  the visitor plants a tree. Quieter forest, clearer signature moment.)
 
@@ -1732,7 +1739,7 @@
 
   // ======================== Audio ========================
 
-  // Forest ambient audio — MP3 file
+  // Forest ambient audio â€” MP3 file
   var forestAudio = null;
   var audioFading = false;
 
@@ -1861,7 +1868,7 @@
       if (canvas) { canvas.style.display = "none"; canvas.style.pointerEvents = "none"; }
       saveTrees();
       cleanup();
-      // Full teardown — free GPU memory + geometry so code mode stays smooth
+      // Full teardown â€” free GPU memory + geometry so code mode stays smooth
       // after visiting the forest. Re-entering rebuilds via init().
       if (scene) {
         scene.traverse(function (obj) {
@@ -1874,7 +1881,7 @@
             }
           }
         });
-        // scene.background is not part of the traverse — free it explicitly
+        // scene.background is not part of the traverse â€” free it explicitly
         if (scene.background && scene.background.isTexture) scene.background.dispose();
         scene.background = null;
         if (scene.clear) scene.clear();
