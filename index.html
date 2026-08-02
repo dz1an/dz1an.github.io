@@ -67,14 +67,6 @@
   <!-- Skip to content (keyboard accessibility) -->
   <a class="skip-link" href="#home">Skip to content</a>
 
-  <!-- No-JS fallback: reveal the static page if the loader's JS never runs -->
-  <noscript>
-    <style>
-      body:not(.loaded) { overflow: auto !important; }
-      #preloader { display: none !important; }
-    </style>
-  </noscript>
-
   <!-- macOS Notification Toast -->
   <div class="mac-toast" id="macToast">
     <div class="mac-toast-icon"><i class="fas fa-check"></i></div>
@@ -270,24 +262,6 @@
         </div>
       </div>
 
-    </div>
-  </div>
-
-  <!-- Branded arrival — the pine grows as the site loads, then the curtain lifts -->
-  <div id="preloader" aria-hidden="true">
-    <div class="pine-loader">
-      <div class="pl-mark">
-        <!-- The Kenney pine itself, baked to flat SVG facets by
-             tools/bake-props/bake-mark.js — same model as the forest, so the
-             loader mark and the world are literally the same tree. -->
-        <img class="pl-pine pl-pine-base" src="images/mark-pine.svg" alt="" decoding="async">
-        <img class="pl-pine pl-pine-fill" id="plFill" src="images/mark-pine.svg" alt="" decoding="async">
-        <span class="pl-ff pl-ff1"></span>
-        <span class="pl-ff pl-ff2"></span>
-      </div>
-      <div class="pl-ground" id="plGround"></div>
-      <div class="pl-brand"><span class="pl-slash">//</span>dzian</div>
-      <div class="pl-pct" id="plPct">0%</div>
     </div>
   </div>
 
