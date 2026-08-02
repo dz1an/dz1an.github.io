@@ -3,6 +3,17 @@
 // ============================================
 (function () {
   var savedTheme = localStorage.getItem("theme");
+
+  // A link can drop a visitor straight into the forest with ?forest (or #forest).
+  // Without this the only way in is the Build & Run button, so every link from
+  // the client pages landed on the IDE — which is not what "go to the forest"
+  // means to anyone following that link. Deliberately NOT written to
+  // localStorage: arriving by URL shouldn't silently change what "/" opens as
+  // on every future visit.
+  if (/(^|[?&])forest\b/.test(window.location.search) || window.location.hash === "#forest") {
+    savedTheme = "creative";
+  }
+
   // Default is dark / code mode (no data-theme attribute needed)
   // Activate creative mode if explicitly saved
   if (savedTheme === "creative") {
