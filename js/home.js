@@ -250,60 +250,74 @@
     window.addEventListener("resize", updateStage);
     updateStage();
 
-    // ---- Closing camp stage ----
-    // The page's second 3D beat, and the last thing before the contact form.
-    // Lives inside this block on purpose: it reuses seg/ease/clamp01 above, and
-    // inherits the same reduced-motion guard — with motion reduced the camp just
-    // sits at the orbit its markup declares, which is a perfectly good still.
-    var campStage = document.getElementById("campStage");
-    if (campStage) {
-      var campMv = campStage.querySelector("model-viewer");
-      var camp3d = document.getElementById("campStage3d");
-      var campCopy = document.getElementById("campStageCopy");
-      var campTicking = false;
+    // ---- Page stages ----
+    // The 3D beats after the hero: the trail (#work), the award (#background)
+    // and the camp (#contact). One driver runs all of them; each section states
+    // its own camera curve in data-orbit, so adding a beat is markup only.
+    //
+    // Lives inside this block on purpose: it reuses seg/ease/clamp01 above and
+    // inherits the same reduced-motion guard — with motion reduced each scene
+    // just sits at the orbit its markup declares, which is a fine still.
+    //
+    //   data-orbit="r0,rA,rC | t0,tP,tA,tC | f0,fA,fC | y0,yC"
+    //     radius = r0 - a*rA - c*rC          (never ends below 100 — see below)
+    //     theta  = t0 + p*tP + a*tA + c*tC
+    //     phi    = f0 + a*fA + c*fC          (never past 90)
+    //     target = y0 + c*yC
+    function driveStage(el) {
+      var mv = el.querySelector("model-viewer");
+      var layer = el.querySelector(".pstage-3d");
+      var copy = el.querySelector(".pstage-copy");
+      var parts = (el.getAttribute("data-orbit") || "").split("|");
+      if (parts.length < 4) return;
+      var R = parts[0].split(",").map(Number), T = parts[1].split(",").map(Number),
+          F = parts[2].split(",").map(Number), Y = parts[3].split(",").map(Number);
+      var ticking = false;
 
-      function updateCamp() {
-        campTicking = false;
-        var cr = campStage.getBoundingClientRect();
-        var ctotal = cr.height - window.innerHeight;
-        if (ctotal <= 0) return;
-        var cp = clamp01(-cr.top / ctotal);
+      function update() {
+        ticking = false;
+        var r = el.getBoundingClientRect();
+        var total = r.height - window.innerHeight;
+        if (total <= 0) return;
+        var p = clamp01(-r.top / total);
+        var a = ease(seg(p, 0.00, 0.55));
+        var c = ease(seg(p, 0.45, 1.00));
 
-        var ca = ease(seg(cp, 0.00, 0.55));
-        var cc = ease(seg(cp, 0.45, 1.00));
-
-        // Arrive at the camp: start high and wide, come down and around until
-        // you are sitting at fire height. Stops at 100% for the same reason the
-        // hero does — under 100% the model outgrows the frame and the pin's
-        // overflow:hidden slices it.
-        var cradius = 152 - ca * 30 - cc * 22;         // 152% -> 100%
-        var ctheta = 10 + cp * 18 + ca * 22 + cc * 36; // ~86deg, a quarter turn
-        var cphi = 58 + ca * 16 + cc * 8;              // 58deg (above) -> 82deg
-        if (campMv) {
-          campMv.cameraOrbit = ctheta.toFixed(1) + "deg " + cphi.toFixed(1) + "deg " + cradius.toFixed(1) + "%";
-          campMv.cameraTarget = "0m " + (1.55 + cc * 0.35).toFixed(2) + "m 0m";
+        // Arrive at the scene: start high and wide, come down and around. The
+        // push STOPS at 100% — model-viewer's 100% is "the model exactly fits",
+        // so anything under it overgrows the pin and overflow:hidden slices the
+        // model in half. scratchpad/test-orbits.js guards every stage's numbers.
+        var radius = R[0] - a * R[1] - c * R[2];
+        var theta = T[0] + p * T[1] + a * T[2] + c * T[3];
+        var phi = F[0] + a * F[1] + c * F[2];
+        if (mv) {
+          mv.cameraOrbit = theta.toFixed(1) + "deg " + phi.toFixed(1) + "deg " + radius.toFixed(1) + "%";
+          mv.cameraTarget = "0m " + (Y[0] + c * Y[1]).toFixed(2) + "m 0m";
         }
 
-        // Desktop sets the camp to the right of the copy; phones drop it below,
+        // Desktop sets the scene to the right of the copy; phones drop it below,
         // since text over a 3D scene on a narrow screen cannot be read.
-        if (camp3d) {
-          camp3d.style.transform = window.innerWidth > 720
-            ? "translateX(" + (11 + ca * 7).toFixed(1) + "vw)"
-            : "translateY(" + (17 + ca * 4).toFixed(1) + "vh)";
+        if (layer) {
+          layer.style.transform = window.innerWidth > 720
+            ? "translateX(" + (11 + a * 7).toFixed(1) + "vw)"
+            : "translateY(" + (17 + a * 4).toFixed(1) + "vh)";
         }
-        if (campCopy) {
-          var cin = ease(seg(cp, 0.06, 0.38));
-          campCopy.style.opacity = cin.toFixed(3);
-          campCopy.style.transform = "translateY(" + ((1 - cin) * 24).toFixed(1) + "px)";
+        if (copy) {
+          var cin = ease(seg(p, 0.06, 0.38));
+          copy.style.opacity = cin.toFixed(3);
+          copy.style.transform = "translateY(" + ((1 - cin) * 24).toFixed(1) + "px)";
         }
       }
 
       window.addEventListener("scroll", function () {
-        if (!campTicking) { campTicking = true; requestAnimationFrame(updateCamp); }
+        if (!ticking) { ticking = true; requestAnimationFrame(update); }
       }, { passive: true });
-      window.addEventListener("resize", updateCamp);
-      updateCamp();
+      window.addEventListener("resize", update);
+      update();
     }
+
+    var pstages = document.querySelectorAll(".pstage[data-orbit]");
+    for (var psi = 0; psi < pstages.length; psi++) driveStage(pstages[psi]);
   }
 
   // ---- Triangle cursor (desktop only) ----

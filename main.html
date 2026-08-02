@@ -149,6 +149,29 @@
     </section>
 
     <!-- WORK -->
+    <!-- 3D beat 2 — the trail. Introduces #work: one lamp post per project row
+         in the section below. Carries .blocklight so it shares the cream field
+         with that section instead of reading as a separate panel. -->
+    <section class="blocklight pstage" id="trailStage"
+             data-orbit="150,26,20|14,16,24,40|56,18,10|1.05,0.30">
+      <div class="pstage-pin">
+        <div class="pstage-3d" aria-hidden="true">
+          <model-viewer src="models/trail-scene.glb?v=1" alt="" loading="lazy" reveal="auto"
+            camera-orbit="14deg 56deg 150%" camera-target="0m 1.05m 0m"
+            min-camera-orbit="auto auto 95%" max-camera-orbit="auto auto 170%"
+            disable-zoom disable-pan disable-tap interaction-prompt="none"
+            shadow-intensity="0.35" exposure="1.05">
+            <div slot="progress-bar"></div>
+          </model-viewer>
+        </div>
+        <div class="wrap pstage-copy">
+          <span class="sec-label">// the work</span>
+          <h2 class="light-head">Every light on<br><em>the path is live.</em></h2>
+          <p class="light-body">Six systems built for real operations — records, sales, training, resident services. The next few screens are all of them.</p>
+        </div>
+      </div>
+    </section>
+
     <section class="blocklight" id="work">
       <div class="wrap">
         <span class="sec-label reveal">// work</span>
@@ -211,6 +234,29 @@
     </section>
 
     <!-- EXPERIENCE & EDUCATION — plain language, no git cosplay -->
+    <!-- 3D beat 3 — the award. Literal, not decorative: the section below lists
+         the 2025 Productivity Olympics national win, so the trophy IS the
+         credential it introduces. -->
+    <section class="blocklight pstage" id="awardStage"
+             data-orbit="148,24,24|8,14,26,44|54,20,12|1.30,0.35">
+      <div class="pstage-pin">
+        <div class="pstage-3d" aria-hidden="true">
+          <model-viewer src="models/award-scene.glb?v=1" alt="" loading="lazy" reveal="auto"
+            camera-orbit="8deg 54deg 148%" camera-target="0m 1.30m 0m"
+            min-camera-orbit="auto auto 95%" max-camera-orbit="auto auto 170%"
+            disable-zoom disable-pan disable-tap interaction-prompt="none"
+            shadow-intensity="0.35" exposure="1.05">
+            <div slot="progress-bar"></div>
+          </model-viewer>
+        </div>
+        <div class="wrap pstage-copy">
+          <span class="sec-label">// the award</span>
+          <h2 class="light-head">National winner,<br><em>2025.</em></h2>
+          <p class="light-body">Productivity Olympics, with the VINTAZK Outsourcing team — for work that measurably moved a real operation.</p>
+        </div>
+      </div>
+    </section>
+
     <section class="blocklight blockfaq" id="background">
       <div class="wrap">
         <span class="sec-label reveal">// background</span>
@@ -286,9 +332,10 @@
          contact form: the trail ends, you sit down, you talk. It gets its own
          section rather than sitting behind the form, because 3D under input
          fields is a legibility problem and the form must own its own scroll. -->
-    <section class="blockgreen campstage" id="campStage">
-      <div class="campstage-pin">
-        <div class="campstage-3d" id="campStage3d" aria-hidden="true">
+    <section class="blockgreen pstage" id="campStage"
+             data-orbit="152,30,22|10,18,22,36|58,16,8|1.55,0.35">
+      <div class="pstage-pin">
+        <div class="pstage-3d" aria-hidden="true">
           <model-viewer src="models/camp-scene.glb?v=1" alt="" loading="lazy" reveal="auto"
             camera-orbit="10deg 58deg 152%" camera-target="0m 1.55m 0m"
             min-camera-orbit="auto auto 95%" max-camera-orbit="auto auto 170%"
@@ -297,7 +344,7 @@
             <div slot="progress-bar"></div><!-- suppress the default gray loading bar -->
           </model-viewer>
         </div>
-        <div class="wrap campstage-copy" id="campStageCopy">
+        <div class="wrap pstage-copy">
           <span class="sec-label sec-label-gold">// pull up a log</span>
           <h2 class="bg-head"><span class="bg-solid">Every build ends</span><br><span class="bg-italic">the same way.</span></h2>
           <p class="bg-body">Sitting down and talking it through — what's slowing you down, and what it would take to fix. That part costs nothing.</p>

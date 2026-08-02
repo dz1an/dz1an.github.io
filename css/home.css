@@ -199,37 +199,45 @@ a { color: var(--sage); }
 }
 .stage.is-dark .stage-foot { color: rgba(255, 255, 255, 0.5); }
 
-/* ---- Closing camp stage ----
-   A second, shorter pinned scene that hands off to the contact form. It carries
-   .blockgreen for the same green + triangle field as the block below it, so the
-   two read as one continuous green run rather than two stacked panels — the
-   pasted-panel look is exactly what killed the earlier per-section 3D attempt.
+/* ---- Page stages ----
+   The scroll-3D beats after the hero: the trail (#work), the award
+   (#background) and the camp (#contact). All three share this shell and the one
+   driver in js/home.js.
+
+   Each carries the SAME block class as the section it introduces (.blocklight
+   or .blockgreen) so a stage and its section read as one continuous field
+   rather than two stacked panels — the pasted-panel look is exactly what killed
+   the earlier per-section 3D attempt.
+
    Same rules as the hero: the 3D layer only ever SLIDES (never CSS-scaled, or
-   it goes soft), and js/home.js never closes the camera past 100%. */
-.campstage { position: relative; height: 210vh; padding: 0; }
-.campstage-pin {
+   it goes soft), and the camera never closes past 100% (see js/home.js). */
+.pstage { position: relative; height: 210vh; padding: 0; }
+.pstage-pin {
   position: sticky; top: 0; height: 100vh; overflow: hidden;
   display: flex; align-items: center;
 }
-.campstage-3d {
+.pstage-3d {
   position: absolute; inset: 0; z-index: 1;
   pointer-events: none; will-change: transform;
 }
-.campstage-3d model-viewer {
+.pstage-3d model-viewer {
   width: 100%; height: 100%;
   background: transparent; --poster-color: transparent;
   --progress-bar-color: transparent; --progress-bar-height: 0px;
 }
-.campstage-copy { position: relative; z-index: 2; max-width: 620px; }
-.campstage-copy .sec-label { display: inline-block; margin-bottom: 1rem; }
-.campstage-copy .bg-body { max-width: 470px; margin-top: 1.1rem; }
+.pstage-copy { position: relative; z-index: 2; max-width: 620px; }
+.pstage-copy .sec-label { display: inline-block; margin-bottom: 1rem; }
+.pstage-copy .bg-body,
+.pstage-copy .light-body { max-width: 470px; margin-top: 1.1rem; }
+/* Cream stages: the copy is ink on cream, so it needs the light heading colour */
+.blocklight.pstage .pstage-copy { color: var(--ink); }
 
 @media (max-width: 720px) {
-  /* Phones stack it: the camp drops below the copy instead of sitting behind
+  /* Phones stack it: the scene drops below the copy instead of sitting behind
      it, because body text over a 3D scene on a narrow screen is unreadable. */
-  .campstage { height: 175vh; }
-  .campstage-pin { align-items: flex-start; padding-top: 96px; }
-  .campstage-copy { max-width: none; }
+  .pstage { height: 175vh; }
+  .pstage-pin { align-items: flex-start; padding-top: 96px; }
+  .pstage-copy { max-width: none; }
 }
 
 /* Nav flips to light while the green ground is up */
