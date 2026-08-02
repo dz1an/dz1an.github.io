@@ -356,4 +356,70 @@
       navigator.serviceWorker.register("/sw.js").catch(function () {});
     });
   }
+
+  // ---- Scroll-out to the forest ----
+  // Past the end of the page, keep scrolling and you walk into the 3D forest.
+  //
+  // Auto-navigation is hostile if it can surprise you, so it is gated three ways:
+  // it only arms at the very bottom, it needs sustained intent rather than one
+  // gesture (the bar shows exactly how much is left), and that intent decays if
+  // you stop. Scrolling back up cancels it outright. The footer keeps a real
+  // link as well — keyboard and screen-reader users cannot overscroll at all.
+  var so = document.getElementById("scrollOut");
+  if (so) {
+    var soFill = document.getElementById("soFill");
+    var NEED = 780;             // px of overscroll to commit
+    var acc = 0, armed = false, fired = false, decay = 0;
+
+    function docBottom() {
+      var d = document.documentElement, b = document.body;
+      var h = Math.max(d.scrollHeight, b ? b.scrollHeight : 0);
+      return (window.innerHeight + (window.scrollY || d.scrollTop || 0)) >= (h - 2);
+    }
+    function paint() {
+      so.classList.toggle("on", armed && !fired);
+      if (soFill) soFill.style.transform = "scaleX(" + Math.min(1, acc / NEED).toFixed(3) + ")";
+    }
+    function push(amount) {
+      if (!armed || fired) return;
+      // Downward adds intent; upward removes it twice as fast, so a change of
+      // mind is respected immediately.
+      acc = Math.max(0, acc + (amount > 0 ? amount : amount * 2));
+      if (acc >= NEED) {
+        fired = true;
+        so.classList.add("go");
+        paint();
+        setTimeout(function () { window.location.href = "./?forest"; }, 480);
+        return;
+      }
+      paint();
+      clearTimeout(decay);
+      decay = setTimeout(function () { acc = 0; paint(); }, 800);
+    }
+
+    window.addEventListener("scroll", function () {
+      var was = armed;
+      armed = docBottom();
+      if (!armed) { acc = 0; clearTimeout(decay); }
+      if (armed !== was || !armed) paint();
+    }, { passive: true });
+
+    window.addEventListener("wheel", function (e) { push(e.deltaY); }, { passive: true });
+
+    // Touch: a phone's rubber-band at the bottom would otherwise read as intent,
+    // so only real finger travel counts, and the last position resets on lift.
+    var lastY = null;
+    window.addEventListener("touchstart", function (e) {
+      lastY = e.touches[0].clientY;
+    }, { passive: true });
+    window.addEventListener("touchmove", function (e) {
+      var y = e.touches[0].clientY;
+      if (lastY !== null) push((lastY - y) * 1.7);
+      lastY = y;
+    }, { passive: true });
+    window.addEventListener("touchend", function () { lastY = null; }, { passive: true });
+
+    armed = docBottom();
+    paint();
+  }
 })();

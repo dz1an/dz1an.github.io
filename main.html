@@ -430,6 +430,18 @@
     </div>
   </footer>
 
+  <!-- Scroll-out to the forest. Appears only once you're at the very bottom, and
+       needs deliberate continued scrolling to fire — a stray flick or a phone's
+       rubber-band must never navigate anyone. The footer keeps a real link too,
+       because keyboard and screen-reader users cannot overscroll. -->
+  <div class="scrollout" id="scrollOut" aria-hidden="true">
+    <div class="so-inner">
+      <img class="so-pine" src="images/mark-pine.svg" alt="" width="34" height="44" decoding="async">
+      <span class="so-text"><em>Keep scrolling</em> into the forest</span>
+      <span class="so-bar"><span class="so-fill" id="soFill"></span></span>
+    </div>
+  </div>
+
   <script src="js/home.js"></script>
 </body>
 

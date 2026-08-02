@@ -675,3 +675,51 @@ a.bf-value:hover { color: var(--sage); }
 
 /* Sub-label for a grouped block inside an existing section */
 .sec-label-sub { margin-top: 2.4rem; }
+
+/* ---- Scroll-out to the forest ----
+   Shown only at the very bottom of the page. Fires on deliberate continued
+   scrolling, never on a single flick or a phone's rubber-band bounce — the bar
+   is the contract: nothing happens until it fills. */
+.scrollout {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 80;
+  display: flex; justify-content: center;
+  padding: 0 20px 22px;
+  pointer-events: none;
+  opacity: 0; transform: translateY(14px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+.scrollout.on { opacity: 1; transform: translateY(0); }
+.so-inner {
+  display: flex; align-items: center; gap: 14px;
+  padding: 11px 20px; border-radius: 999px;
+  background: rgba(31, 42, 34, 0.92); color: #fff;
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 12px 30px -14px rgba(31, 42, 34, 0.7);
+}
+.so-pine { width: 22px; height: auto; display: block; opacity: 0.9; }
+.so-text {
+  font-family: var(--mono); font-size: 0.74rem; font-weight: 600;
+  letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap;
+}
+.so-text em { font-style: normal; color: var(--gold); }
+.so-bar {
+  display: block; width: 76px; height: 3px; border-radius: 2px;
+  background: rgba(255, 255, 255, 0.22); overflow: hidden;
+}
+.so-fill {
+  display: block; width: 100%; height: 100%; border-radius: 2px;
+  background: var(--gold);
+  transform: scaleX(0); transform-origin: left center;
+}
+/* The hand-off: the bar completed, so commit visually before navigating. */
+.scrollout.go { transform: translateY(0) scale(1.04); }
+.scrollout.go .so-inner { background: var(--green); }
+
+@media (max-width: 520px) {
+  .so-text { font-size: 0.66rem; }
+  .so-bar { width: 54px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scrollout { transition: opacity 0.2s ease; transform: none; }
+  .scrollout.on { transform: none; }
+}
