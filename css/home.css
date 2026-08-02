@@ -378,38 +378,104 @@ html:not(.js) .stage-intro .bg-tags { color: var(--sage); }
   .needgrid a { padding: 20px 18px; }
 }
 
-/* Work rows */
-.wrow {
-  display: flex; align-items: center; justify-content: space-between; gap: 18px;
-  padding: 24px 0; border-top: 1px solid var(--line);
-  text-decoration: none; color: inherit;
+/* (The old .wrow list — 92px thumbnail, one line of text — was replaced by the
+   .wcard showcase below. No page uses those classes any more.) */
+
+/* ---- Work showcase ----
+   The three live systems are the page's hardest proof: a client can click them
+   and watch them run. They previously sat in 92px thumbnails, so the evidence
+   was there but whispered. Big screenshot, one visible claim, one obvious way in.
+   3D was considered here and rejected — it would compete with the real thing. */
+.wcards { display: grid; gap: 28px; margin-top: 8px; }
+.wcard {
+  display: grid; grid-template-columns: 1.05fr 1fr; align-items: stretch;
+  border: 1px solid var(--line); border-radius: 18px; overflow: hidden;
+  background: #fff; text-decoration: none; color: inherit;
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
+              box-shadow 0.3s ease, border-color 0.3s ease;
 }
-.wrow:last-of-type { border-bottom: 1px solid var(--line); }
-.wrow h3 {
-  font-size: 1.5rem; font-weight: 900; letter-spacing: -0.01em;
-  text-transform: uppercase; color: var(--ink);
+.wcard:hover {
+  transform: translateY(-4px); border-color: var(--sage);
+  box-shadow: 0 18px 40px -22px rgba(31, 42, 34, 0.45);
 }
-.wrow-txt { flex: 1; }
-.wmeta {
-  font-family: var(--mono); font-size: 0.7rem !important; font-weight: 600;
-  text-transform: uppercase; letter-spacing: 0.08em;
-  color: var(--ink-muted) !important; margin-top: 6px !important;
+/* The cards also carry .reveal, and `.js .reveal.in` pins transform to
+   translateY(0) at higher specificity AND later in this file — so without this
+   the hover lift silently does nothing once a card has revealed. */
+.js .wcard.reveal.in:hover { transform: translateY(-4px); }
+/* Every other card leads with the copy, so six identical rows don't march. */
+.wcard:nth-child(even) .wshot { order: 2; }
+.wshot {
+  display: block; overflow: hidden; background: var(--green);
+  min-height: 260px; position: relative;
 }
-.wthumb {
-  width: 92px; height: 92px; object-fit: cover; object-position: top;
-  border-radius: 12px; border: 1px solid var(--line); flex-shrink: 0;
-  transition: transform 0.2s ease;
+.wshot img {
+  width: 100%; height: 100%; min-height: 260px;
+  object-fit: cover; object-position: top center;
+  display: block; transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-a.wrow:hover .wthumb { transform: scale(1.04) rotate(-1deg); }
-.wrow p { font-size: 0.96rem; color: var(--ink-soft); margin-top: 3px; }
-.wrow-go {
-  flex-shrink: 0; font-family: var(--mono); font-size: 0.82rem; font-weight: 700;
+.wcard:hover .wshot img { transform: scale(1.035); }
+.wbody { display: flex; flex-direction: column; padding: 32px 34px; gap: 4px; }
+.wtop { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.wlive {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--mono); font-size: 0.68rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.1em; color: var(--sage);
+}
+.wlive::before {
+  content: ""; width: 7px; height: 7px; border-radius: 50%;
+  background: var(--sage); box-shadow: 0 0 0 0 rgba(92, 118, 80, 0.6);
+}
+.wrole {
+  font-family: var(--mono); font-size: 0.68rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-muted);
+}
+.wname {
+  font-size: clamp(1.7rem, 3.4vw, 2.3rem); font-weight: 900;
+  letter-spacing: -0.02em; text-transform: uppercase; color: var(--ink);
+  line-height: 1.02;
+}
+.wdesc { font-size: 1rem; color: var(--ink-soft); margin-top: 10px; line-height: 1.5; }
+.wstat {
+  margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line);
+  font-family: var(--mono); font-size: 0.76rem; font-weight: 700;
+  letter-spacing: 0.04em; color: var(--green);
+}
+.wgo {
+  margin-top: auto; padding-top: 20px;
+  font-family: var(--mono); font-size: 0.8rem; font-weight: 700;
   text-transform: uppercase; letter-spacing: 0.08em; color: var(--sage);
-  opacity: 0.75; transition: opacity 0.15s ease, transform 0.15s ease;
+  display: inline-flex; align-items: center; gap: 8px;
+  transition: gap 0.2s ease;
 }
-a.wrow:hover .wrow-go { opacity: 1; transform: translateX(3px); }
-a.wrow:hover h3 { color: var(--green); }
-.wrow-static { cursor: default; }
+.wcard:hover .wgo { gap: 14px; }
+
+/* Not live — quieter on purpose. */
+.wmore-head {
+  margin-top: 56px; margin-bottom: 18px;
+  font-family: var(--mono); font-size: 0.78rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-muted);
+}
+.wmore { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line);
+  border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.wmini { background: var(--bg); padding: 22px 20px; }
+.wmini-name {
+  display: block; font-size: 1.05rem; font-weight: 800;
+  text-transform: uppercase; letter-spacing: -0.01em; color: var(--ink);
+}
+.wmini-name em {
+  font-family: var(--mono); font-style: normal; font-size: 0.64rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-muted);
+  margin-left: 8px; vertical-align: middle;
+}
+.wmini p { font-size: 0.9rem; color: var(--ink-soft); margin-top: 8px; line-height: 1.5; }
+
+@media (max-width: 860px) {
+  .wcard { grid-template-columns: 1fr; }
+  .wcard:nth-child(even) .wshot { order: 0; }
+  .wshot, .wshot img { min-height: 200px; }
+  .wbody { padding: 24px 22px; }
+  .wmore { grid-template-columns: 1fr; }
+}
 
 /* Experience rows — plain-language background */
 .xrow {
