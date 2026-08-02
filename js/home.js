@@ -249,6 +249,61 @@
     }, { passive: true });
     window.addEventListener("resize", updateStage);
     updateStage();
+
+    // ---- Closing camp stage ----
+    // The page's second 3D beat, and the last thing before the contact form.
+    // Lives inside this block on purpose: it reuses seg/ease/clamp01 above, and
+    // inherits the same reduced-motion guard — with motion reduced the camp just
+    // sits at the orbit its markup declares, which is a perfectly good still.
+    var campStage = document.getElementById("campStage");
+    if (campStage) {
+      var campMv = campStage.querySelector("model-viewer");
+      var camp3d = document.getElementById("campStage3d");
+      var campCopy = document.getElementById("campStageCopy");
+      var campTicking = false;
+
+      function updateCamp() {
+        campTicking = false;
+        var cr = campStage.getBoundingClientRect();
+        var ctotal = cr.height - window.innerHeight;
+        if (ctotal <= 0) return;
+        var cp = clamp01(-cr.top / ctotal);
+
+        var ca = ease(seg(cp, 0.00, 0.55));
+        var cc = ease(seg(cp, 0.45, 1.00));
+
+        // Arrive at the camp: start high and wide, come down and around until
+        // you are sitting at fire height. Stops at 100% for the same reason the
+        // hero does — under 100% the model outgrows the frame and the pin's
+        // overflow:hidden slices it.
+        var cradius = 152 - ca * 30 - cc * 22;         // 152% -> 100%
+        var ctheta = 10 + cp * 18 + ca * 22 + cc * 36; // ~86deg, a quarter turn
+        var cphi = 58 + ca * 16 + cc * 8;              // 58deg (above) -> 82deg
+        if (campMv) {
+          campMv.cameraOrbit = ctheta.toFixed(1) + "deg " + cphi.toFixed(1) + "deg " + cradius.toFixed(1) + "%";
+          campMv.cameraTarget = "0m " + (1.55 + cc * 0.35).toFixed(2) + "m 0m";
+        }
+
+        // Desktop sets the camp to the right of the copy; phones drop it below,
+        // since text over a 3D scene on a narrow screen cannot be read.
+        if (camp3d) {
+          camp3d.style.transform = window.innerWidth > 720
+            ? "translateX(" + (11 + ca * 7).toFixed(1) + "vw)"
+            : "translateY(" + (17 + ca * 4).toFixed(1) + "vh)";
+        }
+        if (campCopy) {
+          var cin = ease(seg(cp, 0.06, 0.38));
+          campCopy.style.opacity = cin.toFixed(3);
+          campCopy.style.transform = "translateY(" + ((1 - cin) * 24).toFixed(1) + "px)";
+        }
+      }
+
+      window.addEventListener("scroll", function () {
+        if (!campTicking) { campTicking = true; requestAnimationFrame(updateCamp); }
+      }, { passive: true });
+      window.addEventListener("resize", updateCamp);
+      updateCamp();
+    }
   }
 
   // ---- Triangle cursor (desktop only) ----

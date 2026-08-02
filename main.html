@@ -282,6 +282,29 @@
     </section>
 
     <!-- CONTACT — closing color block -->
+    <!-- Closing 3D beat. A short pinned band that hands the walk over to the
+         contact form: the trail ends, you sit down, you talk. It gets its own
+         section rather than sitting behind the form, because 3D under input
+         fields is a legibility problem and the form must own its own scroll. -->
+    <section class="blockgreen campstage" id="campStage">
+      <div class="campstage-pin">
+        <div class="campstage-3d" id="campStage3d" aria-hidden="true">
+          <model-viewer src="models/camp-scene.glb?v=1" alt="" loading="lazy" reveal="auto"
+            camera-orbit="10deg 58deg 152%" camera-target="0m 1.55m 0m"
+            min-camera-orbit="auto auto 95%" max-camera-orbit="auto auto 170%"
+            disable-zoom disable-pan disable-tap interaction-prompt="none"
+            shadow-intensity="0.55" exposure="1.25">
+            <div slot="progress-bar"></div><!-- suppress the default gray loading bar -->
+          </model-viewer>
+        </div>
+        <div class="wrap campstage-copy" id="campStageCopy">
+          <span class="sec-label sec-label-gold">// pull up a log</span>
+          <h2 class="bg-head"><span class="bg-solid">Every build ends</span><br><span class="bg-italic">the same way.</span></h2>
+          <p class="bg-body">Sitting down and talking it through — what's slowing you down, and what it would take to fix. That part costs nothing.</p>
+        </div>
+      </div>
+    </section>
+
     <section class="blockgreen blockcontact" id="contact">
       <div class="wrap">
         <span class="sec-label sec-label-gold reveal">// say hello</span>
@@ -344,7 +367,7 @@
       <!-- Colophon — one compact line -->
       <div class="bf-row">
         <span class="bf-label">Site</span>
-        <span class="bf-cred">Hand-coded — no templates, no builders. &nbsp;·&nbsp; <a href="./">Dev playground ↗</a> &nbsp;·&nbsp; <button class="linklike" id="downloadCVButton">Résumé ↓</button> &nbsp;·&nbsp; Forest by <a href="https://sketchfab.com/3d-models/forest-scene-e5eb4867faba465d99deda487c56fbd6" target="_blank" rel="noopener noreferrer">Dries Deryckere</a> (CC BY 4.0)</span>
+        <span class="bf-cred">Hand-coded — no templates, no builders. &nbsp;·&nbsp; <a href="./">Dev playground ↗</a> &nbsp;·&nbsp; <button class="linklike" id="downloadCVButton">Résumé ↓</button> &nbsp;·&nbsp; Forest by <a href="https://sketchfab.com/3d-models/forest-scene-e5eb4867faba465d99deda487c56fbd6" target="_blank" rel="noopener noreferrer">Dries Deryckere</a> &nbsp;·&nbsp; Camp by <a href="https://sketchfab.com/3d-models/camping-buscraft-ambience-7b65e4df95c3492fbf4e0641e3b472c1" target="_blank" rel="noopener noreferrer">Edgar_koh</a> (both CC BY 4.0)</span>
       </div>
 
     </div>

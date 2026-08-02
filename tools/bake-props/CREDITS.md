@@ -17,7 +17,7 @@ CC0 imposes no requirement to credit; the site credits Kenney anyway (creative-m
 
 | Model | Author | Baked into | Credited at |
 | --- | --- | --- | --- |
-| [camping buscraft ambience](https://sketchfab.com/3d-models/camping-buscraft-ambience-7b65e4df95c3492fbf4e0641e3b472c1) | Edgar_koh | `models/camp.js` | index.html creative-mode credit line |
+| [camping buscraft ambience](https://sketchfab.com/3d-models/camping-buscraft-ambience-7b65e4df95c3492fbf4e0641e3b472c1) | Edgar_koh | `models/camp.js` + `models/camp-scene.glb` | index.html creative-mode credit line, main.html footer |
 | [Forest Scene](https://sketchfab.com/3d-models/forest-scene-e5eb4867faba465d99deda487c56fbd6) | Dries Deryckere | `models/forest-scene.glb` | main.html footer credit line |
 
 ## CC BY-NC 4.0 — NOT shipped
@@ -41,6 +41,7 @@ node tools/bake-props/bake-forest.js             # -> models/forest.js
 node tools/bake-props/bake-camp.js               # -> models/camp.js
 node tools/bake-props/prep-forest-scene-tex.js   # -> forest-scene-tex/ (gitignored)
 node tools/bake-props/bake-forest-scene.js       # -> models/forest-scene.glb
+node tools/bake-props/bake-camp-scene.js         # -> models/camp-scene.glb
 ```
 
 `bake-forest-scene.js` is the odd one out: main.html renders through `<model-viewer>`,
