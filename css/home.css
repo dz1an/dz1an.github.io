@@ -344,6 +344,40 @@ html:not(.js) .stage-intro .bg-tags { color: var(--sage); }
 }
 .light-head em { font-style: italic; color: var(--sage); }
 
+/* ---- "What I build" — the client's own words ----
+   Sits where a decorative 3D band used to. A client scrolling this far wants to
+   recognise their own situation, so the quote leads and the service label
+   follows; each row links to the full entry on services.html. */
+.blockneeds { padding-bottom: 64px; }
+.needgrid {
+  list-style: none; margin: 0; padding: 0;
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 2px;
+  background: var(--line); border: 1px solid var(--line);
+}
+.needgrid a {
+  display: flex; flex-direction: column; gap: 8px; height: 100%;
+  padding: 26px 24px; background: var(--bg);
+  text-decoration: none; color: inherit;
+  transition: background 0.25s ease, transform 0.25s ease;
+}
+.needgrid a:hover { background: #F1F3EB; transform: translateY(-2px); }
+.ng-q {
+  font-size: 1.12rem; font-weight: 600; line-height: 1.3;
+  color: var(--ink); letter-spacing: -0.01em;
+}
+.ng-a {
+  font-family: var(--mono); font-size: 0.78rem; font-weight: 500;
+  color: var(--sage); letter-spacing: 0.02em;
+}
+.needgrid-foot { margin-top: 28px; }
+.btn-sage { background: var(--sage); color: #fff; }
+.btn-sage:hover { background: var(--green); }
+
+@media (max-width: 720px) {
+  .needgrid { grid-template-columns: 1fr; }
+  .needgrid a { padding: 20px 18px; }
+}
+
 /* Work rows */
 .wrow {
   display: flex; align-items: center; justify-content: space-between; gap: 18px;
