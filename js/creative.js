@@ -939,7 +939,7 @@
     scene.add(awardLabel);
     wayLabels.push({ sp: awardLabel, base: 0.75 });
 
-    // The next lantern — LUMI, not lit yet (in development)
+    // The next lantern — Vintazk 360, not lit yet (in development)
     var lx = -2.2, lz = -31.5, lgY = getGroundY(lx, lz);
     var post2 = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.045, 1.5, 5), woodMat);
     post2.position.set(lx, lgY + 0.75, lz);
@@ -950,7 +950,7 @@
     );
     dim.position.set(lx, lgY + 1.55, lz);
     scene.add(dim);
-    var lumiLabel = makeLabel("LUMI", {
+    var lumiLabel = makeLabel("Vintazk 360", {
       fontSize: 16, color: "#E8C87A",
       sub: "the next lantern — in development", scale: 0.95, opacity: 0.5
     });
@@ -1744,7 +1744,7 @@
       if (techProximity > 0.1) ff.mesh.material.opacity *= 0.85 + (sinT3 + Math.sin(fi * 2.5) * 0.5) * 0.15;
     }
 
-    // Waypoint labels (signposts, award cairn, LUMI) — pure distance fade so a
+    // Waypoint labels (signposts, award cairn, Vintazk 360) — pure distance fade so a
     // marker you're standing on never fills the frame (every 2nd frame)
     if (frame % 2 === 0) {
       for (var wli = 0; wli < wayLabels.length; wli++) {
