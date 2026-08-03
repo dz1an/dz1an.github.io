@@ -438,8 +438,15 @@
     <div class="so-inner">
       <img class="so-pine" src="images/mark-pine.svg" alt="" width="34" height="44" decoding="async">
       <span class="so-text"><em>Keep scrolling</em> into the forest</span>
-      <span class="so-bar"><span class="so-fill" id="soFill"></span></span>
     </div>
+  </div>
+
+  <!-- The forest, dragged up from under the page. Overscroll moves this
+       directly, so pushing past the end produces travel instead of a stalled
+       gesture — and it doubles as the transition once it commits. -->
+  <div class="fcurtain" id="fCurtain" aria-hidden="true">
+    <img class="fc-pine" src="images/mark-pine.svg" alt="" width="86" height="110" decoding="async">
+    <span class="fc-label" id="fcLabel">Keep going</span>
   </div>
 
   <script src="js/home.js"></script>

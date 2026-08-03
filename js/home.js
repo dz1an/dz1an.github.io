@@ -358,68 +358,129 @@
   }
 
   // ---- Scroll-out to the forest ----
-  // Past the end of the page, keep scrolling and you walk into the 3D forest.
+  // Past the end of the page, keep scrolling and you drag the forest up over it.
   //
-  // Auto-navigation is hostile if it can surprise you, so it is gated three ways:
-  // it only arms at the very bottom, it needs sustained intent rather than one
-  // gesture (the bar shows exactly how much is left), and that intent decays if
-  // you stop. Scrolling back up cancels it outright. The footer keeps a real
-  // link as well — keyboard and screen-reader users cannot overscroll at all.
+  // The point is that overscroll produces TRAVEL. An abstract progress meter
+  // reads as "the page is stuck and something inscrutable is happening"; moving
+  // the destination under your finger reads as one continuous scroll. Release
+  // before the halfway mark and it springs back, so nothing is ever committed
+  // by accident, and the gesture is its own undo.
+  //
+  // Wheel deltas are normalised because they are wildly inconsistent: a trackpad
+  // emits dozens of ~3px events, a mouse notch emits ~120, and Firefox reports
+  // lines or pages instead of pixels. Without this the same push travels five
+  // times further on one device than another.
   var so = document.getElementById("scrollOut");
-  if (so) {
-    var soFill = document.getElementById("soFill");
-    var NEED = 780;             // px of overscroll to commit
-    var acc = 0, armed = false, fired = false, decay = 0;
+  var curtain = document.getElementById("fCurtain");
+  if (so && curtain) {
+    var fcLabel = document.getElementById("fcLabel");
+    var pull = 0, armed = false, fired = false, ready = false;
+    var settle = 0, pending = false;
 
-    function docBottom() {
+    function need() { return Math.max(240, window.innerHeight * 0.46); }
+    function atBottom() {
       var d = document.documentElement, b = document.body;
       var h = Math.max(d.scrollHeight, b ? b.scrollHeight : 0);
       return (window.innerHeight + (window.scrollY || d.scrollTop || 0)) >= (h - 2);
     }
-    function paint() {
-      so.classList.toggle("on", armed && !fired);
-      if (soFill) soFill.style.transform = "scaleX(" + Math.min(1, acc / NEED).toFixed(3) + ")";
+    function normalise(e) {
+      var d = e.deltaY || 0;
+      if (e.deltaMode === 1) d *= 16;                   // lines
+      else if (e.deltaMode === 2) d *= window.innerHeight; // pages
+      return d;
     }
+    function draw() {
+      var n = need();
+      // Resistance grows as you go, so the last stretch takes real intent and
+      // the curtain never flies open from one violent swipe.
+      var eased = n * (1 - Math.exp(-pull / n));
+      var pct = Math.max(0, 100 - (eased / window.innerHeight) * 100);
+      curtain.style.transform = "translate3d(0," + pct.toFixed(2) + "%,0)";
+      var nowReady = pull >= n;
+      if (nowReady !== ready) {
+        ready = nowReady;
+        curtain.classList.toggle("ready", ready);
+        if (fcLabel) fcLabel.textContent = ready ? "Release to enter" : "Keep going";
+      }
+      so.classList.toggle("on", armed && pull < 12 && !fired);
+    }
+    // The flag is raised BEFORE scheduling on purpose. Assigning the rAF handle
+    // to a guard variable only works if the callback runs later than the
+    // assignment — when it doesn't, the guard latches on and every subsequent
+    // frame is silently dropped.
+    function schedule() {
+      if (pending) return;
+      pending = true;
+      requestAnimationFrame(function () { pending = false; draw(); });
+    }
+
+    function reset() {
+      pull = 0; ready = false;
+      curtain.classList.add("snap");
+      curtain.classList.remove("ready");
+      curtain.style.transform = "translate3d(0,100%,0)";
+      setTimeout(function () {
+        if (fired) return;
+        curtain.classList.remove("snap", "live");
+      }, 460);
+    }
+    function commit() {
+      fired = true;
+      curtain.classList.remove("snap");
+      curtain.classList.add("commit");
+      curtain.style.transform = "translate3d(0,0,0)";
+      so.classList.remove("on");
+      setTimeout(function () { window.location.href = "./?forest"; }, 520);
+    }
+    // Released without reaching the mark -> spring back. Only the release
+    // decides; holding a half-open curtain never commits on its own.
+    function release() {
+      if (fired || pull <= 0) return;
+      if (ready) commit(); else reset();
+    }
+
     function push(amount) {
       if (!armed || fired) return;
-      // Downward adds intent; upward removes it twice as fast, so a change of
-      // mind is respected immediately.
-      acc = Math.max(0, acc + (amount > 0 ? amount : amount * 2));
-      if (acc >= NEED) {
-        fired = true;
-        so.classList.add("go");
-        paint();
-        setTimeout(function () { window.location.href = "./?forest"; }, 480);
-        return;
+      if (pull === 0 && amount > 0) {
+        curtain.classList.add("live");
+        curtain.classList.remove("snap");
       }
-      paint();
-      clearTimeout(decay);
-      decay = setTimeout(function () { acc = 0; paint(); }, 800);
+      pull = Math.max(0, pull + amount);
+      schedule();
+      clearTimeout(settle);
+      // A wheel has no "letting go", so a pause in the stream is the release.
+      settle = setTimeout(release, 140);
     }
 
     window.addEventListener("scroll", function () {
       var was = armed;
-      armed = docBottom();
-      if (!armed) { acc = 0; clearTimeout(decay); }
-      if (armed !== was || !armed) paint();
+      armed = atBottom();
+      if (!armed && pull > 0 && !fired) { clearTimeout(settle); reset(); }
+      if (armed !== was) schedule();
     }, { passive: true });
 
-    window.addEventListener("wheel", function (e) { push(e.deltaY); }, { passive: true });
+    window.addEventListener("wheel", function (e) { push(normalise(e)); }, { passive: true });
 
-    // Touch: a phone's rubber-band at the bottom would otherwise read as intent,
-    // so only real finger travel counts, and the last position resets on lift.
+    // Touch is a real drag with a real release, so it does not need the timer.
     var lastY = null;
     window.addEventListener("touchstart", function (e) {
       lastY = e.touches[0].clientY;
+      clearTimeout(settle);
     }, { passive: true });
     window.addEventListener("touchmove", function (e) {
       var y = e.touches[0].clientY;
-      if (lastY !== null) push((lastY - y) * 1.7);
+      if (lastY !== null && armed && !fired) push(lastY - y);
       lastY = y;
     }, { passive: true });
-    window.addEventListener("touchend", function () { lastY = null; }, { passive: true });
+    window.addEventListener("touchend", function () {
+      lastY = null;
+      clearTimeout(settle);
+      release();
+    }, { passive: true });
 
-    armed = docBottom();
-    paint();
+    window.addEventListener("resize", function () { if (pull > 0) schedule(); });
+
+    armed = atBottom();
+    draw();
   }
 })();

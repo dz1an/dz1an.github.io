@@ -702,24 +702,45 @@ a.bf-value:hover { color: var(--sage); }
   letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap;
 }
 .so-text em { font-style: normal; color: var(--gold); }
-.so-bar {
-  display: block; width: 76px; height: 3px; border-radius: 2px;
-  background: rgba(255, 255, 255, 0.22); overflow: hidden;
-}
-.so-fill {
-  display: block; width: 100%; height: 100%; border-radius: 2px;
-  background: var(--gold);
-  transform: scaleX(0); transform-origin: left center;
-}
 /* The hand-off: the bar completed, so commit visually before navigating. */
 .scrollout.go { transform: translateY(0) scale(1.04); }
 .scrollout.go .so-inner { background: var(--green); }
 
 @media (max-width: 520px) {
   .so-text { font-size: 0.66rem; }
-  .so-bar { width: 54px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .scrollout { transition: opacity 0.2s ease; transform: none; }
   .scrollout.on { transform: none; }
+}
+
+/* The forest curtain — overscroll drags this up over the page.
+   JS writes the transform every frame while you push, so the only transition
+   here is the release: either it springs back or it completes the journey. */
+.fcurtain {
+  position: fixed; inset: 0; z-index: 200;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 20px; background: #0C1210; color: #DAD7CD;
+  transform: translate3d(0, 100%, 0);
+  will-change: transform; pointer-events: none;
+  visibility: hidden;
+}
+.fcurtain.live { visibility: visible; }
+.fcurtain.snap { transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1); }
+.fcurtain.commit { transition: transform 0.5s cubic-bezier(0.65, 0, 0.35, 1); }
+.fc-pine {
+  width: clamp(52px, 7vw, 82px); height: auto; display: block;
+  opacity: 0.35; transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.fcurtain.ready .fc-pine { opacity: 1; transform: translateY(-4px); }
+.fc-label {
+  font-family: var(--mono); font-size: 0.74rem; font-weight: 600;
+  letter-spacing: 0.2em; text-transform: uppercase; color: #6B8F71;
+  transition: color 0.3s ease;
+}
+.fcurtain.ready .fc-label { color: var(--gold); }
+
+@media (prefers-reduced-motion: reduce) {
+  .fcurtain.snap, .fcurtain.commit { transition: transform 0.15s linear; }
+  .fc-pine, .fc-label { transition: none; }
 }
